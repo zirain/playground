@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Plyr demo</title>
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.5.3/plyr.css" />
+    <script src="https://cdn.plyr.io/3.5.3/plyr.js"></script>
+</head>
+
+<body>
+    <div style="width:50%;">
+        <video id="player" playsinline controls>
+            <source src="https://bluestorestoragetest.blob.core.chinacloudapi.cn/videos/abus.mov" type="video/mp4" />
+        </video>
+    </div>
+</body>
+
+<script>
+// Change the second argument to your options:
+// https://github.com/sampotts/plyr/#options
+const player = new Plyr('video', {captions: {active: true}});
+
+// Expose player so it can be used from the console
+window.player = player;
+</script>
+
+</html>

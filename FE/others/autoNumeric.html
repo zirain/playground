@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>autoNumeric demo</title>
+    <base href="/">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.bootcss.com/jquery/1.12.3/jquery.js"></script>
+    <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.js"></script>
+    <script src="https://cdn.jsdelivr.net/autonumeric/2.0.0/autoNumeric.min.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            $('.input-number-integer').autoNumeric('init', {
+                allowDecimalPadding: false,
+                decimalPlacesOverride: 0
+            });
+
+            $('.input-number-decimal').autoNumeric('init');
+        })
+    </script>
+</head>
+
+<body>
+
+    <div class="container">
+        <hr />
+        <div class="input-group">
+            <div class="input-group-addon">整数</div>
+            <input type="text" class="input-number-integer form-control" value="" required="required" pattern="" title="">
+        </div>
+        <hr />
+        <div class="input-group">
+            <div class="input-group-addon">小数</div>
+            <input type="text" class="input-number-decimal form-control" value="" required="required" pattern="" title="">
+        </div>
+    </div>
+</body>
+
+</html>
