@@ -1,0 +1,17 @@
+server:
+  port: ${SERVER_PORT:2019}
+
+spring:
+  application:
+    name: zk-provider-log
+
+dubbo:
+  registry:
+    protocol: zookeeper
+    address: localhost:2181
+  protocol:
+    name: dubbo
+    port: 20887
+  version: 1.0.0
+  scan:
+    base-packages: com.zirain.samples.dubbo.provider.service.impl
