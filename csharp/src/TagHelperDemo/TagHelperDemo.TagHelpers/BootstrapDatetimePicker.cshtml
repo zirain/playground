@@ -1,0 +1,24 @@
+﻿@model DateTime?
+@{
+    var startView = ViewData["StartView"]?.ToString();
+}
+
+<div class='input-group date' id="@Html.IdForModel()Div">
+    <input id="@Html.IdForModel()" type="text" class="form-control" name="@Html.NameForModel()" />
+    <span class="input-group-addon">
+        <span class="glyphicon glyphicon-calendar">
+        </span>
+    </span>
+</div>
+
+<script asp-location="Footer">
+    $(document).ready(function () {
+        $("#@Html.IdForModel()Div").datetimepicker({
+            defaultDate: '@(Model.HasValue ? Model.Value.ToString() : "")',
+            viewMode: "@startView", // defines the start view
+            format: "L", // momentjs format
+            allowInputToggle: true,
+            locale: "zh-cn"
+        });
+    });
+</script>

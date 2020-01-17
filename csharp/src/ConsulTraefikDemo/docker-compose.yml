@@ -1,0 +1,58 @@
+version: '3.7'
+
+services:
+  traefik_init:
+    container_name: traefik_init
+    image: traefik:1.7-alpine
+    command:
+    - "storeconfig"
+    - "--api"
+    - "--entrypoints=Name:http Address::80"
+    - "--defaultentrypoints=http"
+    - "--consul"
+    - "--consul.endpoint=consul:8500"
+    - "--consul.prefix=traefik"
+    depends_on:
+    - consul
+      
+  traefik:
+    container_name: traefik
+    image: traefik:1.7-alpine
+    depends_on:
+    - traefik_init
+    - consul
+    command:
+    - "--consul"
+    - "--consul.endpoint=consul:8500"
+    - "--consul.prefix=traefik"
+    - "--consulcatalog.endpoint=consul:8500"
+    - "--consulcatalog.watch=true"
+    - "--consulcatalog.frontEndRule=PathPrefixStrip:/{{.ServiceName}}"
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+    - 80:80
+    - 8080:8080
+
+  consul:
+    container_name: consul
+    image: consul:latest
+    command: agent -dev -node=node1
+    volumes:
+    - .docker/consul/data:/consul/data
+    environment:
+    - CONSUL_LOCAL_CONFIG={"datacenter":"dc1","server":true}
+    - CONSUL_BIND_INTERFACE=eth0
+    - CONSUL_CLIENT_INTERFACE=eth0
+    ports:
+    - 8500:8500
+
+  web_api:
+    container_name: webapi
+    build: ./ConsulTestApi
+    depends_on:
+      - consul
+    environment:
+    - ASPNETCORE_URLS=http://*:80
+    - Consul__address=http://consul:8500
+    - Consul__serviceAddress=webapi

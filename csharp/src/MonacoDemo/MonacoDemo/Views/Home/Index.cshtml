@@ -1,0 +1,18 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div id="container" style="min-height:600px;margin-top:20px;"></div>
+
+@section Scripts{
+    <script>
+        require(['vs/editor/editor.main'], function () {
+            var editor = monaco.editor.create(document.getElementById('container'), {
+                value: [
+                    'select GetDate()'
+                ].join('\n'),
+                language: 'sql'
+            });
+        });
+    </script>
+}
