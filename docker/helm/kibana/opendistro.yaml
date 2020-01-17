@@ -1,0 +1,6 @@
+image:
+  repository:  "amazon/opendistro-for-elasticsearch-kibana"
+  tag: "latest"
+files:
+  kibana.yml:
+    elasticsearch.hosts: http://opendistro-es-elasticsearch-client:9200

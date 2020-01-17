@@ -1,0 +1,25 @@
+version: '3'
+services:
+  elasticsearch:
+    image: elasticsearch:7.0.1
+    container_name: es1
+    networks: 
+      - es-net
+    environment:
+      - "discovery.type=single-node"
+    ports:
+      - 9200:9200
+      - 9300:9300
+  kibana:
+    image: kibana:7.0.1
+    container_name: kibana1
+    depends_on:
+      - elasticsearch
+    environment:
+      - ELASTICSEARCH_HOSTS=http://es1:9200
+    networks: 
+      - es-net
+    ports:
+      - 5601:5601
+networks:
+  es-net:

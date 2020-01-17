@@ -1,0 +1,91 @@
+version: '3'
+services:
+  es1:
+    image: elasticsearch:7.0.1
+    container_name: es1
+    environment:
+      - cluster.name=docker-cluster
+      - node.name=es1
+      - node.attr.box_type=hot
+      - bootstrap.memory_lock=true
+      - http.cors.enabled=true
+      - http.cors.allow-origin=*
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - discovery.seed_hosts=es1,es2,es3
+      - cluster.initial_master_nodes=es1,es2,es3
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - esdata1:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+    networks:
+      - esnet
+  es2:
+    image: elasticsearch:7.0.1
+    container_name: es2
+    environment:
+      - cluster.name=docker-cluster
+      - node.name=es2
+      - node.attr.box_type=warm
+      - bootstrap.memory_lock=true
+      - http.cors.enabled=true
+      - http.cors.allow-origin=*
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - discovery.seed_hosts=es1,es2,es3
+      - cluster.initial_master_nodes=es1,es2,es3
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - esdata2:/usr/share/elasticsearch/data
+    networks:
+      - esnet
+    depends_on:
+      - es1
+  es3:
+    image: elasticsearch:7.0.1
+    container_name: es3
+    environment:
+      - cluster.name=docker-cluster
+      - node.name=es3
+      - node.attr.box_type=cold
+      - bootstrap.memory_lock=true
+      - http.cors.enabled=true
+      - http.cors.allow-origin=*
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - discovery.seed_hosts=es1,es2,es3
+      - cluster.initial_master_nodes=es1,es2,es3
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - esdata3:/usr/share/elasticsearch/data
+    networks:
+      - esnet
+    depends_on:
+      - es1
+  kibana:
+    image: kibana:7.0.1
+    container_name: kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://es1:9200
+    ports:
+      - 5601:5601
+    networks:
+      - esnet
+    depends_on:
+      - es1
+volumes:
+  esdata1:
+    driver: local
+  esdata2:
+    driver: local
+  esdata3:
+    driver: local
+networks:
+  esnet:
