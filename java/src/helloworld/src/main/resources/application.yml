@@ -1,4 +1,14 @@
 spring:
+  datasource:
+    url: jdbc:sqlserver://springboottest.database.chinacloudapi.cn:1433;database=test1;
+    username: sqladmin@springboottest
+    password: 1qaz@WSX3edc
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+    jpa:
+      show-sql: true
+      properties:
+        hibernate:
+          enable_lazy_load_no_trans: true
   thymeleaf:
     enabled: true  #开启thymeleaf视图解析
     encoding: utf-8  #编码
