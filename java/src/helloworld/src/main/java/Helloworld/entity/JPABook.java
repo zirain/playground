@@ -2,36 +2,24 @@ package Helloworld.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import javax.persistence.*;
-
-
-@Entity
-@Table(name = "JPABook")
 @JsonIgnoreProperties(value = { "hibernateLazyInitializer"})
 public class JPABook {
-    /**
-     * id
-     */
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
     private Long id;
 
     /**
      * 书名
      */
-    @Column(nullable = false)
     private String name;
 
     /**
      * 作者
      */
-    @Column(nullable = false)
     private String writer;
 
     /**
      * 简介
      */
-    @Column(nullable = false)
     private String introduction;
 
     /**

@@ -1,3 +1,5 @@
+#mybatis:
+# type-aliases-package: Helloword.dao #包类型别名，这样在XML中就可以简写成类名
 spring:
   datasource:
     url: jdbc:sqlserver://springboottest.database.chinacloudapi.cn:1433;database=test1;

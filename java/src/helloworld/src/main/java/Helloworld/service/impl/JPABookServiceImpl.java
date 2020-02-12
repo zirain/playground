@@ -1,9 +1,8 @@
 package Helloworld.service.impl;
 
+import Helloworld.dao.JPABookMapper;
 import Helloworld.entity.JPABook;
-import Helloworld.repository.JPABookRepository;
 import Helloworld.service.JPABookService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -11,20 +10,20 @@ import java.util.List;
 @Service
 public class JPABookServiceImpl implements JPABookService {
 
-    private final JPABookRepository jpaBookRepository;
+    private final JPABookMapper jpaBookMapper;
 
-    public JPABookServiceImpl(JPABookRepository jpaBookRepository) {
-        this.jpaBookRepository = jpaBookRepository;
+    public JPABookServiceImpl(JPABookMapper jpaBookMapper) {
+        this.jpaBookMapper = jpaBookMapper;
     }
 
 
     @Override
     public List<JPABook> findAll() {
-        return  jpaBookRepository.findAll();
+        return  jpaBookMapper.getAllBooks();
     }
 
     @Override
     public JPABook findById(Long id) {
-        return jpaBookRepository.getOne(id);
+        return jpaBookMapper.getById(id);
     }
 }
