@@ -25,7 +25,7 @@ func main() {
 				<-sem
 			}()
 
-			time.Sleep(time.Second)
+			time.Sleep(time.Second * 2)
 			fmt.Println(id, time.Now())
 		}(i)
 	}
