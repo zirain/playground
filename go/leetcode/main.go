@@ -1,65 +1,47 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+)
 
-func maxAreaOfIsland(grid [][]int) int {
-	rows := len(grid)
+func countCharacters(words []string, chars string) int {
+	charsCounts := countChars(chars)
 
-	cols := len(grid[0])
-
-	maxArea := 0
-	for i := 0; i < rows; i++ {
-		for j := 0; j < cols; j++ {
-			if grid[i][j] == 0 {
-				continue
-			}
-
-			area := dfs(grid, rows, cols, i, j, 0)
-			if area > maxArea {
-				maxArea = area
-			}
+	wordLen := 0
+	for _, val := range words {
+		counts := charsCounts
+		if canStringBuilt(val, counts) {
+			wordLen += len(val)
 		}
 	}
-
-	return maxArea
+	return wordLen
 }
 
-func dfs(grid [][]int, rows int, cols int, i int, j int, area int) int {
-	dirX := []int{1, -1, 0, 0}
-	dirY := []int{0, 0, 1, -1}
+func canStringBuilt(chars string, charCounts [26]int) bool {
 
-	area++
-	grid[i][j] = 0
-
-	for n := 0; n < len(dirX); n++ {
-		newI := i + dirX[n]
-		newJ := j + dirY[n]
-
-		if newI >= 0 &&
-			newI < rows &&
-			newJ >= 0 &&
-			newJ < cols &&
-			grid[newI][newJ] == 1 {
-
-			area = dfs(grid, rows, cols, newI, newJ, area)
+	for _, val := range chars {
+		idx := val - 'a'
+		if charCounts[idx] > 0 {
+			charCounts[idx]--
+		} else {
+			return false
 		}
 	}
 
-	return area
+	return true
+}
+
+func countChars(chars string) [26]int {
+	counts := [26]int{}
+	for _, val := range chars {
+		counts[val-'a']++
+	}
+
+	return counts
 }
 
 func main() {
-	grid := [][]int{
-		{0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0},
-		{0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0},
-		{0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0},
-		{0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0},
-		{0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0, 0},
-		{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0},
-		{0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0},
-		{0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0},
-	}
-
-	maxArea := maxAreaOfIsland(grid)
-	fmt.Println("Max area of isliad is ", maxArea)
+	words := []string{"cat", "bt", "hat", "tree"}
+	chars := "atach"
+	fmt.Println(countCharacters(words, chars))
 }
