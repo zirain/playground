@@ -4,44 +4,14 @@ import (
 	"fmt"
 )
 
-func countCharacters(words []string, chars string) int {
-	charsCounts := countChars(chars)
-
-	wordLen := 0
-	for _, val := range words {
-		counts := charsCounts
-		if canStringBuilt(val, counts) {
-			wordLen += len(val)
-		}
-	}
-	return wordLen
-}
-
-func canStringBuilt(chars string, charCounts [26]int) bool {
-
-	for _, val := range chars {
-		idx := val - 'a'
-		if charCounts[idx] > 0 {
-			charCounts[idx]--
-		} else {
-			return false
-		}
-	}
-
-	return true
-}
-
-func countChars(chars string) [26]int {
-	counts := [26]int{}
-	for _, val := range chars {
-		counts[val-'a']++
-	}
-
-	return counts
+func isRectangleOverlap(rec1 []int, rec2 []int) bool {
+	return !(rec1[2] <= rec2[0] || // left
+		rec1[3] <= rec2[1] || // bottom
+		rec1[0] >= rec2[2] || // right
+		rec1[1] >= rec2[3]) // top
 }
 
 func main() {
-	words := []string{"cat", "bt", "hat", "tree"}
-	chars := "atach"
-	fmt.Println(countCharacters(words, chars))
+	fmt.Println(isRectangleOverlap([]int{0, 0, 2, 2}, []int{1, 1, 3, 3}))
+	fmt.Println(isRectangleOverlap([]int{0, 0, 1, 1}, []int{1, 0, 2, 1}))
 }
