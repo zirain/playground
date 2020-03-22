@@ -2,16 +2,40 @@ package main
 
 import (
 	"fmt"
+	"sort"
 )
 
-func isRectangleOverlap(rec1 []int, rec2 []int) bool {
-	return !(rec1[2] <= rec2[0] || // left
-		rec1[3] <= rec2[1] || // bottom
-		rec1[0] >= rec2[2] || // right
-		rec1[1] >= rec2[3]) // top
+func minIncrementForUnique(A []int) int {
+
+	sort.Ints(A)
+	ans, taken := 0, 0
+
+	for i := 1; i < len(A); i++ {
+		if A[i-1] == A[i] {
+			taken++
+			ans -= A[i]
+		} else {
+			var give = min(taken, A[i]-A[i-1]-1)
+			ans += give*(give+1)/2 + give*A[i-1]
+			taken -= give
+		}
+	}
+	if len(A) > 0 {
+		ans += taken*(taken+1)/2 + taken*A[len(A)-1]
+	}
+
+	return ans
+}
+
+func min(x int, y int) int {
+	if x < y {
+		return x
+	}
+
+	return y
 }
 
 func main() {
-	fmt.Println(isRectangleOverlap([]int{0, 0, 2, 2}, []int{1, 1, 3, 3}))
-	fmt.Println(isRectangleOverlap([]int{0, 0, 1, 1}, []int{1, 0, 2, 1}))
+	fmt.Println(minIncrementForUnique([]int{1, 2, 2}))
+	fmt.Println(minIncrementForUnique([]int{3, 2, 1, 2, 1, 7}))
 }
