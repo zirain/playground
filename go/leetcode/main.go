@@ -2,24 +2,16 @@ package main
 
 import "fmt"
 
-func massage(nums []int) int {
-	n := len(nums)
-	if n == 0 {
-		return 0
+func rob(nums []int) int {
+	currMax := 0
+	prevMax := 0
+	for _, val := range nums {
+		tmp := currMax
+		currMax = max(prevMax+val, currMax)
+		prevMax = tmp
 	}
 
-	dp0 := 0
-	dp1 := nums[0]
-
-	for i := 1; i < n; i++ {
-		tdp0 := max(dp0, dp1)
-		tdp1 := dp0 + nums[i]
-
-		dp0 = tdp0
-		dp1 = tdp1
-	}
-
-	return max(dp0, dp1)
+	return currMax
 }
 
 func max(x int, y int) int {
@@ -31,7 +23,7 @@ func max(x int, y int) int {
 }
 
 func main() {
-	fmt.Println(massage([]int{1, 2, 3, 1}))
-	fmt.Println(massage([]int{2, 7, 9, 3, 1}))
-	fmt.Println(massage([]int{2, 1, 4, 5, 3, 1, 1, 3}))
+	fmt.Println(rob([]int{1, 2, 3, 1}))
+	fmt.Println(rob([]int{2, 7, 9, 3, 1}))
+	fmt.Println(rob([]int{2, 1, 4, 5, 3, 1, 1, 3}))
 }
