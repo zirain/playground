@@ -5,7 +5,6 @@ import (
 	"sort"
 )
 
-<<<<<<< HEAD
 func minIncrementForUnique(A []int) int {
 
 	sort.Ints(A)
@@ -37,30 +36,5 @@ func min(x int, y int) int {
 }
 
 func main() {
-	fmt.Println(minIncrementForUnique([]int{1, 2, 2}))
-	fmt.Println(minIncrementForUnique([]int{3, 2, 1, 2, 1, 7}))
-=======
-func longestPalindrome(s string) int {
-	count:=0
-	countDic := make(map[rune]int)
-	for _,chr := range s{
-		if _,ok:=countDic[chr]; ok{
-			countDic[chr]--
-			delete(countDic,chr)
-			count++
-		}else	{
-			countDic[chr] = 0
-		}
-	}
-
-	if len(countDic) > 0{
-		return count*2+1
-	}else{
-		return count*2
-	}
-}
-
-func main() {
 	fmt.Println(longestPalindrome("abccccdd"))
->>>>>>> ddd6444f2a9a89cf8c439d82536610f4887bcfb0
 }
