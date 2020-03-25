@@ -1,29 +1,53 @@
 package main
 
-import "fmt"
+func numRookCaptures(board [][]byte) int {
+	r := 0
+	rx, ry := getRootPosition(board)
+	directions := []byte{'u', 'd', 'l', 'r'}
+	for x, y, i := rx, ry, 0; i < 4; {
+		var d = directions[i]
+		switch d {
+		case 'u':
+			x--
+		case 'd':
+			x++
+		case 'l':
+			y--
+		case 'r':
+			y++
+		}
 
-func rob(nums []int) int {
-	currMax := 0
-	prevMax := 0
-	for _, val := range nums {
-		tmp := currMax
-		currMax = max(prevMax+val, currMax)
-		prevMax = tmp
+		if x >= 0 && y >= 0 && x < len(board) && y < len(board[0]) {
+			chess := "" + string(board[x][y])
+			if chess != "." {
+				if chess == "p" {
+					r++
+				}
+				i++
+				x = rx
+				y = ry
+			}
+
+		} else {
+			i++
+			x = rx
+			y = ry
+		}
 	}
 
-	return currMax
+	return r
 }
 
-func max(x int, y int) int {
-	if x > y {
-		return x
+func getRootPosition(board [][]byte) (int, int) {
+	for i := 0; i < len(board); i++ {
+		for j := 0; j < len(board[0]); j++ {
+			if board[i][j] == 'R' {
+				return i, j
+			}
+		}
 	}
-
-	return y
+	return -1, -1
 }
 
 func main() {
-	fmt.Println(rob([]int{1, 2, 3, 1}))
-	fmt.Println(rob([]int{2, 7, 9, 3, 1}))
-	fmt.Println(rob([]int{2, 1, 4, 5, 3, 1, 1, 3}))
 }
