@@ -1,53 +1,43 @@
 package main
 
-func numRookCaptures(board [][]byte) int {
-	r := 0
-	rx, ry := getRootPosition(board)
-	directions := []byte{'u', 'd', 'l', 'r'}
-	for x, y, i := rx, ry, 0; i < 4; {
-		var d = directions[i]
-		switch d {
-		case 'u':
-			x--
-		case 'd':
-			x++
-		case 'l':
-			y--
-		case 'r':
-			y++
-		}
+import (
+	"fmt"
+)
 
-		if x >= 0 && y >= 0 && x < len(board) && y < len(board[0]) {
-			chess := "" + string(board[x][y])
-			if chess != "." {
-				if chess == "p" {
-					r++
-				}
-				i++
-				x = rx
-				y = ry
-			}
-
+func hasGroupsSizeX(deck []int) bool {
+	dict := make(map[int]int)
+	for _, val := range deck {
+		if count, ok := dict[val]; ok {
+			dict[val] = count + 1
 		} else {
-			i++
-			x = rx
-			y = ry
+			dict[val] = 1
 		}
 	}
 
-	return r
+	g := -1
+	for _, val := range dict {
+		if g == -1 {
+			g = val
+		} else {
+			g = gcd(val, g)
+		}
+	}
+
+	return g >= 2
 }
 
-func getRootPosition(board [][]byte) (int, int) {
-	for i := 0; i < len(board); i++ {
-		for j := 0; j < len(board[0]); j++ {
-			if board[i][j] == 'R' {
-				return i, j
-			}
-		}
+func gcd(x int, y int) int {
+	if x == 0 {
+		return y
+	} else {
+		return gcd(y%x, x)
 	}
-	return -1, -1
 }
 
 func main() {
+	fmt.Println(hasGroupsSizeX([]int{1, 2, 3, 4, 4, 3, 2, 1}))
+	fmt.Println(hasGroupsSizeX([]int{1, 1, 1, 2, 2, 2, 3, 3}))
+	fmt.Println(hasGroupsSizeX([]int{1}))
+	fmt.Println(hasGroupsSizeX([]int{1, 1}))
+	fmt.Println(hasGroupsSizeX([]int{1, 1, 2, 2, 2, 2}))
 }
