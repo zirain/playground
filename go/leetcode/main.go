@@ -4,40 +4,57 @@ import (
 	"fmt"
 )
 
-func hasGroupsSizeX(deck []int) bool {
-	dict := make(map[int]int)
-	for _, val := range deck {
-		if count, ok := dict[val]; ok {
-			dict[val] = count + 1
-		} else {
-			dict[val] = 1
-		}
-	}
-
-	g := -1
-	for _, val := range dict {
-		if g == -1 {
-			g = val
-		} else {
-			g = gcd(val, g)
-		}
-	}
-
-	return g >= 2
+type point struct {
+	x int
+	y int
 }
 
-func gcd(x int, y int) int {
-	if x == 0 {
-		return y
-	} else {
-		return gcd(y%x, x)
+func maxDistance(grid [][]int) int {
+	var (
+		count int
+		stack []*point
+	)
+	for i := 0; i < len(grid); i++ {
+		for j := 0; j < len(grid[0]); j++ {
+			if grid[i][j] == 1 {
+				stack = append(stack, &point{x: i, y: j})
+			}
+		}
 	}
+
+	dXs := []int{1, -1, 0, 0}
+	dYs := []int{0, 0, 1, -1}
+
+	for len(stack) != 0 {
+		temp := stack
+		stack = []*point{}
+		for _, val := range temp {
+			i := val.x
+			j := val.y
+
+			for n := 0; n < 4; n++ {
+				newI := i + dXs[n]
+				newJ := j + dYs[n]
+
+				if newI >= 0 && newI < len(grid) && newJ >= 0 && newJ < len(grid[0]) && grid[newI][newJ] == 0 {
+					grid[newI][newJ] = 1
+					stack = append(stack, &point{x: newI, y: newJ})
+				}
+			}
+		}
+
+		if len(stack) != 0 {
+			count++
+		}
+	}
+
+	if count == 0 {
+		return -1
+	}
+	return count
 }
 
 func main() {
-	fmt.Println(hasGroupsSizeX([]int{1, 2, 3, 4, 4, 3, 2, 1}))
-	fmt.Println(hasGroupsSizeX([]int{1, 1, 1, 2, 2, 2, 3, 3}))
-	fmt.Println(hasGroupsSizeX([]int{1}))
-	fmt.Println(hasGroupsSizeX([]int{1, 1}))
-	fmt.Println(hasGroupsSizeX([]int{1, 1, 2, 2, 2, 2}))
+	fmt.Println(maxDistance([][]int{[]int{1, 0, 1}, []int{0, 0, 0}, []int{1, 0, 1}}))
+	fmt.Println(maxDistance([][]int{[]int{1, 0, 0}, []int{0, 0, 0}, []int{0, 0, 0}}))
 }
