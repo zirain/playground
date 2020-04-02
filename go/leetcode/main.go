@@ -1,23 +1,61 @@
 package main
 
-import (
-	"fmt"
-)
+import "fmt"
 
-func lastRemaining(n int, m int) int {
-	return f(n, m)
-}
+func gameOfLife(board [][]int) {
+	rows := len(board)
+	cols := len(board[0])
 
-func f(n int, m int) int {
-	if n == 1 {
-		return 0
+	neighbors := []int{0, 1, -1}
+	for row := 0; row < rows; row++ {
+		for col := 0; col < cols; col++ {
+			liveNeighbors := 0
+
+			for i := 0; i < 3; i++ {
+				for j := 0; j < 3; j++ {
+
+					if !(neighbors[i] == 0 && neighbors[j] == 0) {
+						r := row + neighbors[i]
+						c := col + neighbors[j]
+
+						if (r < rows && r >= 0) && (c < cols && c >= 0) && (board[r][c] == 1 || board[r][c] == -1) {
+							liveNeighbors += 1
+						}
+					}
+				}
+			}
+
+			// 规则 1 或规则 3
+			if (board[row][col] == 1) && (liveNeighbors < 2 || liveNeighbors > 3) {
+				// -1 代表这个细胞过去是活的现在死了
+				board[row][col] = -1
+			}
+			// 规则 4
+			if board[row][col] == 0 && liveNeighbors == 3 {
+				// 2 代表这个细胞过去是死的现在活了
+				board[row][col] = 2
+			}
+		}
 	}
 
-	x := f(n-1, m)
-	return (m + x) % n
+	// 遍历 board 得到一次更新后的状态
+	for row := 0; row < rows; row++ {
+		for col := 0; col < cols; col++ {
+			if board[row][col] > 0 {
+				board[row][col] = 1
+			} else {
+				board[row][col] = 0
+			}
+		}
+	}
 }
 
 func main() {
-	fmt.Println(lastRemaining(5, 3))
-	fmt.Println(lastRemaining(10, 17))
+	board := [][]int{
+		{0, 1, 0},
+		{0, 0, 1},
+		{1, 1, 1},
+		{0, 0, 0}}
+	gameOfLife(board)
+	fmt.Println(board)
 }
