@@ -1,115 +1,54 @@
 package main
 
-type LFUCache struct {
-	cache               map[int]*Node
-	freq                map[int]*DoubleLinkedList
-	ncap, size, minFreq int
-}
+import "fmt"
 
-func Constructor(capacity int) LFUCache {
-	return LFUCache{
-		cache: make(map[int]*Node),
-		freq:  make(map[int]*DoubleLinkedList),
-		ncap:  capacity,
-	}
-}
+func minDistance(word1 string, word2 string) int {
+	n := len(word1)
+	m := len(word2)
 
-func (this *LFUCache) Get(key int) int {
-	if node, ok := this.cache[key]; ok {
-		this.IncFreq(node)
-		return node.val
+	// 有一个字符串为空串
+	if n*m == 0 {
+		return n + m
 	}
-	return -1
-}
 
-func (this *LFUCache) Put(key, value int) {
-	if this.ncap == 0 {
-		return
+	// DP 数组
+	D := make([][]int, n+1)
+	for i := 0; i <= n; i++ {
+		D[i] = make([]int, m+1)
 	}
-	if node, ok := this.cache[key]; ok {
-		node.val = value
-		this.IncFreq(node)
-	} else {
-		if this.size >= this.ncap {
-			node := this.freq[this.minFreq].RemoveLast()
-			delete(this.cache, node.key)
-			this.size--
+
+	// 边界状态初始化
+	for i := 0; i < n+1; i++ {
+		D[i][0] = i
+	}
+	for j := 0; j < m+1; j++ {
+		D[0][j] = j
+	}
+
+	// 计算所有 DP 值
+	for i := 1; i < n+1; i++ {
+		for j := 1; j < m+1; j++ {
+			left := D[i-1][j] + 1
+			down := D[i][j-1] + 1
+			leftDown := D[i-1][j-1]
+			if word1[i-1] != word2[j-1] {
+				leftDown = (leftDown + 1)
+			}
+			D[i][j] = min(left, min(down, leftDown))
+
 		}
-		x := &Node{key: key, val: value, freq: 1}
-		this.cache[key] = x
-		if this.freq[1] == nil {
-			this.freq[1] = CreateDoubleLinkedList()
-		}
-		this.freq[1].AddFirst(x)
-		this.minFreq = 1
-		this.size++
 	}
+	return D[n][m]
 }
 
-func (this *LFUCache) IncFreq(node *Node) {
-	_freq := node.freq
-	this.freq[_freq].Remove(node)
-	if this.minFreq == _freq && this.freq[_freq].IsEmpty() {
-		this.minFreq++
-		delete(this.freq, _freq)
+func min(x, y int) int {
+	if x < y {
+		return x
 	}
-
-	node.freq++
-	if this.freq[node.freq] == nil {
-		this.freq[node.freq] = CreateDoubleLinkedList()
-	}
-	this.freq[node.freq].AddFirst(node)
-}
-
-type DoubleLinkedList struct {
-	head, tail *Node
-}
-
-type Node struct {
-	prev, next     *Node
-	key, val, freq int
-}
-
-func CreateDoubleLinkedList() *DoubleLinkedList {
-	head, tail := &Node{}, &Node{}
-	head.next, tail.prev = tail, head
-	return &DoubleLinkedList{
-		head: head,
-		tail: tail,
-	}
-}
-
-func (this *DoubleLinkedList) AddFirst(node *Node) {
-	node.next = this.head.next
-	node.prev = this.head
-
-	this.head.next.prev = node
-	this.head.next = node
-}
-
-func (this *DoubleLinkedList) Remove(node *Node) {
-	node.prev.next = node.next
-	node.next.prev = node.prev
-
-	node.next = nil
-	node.prev = nil
-}
-
-func (this *DoubleLinkedList) RemoveLast() *Node {
-	if this.IsEmpty() {
-		return nil
-	}
-
-	last := this.tail.prev
-	this.Remove(last)
-
-	return last
-}
-
-func (this *DoubleLinkedList) IsEmpty() bool {
-	return this.head.next == this.tail
+	return y
 }
 
 func main() {
-
+	fmt.Println(minDistance("horse", "ros"))
+	fmt.Println(minDistance("intention", "execution"))
 }
