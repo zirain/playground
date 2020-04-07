@@ -2,53 +2,39 @@ package main
 
 import "fmt"
 
-func minDistance(word1 string, word2 string) int {
-	n := len(word1)
-	m := len(word2)
+func rotate(matrix [][]int) {
+	n := len(matrix)
 
-	// 有一个字符串为空串
-	if n*m == 0 {
-		return n + m
-	}
-
-	// DP 数组
-	D := make([][]int, n+1)
-	for i := 0; i <= n; i++ {
-		D[i] = make([]int, m+1)
-	}
-
-	// 边界状态初始化
-	for i := 0; i < n+1; i++ {
-		D[i][0] = i
-	}
-	for j := 0; j < m+1; j++ {
-		D[0][j] = j
-	}
-
-	// 计算所有 DP 值
-	for i := 1; i < n+1; i++ {
-		for j := 1; j < m+1; j++ {
-			left := D[i-1][j] + 1
-			down := D[i][j-1] + 1
-			leftDown := D[i-1][j-1]
-			if word1[i-1] != word2[j-1] {
-				leftDown = (leftDown + 1)
-			}
-			D[i][j] = min(left, min(down, leftDown))
-
+	//水平翻转
+	for i := 0; i < n/2; i++ {
+		for j := 0; j < n; j++ {
+			matrix[i][j], matrix[n-i-1][j] = matrix[n-i-1][j], matrix[i][j]
 		}
 	}
-	return D[n][m]
-}
 
-func min(x, y int) int {
-	if x < y {
-		return x
+	//主对角线翻转
+	for i := 0; i < n; i++ {
+		for j := 0; j < i; j++ {
+			matrix[i][j], matrix[j][i] = matrix[j][i], matrix[i][j]
+		}
 	}
-	return y
 }
 
 func main() {
-	fmt.Println(minDistance("horse", "ros"))
-	fmt.Println(minDistance("intention", "execution"))
+	matrix := [][]int{
+		[]int{1, 2, 3},
+		[]int{4, 5, 6},
+		[]int{7, 8, 9},
+	}
+	rotate(matrix)
+	fmt.Println(matrix)
+
+	matrix2 := [][]int{
+		[]int{5, 1, 9, 11},
+		[]int{2, 4, 8, 10},
+		[]int{13, 3, 6, 7},
+		[]int{15, 14, 12, 16},
+	}
+	rotate(matrix2)
+	fmt.Println(matrix2)
 }
