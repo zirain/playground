@@ -2,39 +2,45 @@ package main
 
 import "fmt"
 
-func rotate(matrix [][]int) {
-	n := len(matrix)
+func get(x int) int {
+	res := 0
+	for x > 0 {
+		res += x % 10
+		x = x / 10
+	}
+	return res
+}
 
-	//水平翻转
-	for i := 0; i < n/2; i++ {
+func movingCount(m int, n int, k int) int {
+	if k == 0 {
+		return 1
+	}
+	vis := make([][]int, m)
+	for i := 0; i < m; i++ {
+		vis[i] = make([]int, n)
+	}
+	ans := 1
+	vis[0][0] = 1
+	for i := 0; i < m; i++ {
 		for j := 0; j < n; j++ {
-			matrix[i][j], matrix[n-i-1][j] = matrix[n-i-1][j], matrix[i][j]
-		}
-	}
+			if (i == 0 && j == 0) || get(i)+get(j) > k {
+				continue
+			}
 
-	//主对角线翻转
-	for i := 0; i < n; i++ {
-		for j := 0; j < i; j++ {
-			matrix[i][j], matrix[j][i] = matrix[j][i], matrix[i][j]
+			// 边界判断
+			if i-1 >= 0 {
+				vis[i][j] |= vis[i-1][j]
+			}
+			if j-1 >= 0 {
+				vis[i][j] |= vis[i][j-1]
+			}
+			ans += vis[i][j]
 		}
 	}
+	return ans
 }
 
 func main() {
-	matrix := [][]int{
-		[]int{1, 2, 3},
-		[]int{4, 5, 6},
-		[]int{7, 8, 9},
-	}
-	rotate(matrix)
-	fmt.Println(matrix)
-
-	matrix2 := [][]int{
-		[]int{5, 1, 9, 11},
-		[]int{2, 4, 8, 10},
-		[]int{13, 3, 6, 7},
-		[]int{15, 14, 12, 16},
-	}
-	rotate(matrix2)
-	fmt.Println(matrix2)
+	fmt.Println(movingCount(2, 3, 1))
+	fmt.Println(movingCount(2, 3, 0))
 }
