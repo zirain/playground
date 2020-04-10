@@ -1,32 +1,30 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
-func generateParenthesis(n int) []string {
-	output := make([]string, 0)
-	if n < 0 {
-		return output
+func reverseWords(s string) string {
+	s = strings.TrimSpace(s)
+	words := make([]string, 0)
+	endIndex := len(s) - 1
+	for i := len(s) - 1; i >= 0; i-- {
+		if s[i] == ' ' {
+			words = append(words, s[i+1:endIndex+1])
+			for i >= 0 && s[i] == ' ' {
+				i--
+			}
+			endIndex = i
+		}
 	}
+	words = append(words, s[:endIndex+1])
 
-	backtrace("", 0, 0, n, &output)
-	return output
-}
-
-func backtrace(parenthesis string, lefts int, rights int, max int, output *[]string) {
-	if len(parenthesis) == (max * 2) {
-		*output = append(*output, parenthesis)
-	}
-
-	if lefts < max {
-		backtrace(parenthesis+"(", lefts+1, rights, max, output)
-	}
-
-	if rights < lefts {
-		backtrace(parenthesis+")", lefts, rights+1, max, output)
-	}
+	return strings.Join(words, " ")
 }
 
 func main() {
-	fmt.Println(generateParenthesis(3))
-	fmt.Println(generateParenthesis(1))
+	fmt.Println(reverseWords("     the sky is blue"))
+	fmt.Println(reverseWords("  hello world!  "))
+	fmt.Println(reverseWords("a good   example"))
 }
