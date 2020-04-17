@@ -2,29 +2,33 @@ package main
 
 import (
 	"fmt"
-	"strings"
 )
 
-func reverseWords(s string) string {
-	s = strings.TrimSpace(s)
-	words := make([]string, 0)
-	endIndex := len(s) - 1
-	for i := len(s) - 1; i >= 0; i-- {
-		if s[i] == ' ' {
-			words = append(words, s[i+1:endIndex+1])
-			for i >= 0 && s[i] == ' ' {
-				i--
+func canJump(nums []int) bool {
+	n := len(nums)
+	rightMost := 0
+
+	for i := 0; i < n; i++ {
+		if i <= rightMost {
+			rightMost = max(rightMost, i+nums[i])
+			if rightMost >= n-1 {
+				return true
 			}
-			endIndex = i
 		}
 	}
-	words = append(words, s[:endIndex+1])
 
-	return strings.Join(words, " ")
+	return false
+}
+
+func max(x int, y int) int {
+	if x > y {
+		return x
+	}
+
+	return y
 }
 
 func main() {
-	fmt.Println(reverseWords("     the sky is blue"))
-	fmt.Println(reverseWords("  hello world!  "))
-	fmt.Println(reverseWords("a good   example"))
+	fmt.Println(canJump([]int{2, 3, 1, 1, 4}))
+	fmt.Println(canJump([]int{3, 2, 1, 0, 4}))
 }
