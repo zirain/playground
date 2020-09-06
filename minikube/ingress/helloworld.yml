@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: helloworld
+  labels:
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: helloworld
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: helloworld
+        version: v1
+    spec:
+      containers:
+      - name: helloworld
+        image: istio/examples-helloworld-v1
+        imagePullPolicy: IfNotPresent #Always
+        ports:
+        - containerPort: 5000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: helloworld
+  namespace: default
+spec:
+ selector:                  #指定标签选择器选择的标签范围.
+   app: helloworld
+   version: v1
+ ports:
+  - name: http
+    port: 5000
+    targetPort: 5000
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: helloworld
+  annotations:
+spec:
+  rules:
+  - host: k8s.test.com
+    http:
+      paths:
+      - path: /hello
+        backend:
+          serviceName: helloworld
+          servicePort: 5000
