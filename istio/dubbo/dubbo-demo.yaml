@@ -1,0 +1,108 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: dubbo
+  labels:
+    istio-injection: enabled
+spec:
+  finalizers:
+    - kubernetes
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello-dubbo-provide
+  namespace: dubbo
+  labels:
+    app: hello-dubbo-provide
+    version: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hello-dubbo-provide
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: hello-dubbo-provide
+        version: v1
+    spec:
+      containers:
+        - name: hello-dubbo-provide
+          image: tencent-cloud-one-docker.pkg.coding.net/xyz-demo/images/hello-dubbo-provider:1.0.4
+          command: ["java","-jar","hello-dubbo-provider-fat.jar"]
+          ports:
+            - containerPort: 20880
+              protocol: TCP
+
+---
+# 部署 hello-dubbo-provider v2
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello-dubbo-provider-v2
+  namespace: dubbo
+  labels:
+    app: hello-dubbo-provide
+    version: v2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hello-dubbo-provide
+      version: v2
+  template:
+    metadata:
+      labels:
+        app: hello-dubbo-provide
+        version: v2
+    spec:
+      containers:
+        - name: hello-dubbo-provide
+          image: tencent-cloud-one-docker.pkg.coding.net/xyz-demo/images/hello-dubbo-provider:2.0.0
+          command: ["java","-jar","hello-dubbo-provider-fat.jar"]
+          ports:
+            - containerPort: 20880
+              protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hello-dubbo-provide
+  namespace: dubbo
+  labels:
+    name: hello-dubbo-provide
+spec:
+  ports:
+  - name: dubbo-rpc
+    protocol: TCP
+    port: 20880
+    targetPort: 20880
+  selector:
+    app: hello-dubbo-provide
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello-dubbo-consume
+  namespace: dubbo
+  labels:
+    app: hello-dubbo-consume
+    version: v1
+spec:
+  replicas: 10
+  selector:
+    matchLabels:
+      app: hello-dubbo-consume
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: hello-dubbo-consume
+        version: v1
+    spec:
+      containers:
+        - name: hello-dubbo-consume
+          image: tencent-cloud-one-docker.pkg.coding.net/xyz-demo/images/hello-dubbo-consumer:1.0.3
+          command: ["java","-jar","hello-dubbo-consumer-fat.jar"]
