@@ -6,8 +6,8 @@ import (
 )
 
 type demo struct {
-	ClusterId  string `json:"clusterId"`
-	ClusterIdX string `json:"cluster_id"`
+	ClusterId  string `json:"clusterId,omitempty"`
+	ClusterIdX string `json:"cluster_id,omitempty"`
 }
 
 func MarshalDemo() {
@@ -17,8 +17,17 @@ func MarshalDemo() {
 	}
 
 	b, _ := json.Marshal(d)
-
 	fmt.Println(string(b))
+
+	var m map[string]interface{}
+	err := json.Unmarshal(b, &m)
+	if err != nil {
+		fmt.Println("err: %w", err)
+	}
+
+	for k, v := range m {
+		fmt.Printf("k: %s, v: %v\n", k, v)
+	}
 }
 
 func main() {
