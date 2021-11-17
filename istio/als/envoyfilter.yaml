@@ -1,0 +1,59 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: productpage-als
+  namespace: istio-system
+spec:
+  workloadSelector:
+    labels:
+      app: productpage
+  configPatches:
+    - applyTo: NETWORK_FILTER
+      match:
+        context: SIDECAR_INBOUND
+        listener:
+          filterChain:
+            filter:
+              name: "envoy.filters.network.http_connection_manager"
+      patch:
+        operation: MERGE
+        value:
+          typed_config:
+            "@type": "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager"
+            access_log:
+            - name: envoy.access_loggers.http_grpc
+              typed_config:
+                "@type": "type.googleapis.com/envoy.extensions.access_loggers.grpc.v3.HttpGrpcAccessLogConfig"
+                common_config: 
+                  log_name: "productpage_envoy_accesslog"
+                  grpc_service: 
+                    envoy_grpc: 
+                      cluster_name: productpage_envoy_accesslog
+                  filter_state_objects_to_log:
+                  - wasm.upstream_peer
+                  - wasm.upstream_peer_id
+                  - wasm.downstream_peer
+                  - wasm.downstream_peer_id
+                additional_request_headers_to_log:
+                - x-request-user
+    - applyTo: CLUSTER
+      match:
+        cluster:
+          service: envoy-als-server.common.svc.cluster.local
+      patch:
+        operation: ADD
+        value:
+          name: productpage_envoy_accesslog
+          type: STRICT_DNS
+          connect_timeout: 10s
+          lb_policy: ROUND_ROBIN
+          http2_protocol_options: {}
+          load_assignment:
+            cluster_name: productpage_envoy_accesslog
+            endpoints:
+            - lb_endpoints:
+              - endpoint:
+                  address:
+                     socket_address:
+                      address: envoy-als-server.common.svc.cluster.local
+                      port_value: 9811

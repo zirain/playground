@@ -1,0 +1,39 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: envoy-als-server
+  labels:
+    app: envoy-als-server
+    version: v1
+spec:
+  replicas: 1
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: envoy-als-server
+  template:
+    metadata:
+      labels:
+        app: envoy-als-server
+    spec:
+      containers:
+        - name: envoy-als-server
+          imagePullPolicy: IfNotPresent
+          image: docker.io/zirain/envoy-als-server:latest
+          ports:
+            - containerPort: 8080
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: envoy-als-server
+spec:
+  selector:
+    app: envoy-als-server
+  ports:
+    - protocol: TCP
+      port: 9811
+      targetPort: 8080
