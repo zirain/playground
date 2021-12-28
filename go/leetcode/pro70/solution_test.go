@@ -1,13 +1,26 @@
 package climbingstairs
 
 import (
-	"fmt"
 	"testing"
+
+	"github.com/bmizerany/assert"
 )
 
 func TestClimbStairs(t *testing.T) {
-	fmt.Println(climbStairs(0))
-	fmt.Println(climbStairs(1))
-	fmt.Println(climbStairs(2))
-	fmt.Println(climbStairs(3))
+	cases := []struct {
+		n        int
+		expected int
+	}{
+		{0, 0},
+		{1, 1},
+		{2, 2},
+		{3, 3},
+	}
+
+	for _, tc := range cases {
+		t.Run("", func(t *testing.T) {
+			got := climbStairs(tc.n)
+			assert.Equal(t, tc.expected, got)
+		})
+	}
 }
