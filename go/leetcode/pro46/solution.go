@@ -1,4 +1,4 @@
-package main
+package pro46
 
 import "fmt"
 
@@ -72,9 +72,4 @@ func render(input [][]int) {
 		fmt.Println(" ", input[i])
 	}
 	fmt.Println("]")
-}
-
-func main() {
-	result := permute([]int{1, 2, 3})
-	render(result)
 }
