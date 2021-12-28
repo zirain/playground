@@ -1,8 +1,4 @@
-package main
-
-import (
-	"fmt"
-)
+package pro55
 
 func canJump(nums []int) bool {
 	n := len(nums)
@@ -26,9 +22,4 @@ func max(x int, y int) int {
 	}
 
 	return y
-}
-
-func main() {
-	fmt.Println(canJump([]int{2, 3, 1, 1, 4}))
-	fmt.Println(canJump([]int{3, 2, 1, 0, 4}))
 }
