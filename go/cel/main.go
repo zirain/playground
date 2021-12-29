@@ -12,6 +12,7 @@ func main() {
 	celTexts := []string{
 		"response.code >= 500", // valid
 		"code >= 500",          // valid
+		"code == 200",          // valid
 		")++++",                // invalid
 	}
 
