@@ -8,13 +8,16 @@ data:
         zipkin:
           address: zipkin.istio-system:9411
     enablePrometheusMerge: true
+    defaultProviders:
+      accessLogging:
+      - otel-log
     extensionProviders:
     - name: file-log
       envoyFileAccessLog:
         path: /dev/stdout
     - name: otel-log
       envoyOtelAls:
-        service: otel-collector.common.svc.cluster.local
+        service: otel-collector.istio-system.svc.cluster.local
         port: 4317
         attributes:
           "protocol": "%PROTOCOL%"
