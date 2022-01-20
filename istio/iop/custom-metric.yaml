@@ -1,0 +1,34 @@
+# export mesh_id cluster_id in metrics
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+spec:
+  values:
+    global:
+      meshID: mesh1
+    telemetry:
+      enabled: true
+      v2:
+        enabled: true
+        prometheus:
+          configOverride:
+            gateway:
+              metrics:
+              - dimensions:
+                  cluster_id: node.metadata['CLUSTER_ID']
+                  mesh_id: node.metadata['MESH_ID']
+            inboundSidecar:
+              metrics:
+              - dimensions:
+                  cluster_id: node.metadata['CLUSTER_ID']
+                  mesh_id: node.metadata['MESH_ID']
+            outboundSidecar:
+              metrics:
+              - dimensions:
+                  cluster_id: node.metadata['CLUSTER_ID']
+                  mesh_id: node.metadata['MESH_ID']
+  meshConfig:
+    accessLogFile: /dev/stdout
+    defaultConfig:
+      extraStatTags:
+      - mesh_id
+      - cluster_id
