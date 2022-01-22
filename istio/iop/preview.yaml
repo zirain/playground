@@ -13,6 +13,7 @@ spec:
         # Enable dynamic bootstrap generation.
         BOOTSTRAP_XDS_AGENT: "true"
         PROXY_CONFIG_XDS_AGENT: "true"
+        INSECURE_WASM_PLUGIN: "true"
   values:
     global:
       # logging:
