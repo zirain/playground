@@ -1,0 +1,16 @@
+# The preview profile contains features that are experimental.
+# This is intended to explore new features coming to Istio.
+# Stability, security, and performance are not guaranteed - use at your own risk.
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+spec:
+  meshConfig:
+    defaultConfig:
+      proxyMetadata:
+  values:
+    global:
+      # set your mesh name
+      meshID: mesh1
+      # set your cluster name even on a single cluster mesh
+      multiCluster:
+        clusterName: "cluster1"
