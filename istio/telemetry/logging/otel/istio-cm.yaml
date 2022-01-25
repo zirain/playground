@@ -1,6 +1,7 @@
 apiVersion: v1
 data:
   mesh: |-
+    accessLogFile: /dev/stdout
     defaultConfig:
       discoveryAddress: istiod.istio-system.svc:15012
       proxyMetadata: {}
@@ -8,22 +9,19 @@ data:
         zipkin:
           address: zipkin.istio-system:9411
     enablePrometheusMerge: true
-    defaultProviders:
-      accessLogging:
-      - otel-log
     extensionProviders:
-    - name: file-log
-      envoyFileAccessLog:
-        path: /dev/stdout
-    - name: otel-log
+    - name: otel
       envoyOtelAls:
         service: otel-collector.istio-system.svc.cluster.local
         port: 4317
         logFormat:
-          text: "[%START_TIME%] \"%REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)% %PROTOCOL%\" %RESPONSE_CODE% %RESPONSE_FLAGS% %RESPONSE_CODE_DETAILS% %CONNECTION_TERMINATION_DETAILS% \"%UPSTREAM_TRANSPORT_FAILURE_REASON%\" %BYTES_RECEIVED% %BYTES_SENT% %DURATION% %REQUEST_TX_DURATION% %RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)% \"%REQ(X-FORWARDED-FOR)%\" \"%REQ(USER-AGENT)%\" \"%REQ(X-REQUEST-ID)%\" \"%REQ(:AUTHORITY)%\" \"%UPSTREAM_HOST%\" %UPSTREAM_CLUSTER% %UPSTREAM_LOCAL_ADDRESS% %DOWNSTREAM_LOCAL_ADDRESS% %DOWNSTREAM_REMOTE_ADDRESS% %REQUESTED_SERVER_NAME%\n"
           labels:
-            "route_name": "%ROUTE_NAME%"
+            "protocol": "%PROTOCOL%"
             "attempt": "%REQ(X-ENVOY-ATTEMPT-COUNT)%"
+    defaultProviders:
+      accessLogging:
+      - envoy
+      - otel
     rootNamespace: istio-system
     trustDomain: cluster.local
   meshNetworks: 'networks: {}'
