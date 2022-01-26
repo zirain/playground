@@ -3,7 +3,7 @@ docker run -d -p 5000:5000 --restart=always --name kind-registry registry:2
 ```
 
 ```shell
-cat <<EOF | kind create cluster --config=-
+cat <<EOF | kind create cluster --name istio --config=-
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
 containerdConfigPatches:

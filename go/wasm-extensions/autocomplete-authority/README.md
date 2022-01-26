@@ -1,7 +1,11 @@
 
+# Setup local registry
+
+please checkout [local-registry](../../../docker/local-registry.md)
+
 # Build
 
 ```shell
-tinygo build -o autocomplete-authority.wasm -scheduler=none -target=wasi main.go
+make docker.push
 ```
 
