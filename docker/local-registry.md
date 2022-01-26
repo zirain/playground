@@ -16,3 +16,6 @@ EOF
 ```shell
 docker network connect "kind" "kind-registry"
 ```
+
+
+get more [here](https://medium.com/@deekonda.ajay/create-your-own-secured-docker-private-registry-with-ssl-6a44539f74b8)
