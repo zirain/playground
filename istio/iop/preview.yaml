@@ -13,7 +13,7 @@ spec:
         # Enable dynamic bootstrap generation.
         BOOTSTRAP_XDS_AGENT: "true"
         PROXY_CONFIG_XDS_AGENT: "true"
-        INSECURE_WASM_PLUGIN: "true"
+        WASM_INSECURE_REGISTRIES: "kind-registry:5000,ghcr.io"
   values:
     global:
       # logging:
