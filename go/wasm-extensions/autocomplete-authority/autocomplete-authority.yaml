@@ -8,3 +8,6 @@ spec:
     matchLabels:
       app: httpbin
   url: oci://kind-registry:5000/zirain/autocomplete-authority:latest
+  vmConfig:
+  - name: POD_NAMESPACE
+    valueFrom: HOST
