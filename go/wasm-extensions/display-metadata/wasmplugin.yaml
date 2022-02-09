@@ -1,13 +1,14 @@
 apiVersion: extensions.istio.io/v1alpha1
 kind: WasmPlugin
 metadata:
-  name: autocomplete-authority
+  name: display-metadata
   namespace: default
 spec:
   selector:
     matchLabels:
       app: httpbin
-  url: oci://kind-registry:5000/zirain/autocomplete-authority:latest
+  url: oci://ghcr.io/zirain/display-metadata:latest
   vmConfig:
-  - name: POD_NAMESPACE
-    valueFrom: HOST
+    env:
+    - name: POD_NAMESPACE
+      valueFrom: HOST

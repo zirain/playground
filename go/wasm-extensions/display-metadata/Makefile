@@ -1,6 +1,6 @@
 RM := rm -rf
 WASM_PLUGIN_NAME := display-metadata.wasm
-DOCKER_IMAGE_HUB := localhost:5000/zirain
+DOCKER_IMAGE_HUB := ghcr.io/zirain
 DOCKER_IMAGE_NAME := display-metadata
 DOCKER_IMAGE_VER := latest
 DOCKER_IMAGE := $(DOCKER_IMAGE_HUB)/$(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_VER)
