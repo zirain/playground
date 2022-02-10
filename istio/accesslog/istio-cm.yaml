@@ -23,7 +23,6 @@ data:
     defaultProviders:
       accessLogging: 
       - file-log
-      - otel-log
     rootNamespace: istio-system
     trustDomain: cluster.local
   meshNetworks: 'networks: {}'
