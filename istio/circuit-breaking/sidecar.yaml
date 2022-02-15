@@ -1,0 +1,15 @@
+apiVersion: networking.istio.io/v1beta1
+kind: Sidecar
+metadata:
+  name: sleep-sidecar
+  namespace: default
+spec:
+  egress:
+  - hosts:
+    - default/kubernetes.default.svc.cluster.local
+    - istio-system/*
+    - default/www.github.com
+    - kube-system/*
+  workloadSelector:
+    labels:
+      app: sleep
