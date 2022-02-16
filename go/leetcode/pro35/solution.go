@@ -1,27 +1,19 @@
 package pro35
 
 func searchInsert(nums []int, target int) int {
-	total := len(nums)
-	if total == 0 ||
-		target <= nums[0] {
-		return 0
-	}
+	low, high := 0, len(nums)-1
+	for low <= high {
+		mid := low + (high-low)/2
+		n := nums[mid]
 
-	if target > nums[total-1] {
-		return total
-	}
-
-	l, r := 0, total-1
-	for l < r && r-l > 1 {
-		mid := (r-l)/2 + l
-		if nums[mid] == target {
+		if n == target {
 			return mid
-		} else if nums[mid] > target {
-			r = mid
+		} else if n > target {
+			high = mid - 1
 		} else {
-			l = mid
+			low = mid + 1
 		}
 	}
 
-	return l + 1
+	return low
 }
