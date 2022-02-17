@@ -2,7 +2,7 @@ package pro35
 
 import "testing"
 
-func Test1(t *testing.T) {
+func TestSearchInsert(t *testing.T) {
 	datas := []struct {
 		nums   []int
 		target int
