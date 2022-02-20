@@ -26,7 +26,7 @@ func NewListNode(inputs []int) *ListNode {
 
 func (n *ListNode) ToInts() []int {
 	if n == nil {
-		return nil
+		return []int{}
 	}
 
 	ans := make([]int, 0)
