@@ -1,7 +1,7 @@
 package pro19
 
 import (
-	"github.com/zirain/leetcode/types"
+	"github.com/zirain/leetcode/pkg/types"
 )
 
 func removeNthFromEnd(head *types.ListNode, n int) *types.ListNode {
