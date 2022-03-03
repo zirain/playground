@@ -44,7 +44,7 @@ spec:
               descriptors:
                 - entries:
                   - key: path
-                    value: /productpage
+                    value: /
                   token_bucket:
                     max_tokens: 10
                     tokens_per_fill: 10
