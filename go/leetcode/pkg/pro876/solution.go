@@ -1,6 +1,6 @@
 package pro876
 
-import "github.com/zirain/leetcode/types"
+import "github.com/zirain/leetcode/pkg/types"
 
 func middleNode(head *types.ListNode) *types.ListNode {
 	pre := &types.ListNode{

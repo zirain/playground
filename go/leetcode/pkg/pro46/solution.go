@@ -1,7 +1,5 @@
 package pro46
 
-import "fmt"
-
 //这里声明一个全局变量用来存储所有的排列
 var result [][]int
 
@@ -64,12 +62,4 @@ func arrange(nums []int, arr []int) {
 		**/
 		arr = arr[:len(arr)-1]
 	}
-}
-
-func render(input [][]int) {
-	fmt.Println("[")
-	for i := 0; i < len(input); i++ {
-		fmt.Println(" ", input[i])
-	}
-	fmt.Println("]")
 }

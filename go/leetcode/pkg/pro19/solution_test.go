@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/bmizerany/assert"
-	"github.com/zirain/leetcode/types"
+	"github.com/zirain/leetcode/pkg/types"
 )
 
 func TestRemoveNthFromEnd(t *testing.T) {
