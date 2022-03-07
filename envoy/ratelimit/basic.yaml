@@ -50,6 +50,7 @@ static_resources:
                                   - request_headers:
                                       header_name: ":path"
                                       descriptor_key: path
+                                  - source_cluster: {} # descriptors 必须全匹配，加入此配置后，限流次数使用默认配置10次/min
                           typed_per_filter_config:
                             envoy.filters.http.local_ratelimit:
                               "@type": type.googleapis.com/envoy.extensions.filters.http.local_ratelimit.v3.LocalRateLimit
@@ -78,8 +79,8 @@ static_resources:
                                     - key: path
                                       value: /foo/bar
                                   token_bucket:
-                                    max_tokens: 10
-                                    tokens_per_fill: 10
+                                    max_tokens: 5
+                                    tokens_per_fill: 5
                                     fill_interval: 60s
                                 - entries:
                                     - key: path
