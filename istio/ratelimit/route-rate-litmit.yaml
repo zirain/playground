@@ -8,24 +8,6 @@ spec:
     labels:
       app: httpbin
   configPatches:
-    - applyTo: HTTP_ROUTE
-      match:
-        context: SIDECAR_INBOUND
-        routeConfiguration:
-          vhost:
-            #name: ""
-            route:
-              action: ANY
-      patch:
-        operation: MERGE
-        # Applies the rate limit rules.
-        value:
-          route:
-            rate_limits:
-              - actions: # any actions in here
-                  - request_headers:
-                      header_name: ":path"
-                      descriptor_key: "path"
     - applyTo: HTTP_FILTER
       match:
         context: SIDECAR_INBOUND
@@ -47,12 +29,38 @@ spec:
         context: SIDECAR_INBOUND
         routeConfiguration:
           vhost:
-            name: "inbound|http|8000"
+            #name: ""
             route:
               action: ANY
       patch:
         operation: MERGE
+        # Applies the rate limit rules.
         value:
+          route:
+            rate_limits:
+              - actions: 
+                # source_cluster & destination_cluster
+                # - source_cluster: {} 
+                # - destination_cluster: {}
+                - remote_address: {}
+              - actions: # any actions in here
+                  - header_value_match:
+                      descriptor_value: "ip"
+                      expect_match: true
+                      headers:
+                        - name: :path
+                          string_match:
+                            prefix: /ip
+                            ignore_case: true
+              - actions: # any actions in here
+                  - header_value_match:
+                      descriptor_value: "status"
+                      expect_match: true
+                      headers:
+                        - name: :path
+                          string_match:
+                            prefix: /status
+                            ignore_case: true
           typed_per_filter_config:
             envoy.filters.http.local_ratelimit:
               "@type": type.googleapis.com/udpa.type.v1.TypedStruct
@@ -60,8 +68,8 @@ spec:
               value:
                 stat_prefix: test_enabled
                 token_bucket:
-                  max_tokens: 5
-                  tokens_per_fill: 5
+                  max_tokens: 10
+                  tokens_per_fill: 10
                   fill_interval: 60s
                 filter_enabled:
                   runtime_key: test_enabled
@@ -80,9 +88,16 @@ spec:
                       value: "true"
                 descriptors:
                   - entries:
-                      - key: path
-                        value: /ip
+                      - key: header_match
+                        value: ip
                     token_bucket:
                       max_tokens: 2
                       tokens_per_fill: 2
+                      fill_interval: 60s
+                  - entries:
+                      - key: header_match
+                        value: status
+                    token_bucket:
+                      max_tokens: 5
+                      tokens_per_fill: 5
                       fill_interval: 60s
