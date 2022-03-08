@@ -1,3 +1,10 @@
+# how to dev
+
+## lint
+
+```console
+./ci/run_envoy_docker.sh './ci/do_ci.sh fix_format'
+```
 
 # envoy-handbook
 
