@@ -17,15 +17,15 @@ static_resources:
             - name: envoy.filters.network.http_connection_manager
               typed_config:
                 "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
-                access_log:
-                  - name: envoy.access_loggers.file
-                    typed_config:
-                      "@type": type.googleapis.com/envoy.extensions.access_loggers.file.v3.FileAccessLog
-                      log_format:
-                        text_format_source:
-                          inline_string: |
-                            [%START_TIME%] "%REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)% %PROTOCOL%" %RESPONSE_CODE% %RESPONSE_FLAGS% %RESPONSE_CODE_DETAILS% %CONNECTION_TERMINATION_DETAILS% "%UPSTREAM_TRANSPORT_FAILURE_REASON%" %BYTES_RECEIVED% %BYTES_SENT% %DURATION% %RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)% "%REQ(X-FORWARDED-FOR)%" "%REQ(USER-AGENT)%" "%REQ(X-REQUEST-ID)%" "%REQ(:AUTHORITY)%" "%UPSTREAM_HOST%" %UPSTREAM_CLUSTER% %UPSTREAM_LOCAL_ADDRESS% %DOWNSTREAM_LOCAL_ADDRESS% %DOWNSTREAM_REMOTE_ADDRESS% %REQUESTED_SERVER_NAME% %ROUTE_NAME%
-                      path: /dev/stdout
+                # access_log:
+                #   - name: envoy.access_loggers.file
+                #     typed_config:
+                #       "@type": type.googleapis.com/envoy.extensions.access_loggers.file.v3.FileAccessLog
+                #       log_format:
+                #         text_format_source:
+                #           inline_string: |
+                #             [%START_TIME%] "%REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)% %PROTOCOL%" %RESPONSE_CODE% %RESPONSE_FLAGS% %RESPONSE_CODE_DETAILS% %CONNECTION_TERMINATION_DETAILS% "%UPSTREAM_TRANSPORT_FAILURE_REASON%" %BYTES_RECEIVED% %BYTES_SENT% %DURATION% %RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)% "%REQ(X-FORWARDED-FOR)%" "%REQ(USER-AGENT)%" "%REQ(X-REQUEST-ID)%" "%REQ(:AUTHORITY)%" "%UPSTREAM_HOST%" %UPSTREAM_CLUSTER% %UPSTREAM_LOCAL_ADDRESS% %DOWNSTREAM_LOCAL_ADDRESS% %DOWNSTREAM_REMOTE_ADDRESS% %REQUESTED_SERVER_NAME% %ROUTE_NAME%
+                #       path: /dev/stdout
                 stat_prefix: ingress_http
                 http_filters:
                   - name: envoy.filters.http.local_ratelimit
@@ -41,7 +41,7 @@ static_resources:
                     - name: local_service
                       domains: ["*"]
                       routes:
-                        - match: { prefix: "/foo" }
+                        - match: { prefix: "/" }
                           name: "rl-test"
                           route:
                             cluster: service_protected_by_rate_limit
@@ -50,7 +50,25 @@ static_resources:
                                   - request_headers:
                                       header_name: ":path"
                                       descriptor_key: path
-                                  - source_cluster: {} # descriptors 必须全匹配，加入此配置后，限流次数使用默认配置10次/min
+                                  # descriptors 必须全匹配，加入此配置后，限流次数使用默认配置10次/min
+                                  - source_cluster: {}
+                                  - destination_cluster: {}
+                                  - remote_address: {}
+                                  # 此处envoy实现有问题：任意一个action执行失败，会导致populateDescriptor返回失败
+                                  - header_value_match:
+                                      descriptor_value: "true"
+                                      expect_match: true
+                                      headers:
+                                        - name: :path
+                                          prefix_match: /foo
+                                  - header_value_match:
+                                      descriptor_value: "true"
+                                      expect_match: false # 此处改为true会导致populateDescriptor返回失败
+                                      headers:
+                                        - name: :path
+                                          string_match:
+                                            prefix: /foo2
+                                            ignore_case: true
                           typed_per_filter_config:
                             envoy.filters.http.local_ratelimit:
                               "@type": type.googleapis.com/envoy.extensions.filters.http.local_ratelimit.v3.LocalRateLimit
@@ -78,6 +96,8 @@ static_resources:
                                 - entries:
                                     - key: path
                                       value: /foo/bar
+                                    # - key: destination_cluster
+                                    #   value: ""
                                   token_bucket:
                                     max_tokens: 5
                                     tokens_per_fill: 5
@@ -89,7 +109,7 @@ static_resources:
                                     max_tokens: 1
                                     tokens_per_fill: 1
                                     fill_interval: 60s
-                        - match: { prefix: "/" }
+                        - match: { prefix: "/foo2" }
                           route: { cluster: default_service }
 
     - name: staticreply-8080
