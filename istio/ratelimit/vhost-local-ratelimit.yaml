@@ -36,11 +36,6 @@ spec:
       patch:
         operation: MERGE
         value:
-          rate_limits:
-            - actions: # any actions in here
-                - request_headers:
-                    header_name: ":path"
-                    descriptor_key: "path"
           typed_per_filter_config:
             envoy.filters.http.local_ratelimit:
               "@type": type.googleapis.com/udpa.type.v1.TypedStruct
@@ -66,11 +61,3 @@ spec:
                     header:
                       key: x-local-rate-limit
                       value: "true"
-                descriptors:
-                  - entries:
-                      - key: path
-                        value: /ip
-                    token_bucket:
-                      max_tokens: 2
-                      tokens_per_fill: 2
-                      fill_interval: 60s

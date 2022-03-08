@@ -47,27 +47,28 @@ static_resources:
                             cluster: service_protected_by_rate_limit
                             rate_limits:
                               - actions: # any actions in here
-                                  - request_headers:
-                                      header_name: ":path"
-                                      descriptor_key: path
-                                  # descriptors 必须全匹配，加入此配置后，限流次数使用默认配置10次/min
-                                  - source_cluster: {}
-                                  - destination_cluster: {}
-                                  - remote_address: {}
+                                  # - request_headers:
+                                  #     header_name: ":path"
+                                  #     descriptor_key: path
+                                  # # descriptors 必须全匹配，加入此配置后，限流次数使用默认配置10次/min
+                                  # - source_cluster: {}
+                                  # - destination_cluster: {}
+                                  # - remote_address: {}
                                   # 此处envoy实现有问题：任意一个action执行失败，会导致populateDescriptor返回失败
                                   - header_value_match:
-                                      descriptor_value: "true"
+                                      descriptor_value: "svc1"
                                       expect_match: true
                                       headers:
                                         - name: :path
-                                          prefix_match: /foo
+                                          prefix_match: /svc1
+                              - actions:
                                   - header_value_match:
-                                      descriptor_value: "true"
-                                      expect_match: false # 此处改为true会导致populateDescriptor返回失败
+                                      descriptor_value: "svc2"
+                                      expect_match: true
                                       headers:
                                         - name: :path
                                           string_match:
-                                            prefix: /foo2
+                                            prefix: /svc2
                                             ignore_case: true
                           typed_per_filter_config:
                             envoy.filters.http.local_ratelimit:
@@ -94,17 +95,15 @@ static_resources:
                                     value: "true"
                               descriptors:
                                 - entries:
-                                    - key: path
-                                      value: /foo/bar
-                                    # - key: destination_cluster
-                                    #   value: ""
+                                    - key: header_match
+                                      value: svc2
                                   token_bucket:
-                                    max_tokens: 5
-                                    tokens_per_fill: 5
+                                    max_tokens: 2
+                                    tokens_per_fill: 2
                                     fill_interval: 60s
                                 - entries:
-                                    - key: path
-                                      value: /foo/bar2
+                                    - key: header_match
+                                      value: svc1
                                   token_bucket:
                                     max_tokens: 1
                                     tokens_per_fill: 1
