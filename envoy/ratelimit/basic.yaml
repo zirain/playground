@@ -46,6 +46,11 @@ static_resources:
                           route:
                             cluster: service_protected_by_rate_limit
                             rate_limits:
+                              - actions:
+                                  # 获取请求方法： key=request_method value=GET
+                                  - request_headers:
+                                      header_name: ":method"
+                                      descriptor_key: "request_method" 
                               - actions: # any actions in here
                                   # - request_headers:
                                   #     header_name: ":path"
