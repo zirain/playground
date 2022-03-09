@@ -29,9 +29,9 @@ spec:
         context: SIDECAR_INBOUND
         routeConfiguration:
           vhost:
-            #name: ""
-            route:
-              action: ANY
+            name: inbound|http|8000 # 基于端口筛选
+            route:  
+              action: ROUTE
       patch:
         operation: MERGE
         # Applies the rate limit rules.
