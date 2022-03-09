@@ -43,7 +43,7 @@ spec:
                 # - source_cluster: {} 
                 # - destination_cluster: {}
                 - remote_address: {}
-              - actions: # any actions in here
+              - actions: # 前缀匹配请求路径
                   - header_value_match:
                       descriptor_value: "ip"
                       expect_match: true
@@ -52,15 +52,16 @@ spec:
                           string_match:
                             prefix: /ip
                             ignore_case: true
-              - actions: # any actions in here
+              - actions: # 使用正则匹配请求路径
                   - header_value_match:
                       descriptor_value: "status"
                       expect_match: true
                       headers:
                         - name: :path
                           string_match:
-                            prefix: /status
-                            ignore_case: true
+                            safe_regex:
+                              google_re2: {}
+                              regex: /status/.*
           typed_per_filter_config:
             envoy.filters.http.local_ratelimit:
               "@type": type.googleapis.com/udpa.type.v1.TypedStruct
