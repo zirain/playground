@@ -22,7 +22,7 @@ func permute(nums []int) [][]int {
 	return result
 }
 
-func arrange(nums []int, path []int) {
+func arrange(nums []int, prefix []int) {
 	//当nums长度为0，选择列表为空，路径选择完毕，返回即可
 	if len(nums) == 0 {
 		return
@@ -31,7 +31,7 @@ func arrange(nums []int, path []int) {
 	//循环当前的选择列表
 	for k, v := range nums {
 		//选取一个元素，例如选1，则使用newArr来存储更新后的选择列表
-		path = append(path, v)
+		prefix = append(prefix, v)
 
 		newArr := make([]int, len(nums)-1)
 		copy(newArr[:k], nums[:k])
@@ -41,13 +41,13 @@ func arrange(nums []int, path []int) {
 		}
 
 		//递归调用，将更新后的选择列表和存储路径的arr传入
-		arrange(newArr, path)
+		arrange(newArr, prefix)
 
 		//当path的长度和容量相等，说明路径已经选择完毕
 		//将此条路径记录到结果中
-		if len(path) == cap(path) {
-			path := make([]int, len(path))
-			copy(path, path)
+		if len(prefix) == cap(prefix) {
+			path := make([]int, len(prefix))
+			copy(path, prefix)
 			result = append(result, path)
 		}
 
