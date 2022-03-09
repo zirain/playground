@@ -17,3 +17,11 @@ https://k8s-gubernator.appspot.com/pr
 ```
 TEST_ENV=kind ADDITIONAL_CONTAINER_OPTIONS="--network host"  make doc.test TEST=tasks/observability/logs/otel-provider
 ```
+
+
+# Run istio repo e2e test
+
+```
+cd $GOPATH/src/istio.io/istio
+go test -tags=integ ./tests/integration/telemetry
+```
