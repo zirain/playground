@@ -32,3 +32,9 @@ go test -tags=integ ./tests/integration/telemetry
 export ISTIOD_POD=`kubectl get po -nistio-system| grep istiod | grep Running | awk '{print $1}'`
 kubectl exec -it $ISTIOD_POD -nistio-system -- pilot-discovery request get /debug/ecdsz?proxyID=httpbin-74fb669cc6-tpjfh
 ```
+
+# istioctl x metric
+
+```shell
+out/linux_amd64/istioctl --log_output_level=debug x metrics httpbin -d 2m
+```
