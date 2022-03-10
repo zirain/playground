@@ -25,3 +25,10 @@ TEST_ENV=kind ADDITIONAL_CONTAINER_OPTIONS="--network host"  make doc.test TEST=
 cd $GOPATH/src/istio.io/istio
 go test -tags=integ ./tests/integration/telemetry
 ```
+
+# debug ECDS
+
+```shell
+export ISTIOD_POD=`kubectl get po -nistio-system| grep istiod | grep Running | awk '{print $1}'`
+kubectl exec -it $ISTIOD_POD -nistio-system -- pilot-discovery request get /debug/ecdsz?proxyID=httpbin-74fb669cc6-tpjfh
+```
