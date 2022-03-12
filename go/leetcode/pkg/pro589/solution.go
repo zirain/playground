@@ -11,14 +11,14 @@ func preorder(root *Node) []int {
 		return nil
 	}
 	ans := make([]int, 0)
-	queue := make([]*Node, 0)
-	queue = append(queue, root)
-	for len(queue) != 0 {
-		cur := queue[len(queue)-1]
-		queue = queue[:len(queue)-1]
+	stack := make([]*Node, 0)
+	stack = append(stack, root)
+	for len(stack) != 0 {
+		cur := stack[len(stack)-1]
+		stack = stack[:len(stack)-1]
 		ans = append(ans, cur.Val)
 		for i := len(cur.Children) - 1; i >= 0; i-- {
-			queue = append(queue, cur.Children[i])
+			stack = append(stack, cur.Children[i])
 		}
 	}
 
