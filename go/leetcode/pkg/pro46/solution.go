@@ -1,62 +1,33 @@
 package pro46
 
 //这里声明一个全局变量用来存储所有的排列
-var result [][]int
+var ans [][]int
 
 func permute(nums []int) [][]int {
+	ans = make([][]int, 0, 2*len(nums))
+	track := make([]int, 0)
+	used := make([]bool, len(nums))
 
-	//每次调用重置result全局变量，防止结果缓存
-	result = make([][]int, 0, 2*len(nums))
+	backtrack(nums, track, used)
 
-	//当nums只有一个元素的情况下，直接返回即可
-	if len(nums) == 1 {
-		result = append(result, nums)
-		return result
-	}
-
-	//声明一个arr变量，用来存储路径
-	arr := make([]int, 0, len(nums))
-
-	arrange(nums, arr)
-
-	return result
+	return ans
 }
 
-func arrange(nums []int, prefix []int) {
-	//当nums长度为0，选择列表为空，路径选择完毕，返回即可
-	if len(nums) == 0 {
+func backtrack(nums []int, track []int, used []bool) {
+	if len(track) == len(nums) {
+		ans = append(ans, track)
 		return
 	}
 
-	//循环当前的选择列表
-	for k, v := range nums {
-		//选取一个元素，例如选1，则使用newArr来存储更新后的选择列表
-		prefix = append(prefix, v)
-
-		newArr := make([]int, len(nums)-1)
-		copy(newArr[:k], nums[:k])
-
-		if k < len(nums)-1 {
-			copy(newArr[k:], nums[k+1:])
+	for i := 0; i < len(nums); i++ {
+		if used[i] {
+			continue
 		}
 
-		//递归调用，将更新后的选择列表和存储路径的arr传入
-		arrange(newArr, prefix)
-
-		//当path的长度和容量相等，说明路径已经选择完毕
-		//将此条路径记录到结果中
-		if len(prefix) == cap(prefix) {
-			path := make([]int, len(prefix))
-			copy(path, prefix)
-			result = append(result, path)
-		}
-
-		/**
-		返回上一个路口重新做选择
-		例如，当arr为1开头的时候，下一个路口有2，3两种选择
-		当选择完毕，将路径记录之后，需要返回重新选择
-		例如从1->2 返回到 1->3的结果
-		**/
-		prefix = prefix[:len(prefix)-1]
+		track = append(track, nums[i])
+		used[i] = true
+		backtrack(nums, track, used)
+		track = track[:len(track)-1]
+		used[i] = false
 	}
 }
