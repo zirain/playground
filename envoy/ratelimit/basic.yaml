@@ -61,6 +61,7 @@ static_resources:
                                   # - remote_address: {}
                                   # 此处envoy实现有问题：任意一个action执行失败，会导致populateDescriptor返回失败
                                   - header_value_match:
+                                      #descriptor_key: path_match
                                       descriptor_value: "svc1"
                                       expect_match: true
                                       headers:
