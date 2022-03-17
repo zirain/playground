@@ -1,0 +1,26 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: bootstrap-demo
+spec:
+  configPatches:
+    - applyTo: BOOTSTRAP
+      patch:
+        operation: MERGE
+        value:
+          bootstrap_extensions:
+            - name: envoy.bootstrap.wasm
+              typed_config:
+                "@type": type.googleapis.com/envoy.extensions.wasm.v3.WasmService
+                singleton: true
+                config:
+                  vm_config:
+                    vm_id: "my-vm-id"
+                    runtime: "envoy.wasm.runtime.v8"
+                    code:
+                      remote:
+                        sha256: " " # required
+                        http_uri:
+                          uri: ghcr.io/zirain/display-metadata:latest
+                          cluster: "_" # required
+                          timeout: 1m # required
