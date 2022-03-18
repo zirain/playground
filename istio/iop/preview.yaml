@@ -4,8 +4,22 @@
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 spec:
+  components:
+    pilot:
+      k8s:
+        env:
+          - name: PILOT_FILTER_GATEWAY_CLUSTER_CONFIG
+            value: "true"
   meshConfig:
     accessLogFile: /dev/stdout
+    extensionProviders:
+    - name: otel
+      envoyOtelAls:
+        service: otel-collector.istio-system.svc.cluster.local
+        port: 4317
+    defaultProviders:
+      accessLogging:
+      - otel
     defaultConfig:
       proxyMetadata:
         # Enable Istio agent to handle DNS requests for known hosts
@@ -17,8 +31,8 @@ spec:
         WASM_INSECURE_REGISTRIES: "kind-registry:5000,ghcr.io"
   values:
     global:
-      # logging:
-      #   level: "default:debug,cache:debug"
+    # logging:
+    #   level: "default:debug,cache:debug"
     telemetry:
       v2:
         metadataExchange:
