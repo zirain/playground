@@ -47,10 +47,18 @@ static_resources:
                             cluster: service_protected_by_rate_limit
                             rate_limits:
                               - actions:
+                                  - header_value_match:
+                                      #descriptor_key: path_match
+                                      descriptor_value: "path_exits"
+                                      expect_match: true
+                                      headers:
+                                        - name: :path
+                                          present_match: true
+                              - actions:
                                   # 获取请求方法： key=request_method value=GET
                                   - request_headers:
                                       header_name: ":method"
-                                      descriptor_key: "request_method" 
+                                      descriptor_key: "request_method"
                               - actions: # any actions in here
                                   # - request_headers:
                                   #     header_name: ":path"
