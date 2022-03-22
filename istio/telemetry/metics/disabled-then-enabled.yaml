@@ -1,0 +1,24 @@
+apiVersion: telemetry.istio.io/v1alpha1
+kind: Telemetry
+metadata:
+  name: disable-metrics
+  namespace: istio-system
+spec:
+  metrics:
+    - overrides:
+        - disabled: true
+          match:
+            metric: ALL_METRICS
+            mode: CLIENT_AND_SERVER
+      providers:
+        - name: prometheus
+---
+apiVersion: telemetry.istio.io/v1alpha1
+kind: Telemetry
+metadata:
+  name: empty-prometheus
+  namespace: default
+spec:
+  metrics:
+    - providers:
+        - name: prometheus
