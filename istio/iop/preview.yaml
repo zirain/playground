@@ -19,7 +19,7 @@ spec:
         port: 4317
     defaultProviders:
       accessLogging:
-      - otel
+      - envoy
     defaultConfig:
       proxyMetadata:
         # Enable Istio agent to handle DNS requests for known hosts

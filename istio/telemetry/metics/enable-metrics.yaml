@@ -1,0 +1,19 @@
+apiVersion: telemetry.istio.io/v1alpha1
+kind: Telemetry
+metadata:
+  name: enable-metrics
+  namespace: istio-system
+spec:
+  metrics:
+    - overrides:
+        - match:
+            mode: SERVER
+          tagOverrides:
+            destination_cluster:
+              value: node.metadata['CLUSTER_ID']
+            source_cluster:
+              value: downstream_peer.cluster_id
+        - match:
+            mode: CLIENT
+      providers:
+        - name: prometheus
