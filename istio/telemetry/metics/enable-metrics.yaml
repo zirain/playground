@@ -1,7 +1,7 @@
 apiVersion: telemetry.istio.io/v1alpha1
 kind: Telemetry
 metadata:
-  name: enable-metrics
+  name: stats
   namespace: istio-system
 spec:
   metrics:
