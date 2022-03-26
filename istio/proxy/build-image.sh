@@ -14,7 +14,8 @@ docker rm -f envoy_build
 docker run --name envoy_build \
     -v ${CACHE_PATH}:/root/.cache \
     -v ${ISTIO_BASE}:/root/GoProjects/src \
-    ${ISTIO_BUILD_TOOL} bash -c "export BAZEL_BUILD_ARGS=--override_repository=envoy=/root/GoProjects/src/envoy;cd /root/GoProjects/src/proxy;make build_envoy"
+    ${ISTIO_BUILD_TOOL} bash -c "sleep infinity"
+    #${ISTIO_BUILD_TOOL} bash -c "export BAZEL_BUILD_ARGS=--override_repository=envoy=/root/GoProjects/src/envoy;cd /root/GoProjects/src/proxy;make build_envoy"
 # copy 
-docker cp envoy_build:/root/GoProjects/src/proxy/bazel-bin/src/envoy/envoy ${RELEASE_PATH}
-docker cp envoy_build:/root/.cache ${CACHE_PATH}
+# docker cp envoy_build:/root/GoProjects/src/proxy/bazel-bin/src/envoy/envoy ${RELEASE_PATH}
+# docker cp envoy_build:/root/.cache ${CACHE_PATH}
