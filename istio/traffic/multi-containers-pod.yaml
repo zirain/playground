@@ -52,6 +52,9 @@ spec:
       labels:
         app: httpbin-helloworld
         version: v1
+      # annotations:
+      #   kubectl.kubernetes.io/default-container: helloworld
+      #   kubectl.kubernetes.io/default-logs-container: helloworld
     spec:
       serviceAccountName: httpbin-helloworld
       containers:
