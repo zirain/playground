@@ -29,8 +29,7 @@ go test -tags=integ ./tests/integration/telemetry
 # debug ECDS
 
 ```shell
-export ISTIOD_POD=`kubectl get po -nistio-system| grep istiod | grep Running | awk '{print $1}'`
-kubectl exec -it $ISTIOD_POD -nistio-system -- pilot-discovery request get /debug/ecdsz?proxyID=httpbin-74fb669cc6-tpjfh
+kubectl exec -it `kubectl get po -nistio-system| grep istiod | grep Running | awk '{print $1}'` -nistio-system -- pilot-discovery request get /debug/edsz?proxyID=httpbin-74fb669cc6-htg48
 ```
 
 # istioctl x metric
