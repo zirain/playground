@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: statsd-influxdb-grafana
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: statsd-influxdb-grafana
+  template:
+    metadata:
+      labels:
+        app: statsd-influxdb-grafana
+    spec:
+      containers:
+      - name: statsd-influxdb-grafana
+        image: samuelebistoletti/docker-statsd-influxdb-grafana:2.2.0
+        ports:
+        - name: grafana
+          containerPort: 3003
+        - name: influxdb-admin
+          containerPort: 8888
+        - name: influxdb
+          containerPort: 8086
+        - name: statsd
+          containerPort: 8125
+          protocol: UDP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: statsd-influxdb-grafana-svc
+spec:
+  ports:
+  - name: http-grafana
+    port: 3003
+    targetPort: 3003
+  - name: http-influxdb-admin
+    port: 3004
+    targetPort: 8888
+  - name: tcp-influxdb
+    port: 8086
+    targetPort: 8086
+  - name: udp-statsd
+    port: 8125
+    targetPort: 8125
+    protocol: UDP
+  selector:
+    app: statsd-influxdb-grafana
