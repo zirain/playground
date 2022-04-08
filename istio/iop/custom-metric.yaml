@@ -11,24 +11,32 @@ spec:
         enabled: true
         prometheus:
           configOverride:
-            gateway:
-              metrics:
-              - dimensions:
-                  cluster_id: node.metadata['CLUSTER_ID']
-                  mesh_id: node.metadata['MESH_ID']
             inboundSidecar:
+              definitions:
+                - name: posta_total
+                  type: "COUNTER"
+                  value: "1"
+                - name: posta_duration_milliseconds
+                  type: "HISTOGRAM"
+                  value: request.duration 
               metrics:
-              - dimensions:
-                  cluster_id: node.metadata['CLUSTER_ID']
-                  mesh_id: node.metadata['MESH_ID']
-            outboundSidecar:
-              metrics:
-              - dimensions:
-                  cluster_id: node.metadata['CLUSTER_ID']
-                  mesh_id: node.metadata['MESH_ID']
+                - name: posta_total
+                  dimensions:
+                    url_path: request.url_path
+                    response_status: string(response.code)
+                - name: posta_duration_milliseconds
+                  dimensions:
+                    url_path: request.url_path
+                    response_status: string(response.code)
   meshConfig:
     accessLogFile: /dev/stdout
     defaultConfig:
+      proxyStatsMatcher:
+        inclusionPrefixes:
+          - istio_posta_total
+          - istio_posta_duration_milliseconds_buckets
+          - istio_posta_duration_milliseconds_sum
+          - istio_posta_duration_milliseconds_total
       extraStatTags:
-      - mesh_id
-      - cluster_id
+        - url_path
+        - response_status
