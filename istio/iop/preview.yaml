@@ -17,9 +17,15 @@ spec:
       envoyOtelAls:
         service: otel-collector.istio-system.svc.cluster.local
         port: 4317
+    - name: zipkin-otel
+      zipkin:
+        service: otel-collector.istio-system.svc.cluster.local
+        port: 9411
     defaultProviders:
       accessLogging:
-      - envoy
+      - otel
+      tracing:
+      - zipkin-otel
     defaultConfig:
       proxyMetadata:
         # Enable Istio agent to handle DNS requests for known hosts

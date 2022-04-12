@@ -9,6 +9,7 @@ metadata:
 data:
   config.yaml: |
     receivers:
+      zipkin:
       otlp:
         protocols:
           grpc:
@@ -24,12 +25,20 @@ data:
           # you need config at least one label
           resource:
             node_name: "node_name"
+      otlp:
+        endpoint: tempo.tempo.svc.cluster.local:4317
+        tls:
+          insecure: true
     service:
       pipelines:
+        traces:
+          receivers: [zipkin]
+          processors: [batch]
+          exporters: [otlp, logging]
         logs:
           receivers: [otlp]
           processors: [batch]
-          exporters: [loki, logging]
+          exporters: [loki]
 ---
 apiVersion: v1
 kind: Service
@@ -45,6 +54,8 @@ spec:
     port: 4317
     protocol: TCP
     targetPort: 4317
+  - name: zipkin # Default endpoint for Zipkin receiver.
+    port: 9411
   selector:
     app: opentelemetry
     component: otel-collector

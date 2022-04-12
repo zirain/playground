@@ -1,18 +1,19 @@
 package pro704
 
 func search(nums []int, target int) int {
-	low, high := 0, len(nums)-1
-	for low <= high {
-		mid := low + (high-low)/2
-		n := nums[mid]
-		if n == target {
-			return mid
-		} else if n < target {
-			low = mid + 1
+	l, r := 0, len(nums)-1
+	for l <= r {
+		mid := l + (r-l)/2
+		if nums[mid] < target {
+			l = mid + 1
 		} else {
-			high = mid - 1
+			r = mid - 1
 		}
 	}
 
-	return -1
+	if l >= len(nums) || nums[l] != target {
+		return -1
+	}
+
+	return l
 }
