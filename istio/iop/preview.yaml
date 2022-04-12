@@ -17,6 +17,10 @@ spec:
       envoyOtelAls:
         service: otel-collector.istio-system.svc.cluster.local
         port: 4317
+        logFormat:
+          labels:
+            traceID: "%REQ(X-B3-Traceid)%"
+            spanID: "%REQ(X-B3-Spanid)%"
     - name: zipkin-otel
       zipkin:
         service: otel-collector.istio-system.svc.cluster.local

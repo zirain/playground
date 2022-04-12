@@ -25,6 +25,9 @@ data:
           # you need config at least one label
           resource:
             node_name: "node_name"
+          attributes:
+            traceID: "traceID"
+            spanID: "spanID"
       otlp:
         endpoint: tempo.tempo.svc.cluster.local:4317
         tls:

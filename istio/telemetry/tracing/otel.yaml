@@ -7,4 +7,4 @@ spec:
   tracing:
   - providers:
     - name: "zipkin-otel"
-    randomSamplingPercentage: 10.00
+    randomSamplingPercentage: 100.00
