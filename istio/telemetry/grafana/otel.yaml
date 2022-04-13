@@ -28,6 +28,7 @@ data:
           attributes:
             traceID: "traceID"
             spanID: "spanID"
+            hostname: "hostname"
       otlp:
         endpoint: tempo.tempo.svc.cluster.local:4317
         tls:

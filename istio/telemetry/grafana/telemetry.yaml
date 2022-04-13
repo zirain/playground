@@ -1,0 +1,17 @@
+apiVersion: telemetry.istio.io/v1alpha1
+kind: Telemetry
+metadata:
+  name: mesh-default
+  namespace: istio-system
+spec:
+  tracing:
+  - providers:
+    - name: "zipkin-otel"
+    randomSamplingPercentage: 100.00 # for test
+    customTags:
+      hostname:
+        environment: 
+          name: POD_NAME
+  accessLogging:
+  - providers:
+    - name: otel

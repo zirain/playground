@@ -20,6 +20,9 @@ kubectl create -f single-binary-extras.yaml
 
 
 ```
+
 kubectl apply -f istio/telemetry/grafana/otel.yaml 
+kubectl apply -f istio/telemetry/grafana/telemetry.yaml 
 kubectl delete po  -nistio-system -l app=opentelemetry,component=otel-collector
+
 ```
