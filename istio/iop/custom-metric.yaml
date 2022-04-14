@@ -1,6 +1,9 @@
 # export mesh_id cluster_id in metrics
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
+metadata:
+  name: custom-metrics
+  namespace: istio-system
 spec:
   values:
     global:
