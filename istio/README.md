@@ -48,4 +48,8 @@ cd $GOPATH/src/istio.io/istio
 export HUB=istio
 export TAG=1.14-dev
 make istioctl && make docker.proxyv2 && make docker.pilot && kind load docker-image istio/proxyv2:$TAG --name istio && kind load docker-image istio/pilot:$TAG --name istio && unset TAG && unset HUB && docker image prune -f
+
+
+kubectl rollout restart deployment istiod -nistio-system
+
 ```
