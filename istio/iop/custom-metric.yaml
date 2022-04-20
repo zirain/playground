@@ -34,6 +34,8 @@ spec:
   meshConfig:
     accessLogFile: /dev/stdout
     defaultConfig:
+      proxyMetadata:
+        ISTIO_META_IDLE_TIMEOUT: "15s"
       proxyStatsMatcher:
         inclusionPrefixes:
           - istio_posta_total

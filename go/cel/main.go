@@ -7,6 +7,18 @@ import (
 )
 
 func main() {
+	celDemo1()
+
+	expr := "string(node.metadata.INTERCEPTION_MODE)"
+	out, err := getNodeMetadata(expr)
+	if err != nil {
+		fmt.Println("err:", err)
+		return
+	}
+	fmt.Println(out)
+}
+
+func celDemo1() {
 	env, _ := cel.NewEnv()
 
 	celTexts := []string{
@@ -25,4 +37,31 @@ func main() {
 	}
 
 	fmt.Println("all cel parse success.")
+}
+
+func getNodeMetadata(celExpr string) (interface{}, error) {
+	//node := readNode()
+
+	celEnv, err := cel.NewEnv()
+	if err != nil {
+		return nil, err
+	}
+	ast, iss := celEnv.Parse(celExpr)
+	if iss.Err() != nil {
+		return nil, iss.Err()
+	}
+	prg, err := celEnv.Program(ast)
+	if err != nil {
+		return nil, err
+	}
+
+	out, _, err := prg.Eval(map[string]interface{}{
+		"node.metadata": map[string]string{
+			"INTERCEPTION_MODE": "REDIRECT",
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+	return out.Value(), nil
 }
