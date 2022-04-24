@@ -1,0 +1,10 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+spec:
+  values:
+    global:
+      meshID: mesh1
+      multiCluster:
+        clusterName: remote1
+      network: network1
+      remotePilotAddress: ${DISCOVERY_ADDRESS}
