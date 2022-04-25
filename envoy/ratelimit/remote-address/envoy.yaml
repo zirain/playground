@@ -35,6 +35,8 @@ static_resources:
                       value:
                         stat_prefix: http_local_rate_limiter
                   - name: envoy.filters.http.router
+                    typedConfig:
+                      "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
                 route_config:
                   name: local_route
                   virtual_hosts:
@@ -48,7 +50,7 @@ static_resources:
                             rate_limits:
                               - actions: # any actions in here
                                   - remote_address:
-                                      prefix_len: 16
+                                      v4_prefix_mask_len: 16
                           typed_per_filter_config:
                             envoy.filters.http.local_ratelimit:
                               "@type": type.googleapis.com/envoy.extensions.filters.http.local_ratelimit.v3.LocalRateLimit
@@ -117,7 +119,8 @@ static_resources:
                               inline_string: "example body\n"
                 http_filters:
                   - name: envoy.filters.http.router
-                    typed_config: {}
+                    typedConfig:
+                      "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
 
     - name: staticreply-9081
       address:
@@ -146,7 +149,8 @@ static_resources:
                               inline_string: "example body\n"
                 http_filters:
                   - name: envoy.filters.http.router
-                    typed_config: {}
+                    typedConfig:
+                      "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
 
   clusters:
     - name: default_service
