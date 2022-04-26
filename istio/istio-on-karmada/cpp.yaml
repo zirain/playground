@@ -1,0 +1,88 @@
+apiVersion: policy.karmada.io/v1alpha1
+kind: ClusterPropagationPolicy
+metadata:
+  name: istio-config-cluster
+spec:
+  resourceSelectors:
+    # crds
+    # - apiVersion: apiextensions.k8s.io/v1
+    #   kind: CustomResourceDefinition
+    #   name: authorizationpolicies.security.istio.io
+    # - apiVersion: apiextensions.k8s.io/v1
+    #   kind: CustomResourceDefinition
+    #   name: destinationrules.networking.istio.io
+    # - apiVersion: apiextensions.k8s.io/v1
+    #   kind: CustomResourceDefinition
+    #   name: envoyfilters.networking.istio.io
+    # - apiVersion: apiextensions.k8s.io/v1
+    #   kind: CustomResourceDefinition
+    #   name: gateways.networking.istio.io
+    # - apiVersion: apiextensions.k8s.io/v1
+    #   kind: CustomResourceDefinition
+    #   name: peerauthentications.security.istio.io
+    # - apiVersion: apiextensions.k8s.io/v1
+    #   kind: CustomResourceDefinition
+    #   name: proxyconfigs.networking.istio.io
+    # - apiVersion: apiextensions.k8s.io/v1
+    #   kind: CustomResourceDefinition
+    #   name: requestauthentications.security.istio.io
+    # - apiVersion: apiextensions.k8s.io/v1
+    #   kind: CustomResourceDefinition
+    #   name: serviceentries.networking.istio.io
+    # - apiVersion: apiextensions.k8s.io/v1
+    #   kind: CustomResourceDefinition
+    #   name: sidecars.networking.istio.io
+    # - apiVersion: apiextensions.k8s.io/v1
+    #   kind: CustomResourceDefinition
+    #   name: sidecars.networking.istio.io
+    # - apiVersion: apiextensions.k8s.io/v1
+    #   kind: CustomResourceDefinition
+    #   name: telemetries.telemetry.istio.io
+    # - apiVersion: apiextensions.k8s.io/v1
+    #   kind: CustomResourceDefinition
+    #   name: virtualservices.networking.istio.io
+    # - apiVersion: apiextensions.k8s.io/v1
+    #   kind: CustomResourceDefinition
+    #   name: wasmplugins.extensions.istio.io
+    # - apiVersion: apiextensions.k8s.io/v1
+    #   kind: CustomResourceDefinition
+    #   name: workloadentries.networking.istio.io
+    # - apiVersion: apiextensions.k8s.io/v1
+    #   kind: CustomResourceDefinition
+    #   name: workloadgroups.networking.istio.io
+    - apiVersion: networking.istio.io/v1alpha3
+      kind: Gateway
+    - apiVersion: networking.istio.io/v1alpha3
+      kind: VirtualService
+    - apiVersion: networking.istio.io/v1beta1
+      kind: Gateway
+    - apiVersion: networking.istio.io/v1beta1
+      kind: VirtualService
+    # TODO: add others istio crds
+  placement:
+    clusterAffinity:
+      clusterNames:
+        - member1
+---
+apiVersion: policy.karmada.io/v1alpha1
+kind: ClusterPropagationPolicy
+metadata:
+  name: istio-operator
+spec:
+  resourceSelectors:
+    # rbac
+    - apiVersion: rbac.authorization.k8s.io/v1
+      kind: ClusterRole
+      name: istio-operator
+    - apiVersion: rbac.authorization.k8s.io/v1
+      kind: ClusterRoleBinding
+      name: istio-operator
+    # crds
+    - apiVersion: apiextensions.k8s.io/v1
+      kind: CustomResourceDefinition
+      name: istiooperators.install.istio.io
+  placement:
+    clusterAffinity:
+      clusterNames:
+        - member1
+        - member2

@@ -1,0 +1,50 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  name: primary
+  namespace: istio-system
+spec:
+  meshConfig:
+    accessLogFile: /dev/stdout
+  values:
+    global:
+      meshID: mesh1
+      multiCluster:
+        clusterName: primary
+      network: network1
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: istiod-elb
+  namespace: istio-system
+spec:
+  ports:
+    - name: tcp
+      port: 15012
+      protocol: TCP
+      targetPort: 15012
+  selector:
+    app: istiod
+    istio: pilot
+  sessionAffinity: None
+  type: LoadBalancer
+
+---
+apiVersion: policy.karmada.io/v1alpha1
+kind: PropagationPolicy
+metadata:
+  name: primary
+  namespace: istio-system
+spec:
+  resourceSelectors:
+    - apiVersion: v1
+      kind: Service
+      name: istiod-elb
+    - apiVersion: install.istio.io/v1alpha1
+      kind: IstioOperator
+      name: primary
+  placement:
+    clusterAffinity:
+      clusterNames:
+        - member1

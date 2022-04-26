@@ -1,0 +1,14 @@
+apiVersion: policy.karmada.io/v1alpha1
+kind: PropagationPolicy
+metadata:
+  name: cacerts
+  namespace: istio-system
+spec:
+  resourceSelectors:
+    - apiVersion: v1
+      kind: Secret
+      name: cacerts
+  placement:
+    clusterAffinity:
+      clusterNames:
+        - member1

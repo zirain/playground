@@ -1,0 +1,28 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  name: member2
+  namespace: istio-system
+spec:
+  values:
+    global:
+      meshID: mesh1
+      multiCluster:
+        clusterName: member2
+      network: network1
+      remotePilotAddress: 172.18.255.155
+---
+apiVersion: policy.karmada.io/v1alpha1
+kind: PropagationPolicy
+metadata:
+  name: member2
+  namespace: istio-system
+spec:
+  resourceSelectors:
+    - apiVersion: install.istio.io/v1alpha1
+      kind: IstioOperator
+      name: member2
+  placement:
+    clusterAffinity:
+      clusterNames:
+        - member2
