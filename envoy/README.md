@@ -6,6 +6,12 @@
 ./ci/run_envoy_docker.sh './ci/do_ci.sh bazel.dev'
 ```
 
+## test
+
+```console
+bazel test //test/extensions/access_loggers/open_telemetry:grpc_access_log_impl_test
+```
+
 ## lint
 
 ```console
