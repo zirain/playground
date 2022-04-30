@@ -3,6 +3,10 @@
 ## build
 
 ```console
+bazel build -c opt envoy
+```
+
+```console
 ./ci/run_envoy_docker.sh './ci/do_ci.sh bazel.dev'
 ```
 
