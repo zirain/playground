@@ -14,6 +14,8 @@ bazel build -c opt envoy
 
 ```console
 bazel test //test/extensions/access_loggers/open_telemetry:grpc_access_log_impl_test
+
+bazel test //test/common/router:router_ratelimit_test
 ```
 
 ## lint
