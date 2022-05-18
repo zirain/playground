@@ -11,11 +11,26 @@ https://istio.teststats.cncf.io/
 
 https://k8s-gubernator.appspot.com/pr
 
+# Setup istio e2e cluster
+
+```shell
+# MULTI_CLUSTER
+prow/integ-suite-kind.sh --topology MULTICLUSTER doc.test.multicluster
+
+# SINGLE_CLUSTER 
+prow/integ-suite-kind.sh doc.test.profile_none
+```
 
 # How to test istio.io repo using Kind
 
 ```
+# MACOS
 TEST_ENV=kind ADDITIONAL_CONTAINER_OPTIONS="--network host"  make doc.test TEST=tasks/observability/logs/otel-provider
+
+export KUBECONFIG=/root/.kube/member1.config:/root/.kube/member2.config:/root/.kube/member3.config
+export KUBECONFIG_FILES=(/root/.kube/member1.config /root/.kube/members.config /root/.kube/member3.config)
+export KUBE_CONTEXTS=(member1 member2 member3)
+TAG="1.13.3" TEST_ENV=kind ADDITIONAL_CONTAINER_OPTIONS="--network host" make doc.test.multicluster TEST=setup/install/external-controlplane
 ```
 
 
