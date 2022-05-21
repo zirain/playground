@@ -100,7 +100,7 @@ function print_success() {
   echo -e "  export KUBECONFIG=${MAIN_KUBECONFIG}"
   echo -e "\nTo manage your remote clusters, run:"
   echo -e "  export KUBECONFIG=${MEMBER_CLUSTER_KUBECONFIG}"
-  echo "Please use 'kubectl config use-context remtoe1/remote2' to switch to the different remote cluster."
+  echo "Please use 'kubectl config use-context remote1/remote2' to switch to the different remote cluster."
 }
 
 print_success
