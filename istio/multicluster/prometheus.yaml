@@ -37,7 +37,7 @@ data:
 
       static_configs:
         - targets:
-          - '10.11.93.216:9090'
+          - '10.11.114.223:9090'
           labels:
             cluster: 'remote1'
 
@@ -53,7 +53,7 @@ data:
 
       static_configs:
         - targets:
-          - '10.13.241.190:9090'
+          - '10.13.92.201:9090'
           labels:
             cluster: 'remote2'
 
