@@ -37,7 +37,7 @@ data:
 
       static_configs:
         - targets:
-          - '10.11.114.223:9090'
+          - REMOTE1_PROMETHEUS_SVC_IP:9090
           labels:
             cluster: 'remote1'
 
@@ -53,7 +53,7 @@ data:
 
       static_configs:
         - targets:
-          - '10.13.92.201:9090'
+          - REMOTE2_PROMETHEUS_SVC_IP:9090
           labels:
             cluster: 'remote2'
 

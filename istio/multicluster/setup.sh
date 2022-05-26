@@ -3,6 +3,8 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+# set -x
+
 # This script starts a local karmada control plane based on current codebase and with a certain number of clusters joined.
 # Parameters: [HOST_IPADDRESS](optional) if you want to export clusters' API server port to specific IP address
 # This script depends on utils in: ${REPO_ROOT}/hack/util.sh
@@ -60,6 +62,9 @@ echo "install istio in primary"
 istioctl install --kubeconfig="${MAIN_KUBECONFIG}" -f iop/primary.yaml -y
 DISCOVER_ADDRESS=$(kubectl get --kubeconfig=${MAIN_KUBECONFIG} svc -nistio-system istiod -ojsonpath="{ .spec.clusterIP }")
 
+kubectl label --kubeconfig=${MAIN_KUBECONFIG} namespace default istio-injection=enabled
+kubectl apply --kubeconfig=${MAIN_KUBECONFIG} -f https://raw.githubusercontent.com/istio/istio/master/samples/httpbin/sample-client/fortio-deploy.yaml
+kubectl apply --kubeconfig=${MAIN_KUBECONFIG} -f https://raw.githubusercontent.com/istio/istio/master/samples/sleep/sleep.yaml
 
 echo "install istio in remote1"
 istioctl x create-remote-secret --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} \
@@ -71,10 +76,14 @@ istioctl install --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${REMOTE_C
     --set values.global.remotePilotAddress="${DISCOVER_ADDRESS}" \
     -f iop/remote1.yaml -y
 
+# install helloworld-v1
 kubectl label --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${REMOTE_CLUSTER_1_NAME}" namespace default istio-injection=enabled
-kubectl apply --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${REMOTE_CLUSTER_1_NAME}" -f https://raw.githubusercontent.com/istio/istio/master/samples/httpbin/httpbin.yaml
-kubectl apply --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${REMOTE_CLUSTER_1_NAME}" -f https://raw.githubusercontent.com/istio/istio/master/samples/httpbin/sample-client/fortio-deploy.yaml
-kubectl apply --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${REMOTE_CLUSTER_1_NAME}" -f https://raw.githubusercontent.com/istio/istio/master/samples/sleep/sleep.yaml
+kubectl apply --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${REMOTE_CLUSTER_1_NAME}" -f https://raw.githubusercontent.com/istio/istio/master/samples/helloworld/helloworld.yaml
+kubectl delete deploy helloworld-v2 --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${REMOTE_CLUSTER_1_NAME}"
+
+kubectl apply --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${REMOTE_CLUSTER_1_NAME}" -f https://raw.githubusercontent.com/istio/istio/master/samples/addons/prometheus.yaml
+export REMOTE1_PROMETHEUS_SVC_IP=$(kubectl get svc prometheus -nistio-system --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${REMOTE_CLUSTER_1_NAME}" -o jsonpath='{.spec.clusterIP}')
+echo -e "remote1 prometheus endpoint: ${REMOTE1_PROMETHEUS_SVC_IP}"
 
 echo "install istio in remote2"
 istioctl x create-remote-secret --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} \
@@ -88,14 +97,26 @@ istioctl install --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${REMOTE_C
     --set values.global.remotePilotAddress="${DISCOVER_ADDRESS}" \
     -f iop/remote2.yaml -y
 
+# install helloworld-v1
 kubectl label --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${REMOTE_CLUSTER_2_NAME}" namespace default istio-injection=enabled
-kubectl apply --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${REMOTE_CLUSTER_2_NAME}" -f https://raw.githubusercontent.com/istio/istio/master/samples/httpbin/httpbin.yaml
-kubectl apply --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${REMOTE_CLUSTER_2_NAME}" -f https://raw.githubusercontent.com/istio/istio/master/samples/httpbin/sample-client/fortio-deploy.yaml
-kubectl apply --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${REMOTE_CLUSTER_2_NAME}" -f https://raw.githubusercontent.com/istio/istio/master/samples/sleep/sleep.yaml
+kubectl apply --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${REMOTE_CLUSTER_2_NAME}" -f https://raw.githubusercontent.com/istio/istio/master/samples/helloworld/helloworld.yaml
+kubectl delete deploy helloworld-v1 --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${REMOTE_CLUSTER_2_NAME}"
 
+kubectl apply --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${REMOTE_CLUSTER_2_NAME}" -f https://raw.githubusercontent.com/istio/istio/master/samples/addons/prometheus.yaml
+export REMOTE2_PROMETHEUS_SVC_IP=$(kubectl get svc prometheus -nistio-system --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${REMOTE_CLUSTER_2_NAME}" -o jsonpath='{.spec.clusterIP}')
+echo -e "remote2 prometheus endpoint: ${REMOTE2_PROMETHEUS_SVC_IP}"
+
+# install prometheus in primary
+kubectl apply --kubeconfig=${MAIN_KUBECONFIG} -f https://raw.githubusercontent.com/istio/istio/master/samples/addons/prometheus.yaml
+kubectl apply --kubeconfig=${MAIN_KUBECONFIG} -f https://raw.githubusercontent.com/istio/istio/master/samples/addons/grafana.yaml
+cp prometheus.yaml prometheus-temp.yaml 
+sed -i -- "s/REMOTE1_PROMETHEUS_SVC_IP/${REMOTE1_PROMETHEUS_SVC_IP}/g" prometheus-temp.yaml
+sed -i -- "s/REMOTE2_PROMETHEUS_SVC_IP/${REMOTE2_PROMETHEUS_SVC_IP}/g" prometheus-temp.yaml
+kubectl apply --kubeconfig=${MAIN_KUBECONFIG} -f prometheus-temp.yaml
+rm -rf prometheus-temp.yaml
 
 function print_success() {
-  echo "Local Istio is running."
+  echo "Multicluster Istio is running."
   echo -e "\nTo start using your Istio, run:"
   echo -e "  export KUBECONFIG=${MAIN_KUBECONFIG}"
   echo -e "\nTo manage your remote clusters, run:"
