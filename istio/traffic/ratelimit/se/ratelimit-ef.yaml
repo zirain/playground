@@ -1,0 +1,77 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: ratelimit-se
+spec:
+  workloadSelector:
+    labels:
+      app: fortio
+  configPatches:
+    - applyTo: HTTP_FILTER
+      match:
+        context: SIDECAR_OUTBOUND
+        listener:
+          filterChain:
+            filter:
+              name: "envoy.filters.network.http_connection_manager"
+      patch:
+        operation: INSERT_BEFORE
+        value:
+          name: envoy.filters.http.local_ratelimit
+          typed_config:
+            "@type": type.googleapis.com/udpa.type.v1.TypedStruct
+            type_url: type.googleapis.com/envoy.extensions.filters.http.local_ratelimit.v3.LocalRateLimit
+            value:
+              stat_prefix: mantis
+    - applyTo: HTTP_ROUTE
+      match:
+        context: SIDECAR_OUTBOUND
+        routeConfiguration:
+          vhost:
+            name: www.github.com:80
+            route:
+              action: ROUTE
+      patch:
+        operation: MERGE
+        value:
+          route:
+            rateLimits:
+              - actions:
+                  - headerValueMatch:
+                      descriptorValue: URL|Prefix|/
+                      headers:
+                        - name: :path
+                          stringMatch:
+                            prefix: /
+                            ignoreCase: true
+          typedPerFilterConfig:
+            envoy.filters.http.local_ratelimit:
+              "@type": type.googleapis.com/envoy.extensions.filters.http.local_ratelimit.v3.LocalRateLimit
+              statPrefix: "mantis"
+              tokenBucket:
+                maxTokens: 100
+                tokensPerFill: 100
+                fillInterval: 60s
+              filterEnabled:
+                runtimeKey: filter_enabled
+                defaultValue:
+                  numerator: 100
+                  #denominator: HUNDRED
+              filterEnforced:
+                runtimeKey: filter_enforced
+                defaultValue:
+                  numerator: 100
+                  #denominator: HUNDRED
+              responseHeadersToAdd:
+                - append: false
+                  header:
+                    key: x-local-rate-limit
+                    value: "true"
+              descriptors:
+                - entries:
+                    - key: header_match
+                      value: URL|Prefix|/
+                  tokenBucket:
+                    maxTokens: 10
+                    tokensPerFill: 10
+                    fillInterval: 60s
