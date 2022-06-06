@@ -3,6 +3,7 @@
 ## build
 
 ```console
+bazel/setup_clang.sh /usr/lib/llvm-10/
 bazel build -c opt envoy
 ```
 
