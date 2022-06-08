@@ -16,10 +16,13 @@ spec:
           configOverride:
             outboundSidecar:
               metrics:
-                - tags_to_remove:
-                  - grpc_response_status
+                - name: requests_total
+                  tags_to_remove:
+                    - grpc_response_status
+                    - reporter
             inboundSidecar:
               metrics:
-                - tags_to_remove:
-                  - grpc_response_status
-
+                - name: requests_total
+                  tags_to_remove:
+                    - grpc_response_status
+                    - reporter

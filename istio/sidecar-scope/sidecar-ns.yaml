@@ -1,0 +1,14 @@
+apiVersion: networking.istio.io/v1beta1
+kind: Sidecar
+metadata:
+  name: ns-level
+  namespace: default
+spec:
+  egress:
+  - hosts:
+    - default/kubernetes.default.svc.cluster.local
+    - istio-system/*
+    - kube-system/kube-dns.kube-system.svc.cluster.local
+    - monitoring/*
+  workloadSelector:
+    labels:
