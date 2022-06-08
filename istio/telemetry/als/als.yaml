@@ -37,3 +37,4 @@ spec:
     - protocol: TCP
       port: 9811
       targetPort: 8080
+      name: grpc
