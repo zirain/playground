@@ -2,6 +2,10 @@
 
 https://github.com/proxy-wasm/spec
 
+# Overview
+
+https://github.com/proxy-wasm/spec/blob/master/docs/WebAssembly-in-Envoy.md
+
 # Servers
 
 * [Envoy]
