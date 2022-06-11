@@ -11,4 +11,4 @@ spec:
     - kube-system/kube-dns.kube-system.svc.cluster.local
     - monitoring/*
   workloadSelector:
-    labels:
+    labels: # empty labels means select all workloads in target namespace
