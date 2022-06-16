@@ -59,6 +59,9 @@ spec:
     metadata:
       labels:
         app: otel-collector
+        sidecar.istio.io/inject: "false"
+      #annotations:
+        #sidecar.istio.io/inject: "false"
     spec:
       containers:
       - command:
