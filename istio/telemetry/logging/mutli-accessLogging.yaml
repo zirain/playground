@@ -1,0 +1,11 @@
+apiVersion: telemetry.istio.io/v1alpha1
+kind: Telemetry
+metadata:
+  name: mutli-accessLogging
+  namespace: istio-system
+spec:
+  accessLogging:
+  - providers:
+    - name: envoy
+  - providers:
+    - name: envoy-json
