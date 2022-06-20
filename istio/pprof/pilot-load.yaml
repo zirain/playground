@@ -1,0 +1,95 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pilot-load-config
+data:
+  # Each namespace has 1 20 replica service, 5 10 replica services, and 10 3 replica services. 100 pods each
+  # Each service is exposed by a single Gateway, which has 200 instances
+  # Overall this gives 100 * 5 =500 pods
+  config.yaml: |
+    nodeMetadata: {}
+    gracePeriod: 10s
+    jitter:
+      workloads: "24h"
+      config: "24h"
+    adsPercentage: 100
+    namespaces:
+    - name: mesh
+      replicas: 5
+      applications:
+      - name: big
+        replicas: 1
+        instances: 20
+        gateways:
+          virtualServices: [main]
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: pilot-load
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pilot-load
+  labels:
+    app: pilot-load
+spec:
+  replicas: 1
+  template:
+    metadata:
+      name: pilot-load
+      annotations:
+        sidecar.istio.io/inject: "false"
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8765"
+      labels:
+        app: pilot-load
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                namespaces: [istio-system]
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - istiod
+                topologyKey: kubernetes.io/hostname
+      # May take a while to shut down
+      terminationGracePeriodSeconds: 2000
+      containers:
+        - name: pilot-load
+          image: ghcr.io/zirain/pilot-load:latest
+          imagePullPolicy: IfNotPresent
+          args:
+            - "cluster"
+            - "--pilot-address=istiod.istio-system:15010"
+            - "--config=/etc/config/config/config.yaml"
+          volumeMounts:
+            - name: config
+              mountPath: /etc/config/config
+      volumes:
+        - name: config
+          configMap:
+            name: pilot-load-config
+      serviceAccountName: pilot-load
+  selector:
+    matchLabels:
+      app: pilot-load
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: pilot-load
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+  - apiGroup: rbac.authorization.k8s.io
+    kind: User
+    name: system:serviceaccount:default:pilot-load
