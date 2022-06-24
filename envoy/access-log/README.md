@@ -10,18 +10,23 @@ docker rm -f otel-collector && docker run -d --name otel-collector \
 ```
 
 ## start envoy
+
 ```shell
 envoy-dev -c envoy/access-log/otel.yaml --component-log-level filter:debug,router:debug
 ```
 
 ## verify 
+
 ```shell
 curl  127.0.0.1:10000/
+
+curl -H "x-b3-traceid:80f198ee56343ba864fe8b2a57d3eff7"  127.0.0.1:10000/
 
 docker logs otel-collector
 ```
 
 ## output
+
 ```console
 2022-06-10T02:49:49.765Z	INFO	loggingexporter/logging_exporter.go:71	LogsExporter	{"#logs": 1}
 2022-06-10T02:49:49.765Z	DEBUG	loggingexporter/logging_exporter.go:81	ResourceLog #0
