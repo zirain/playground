@@ -20,7 +20,7 @@ envoy-dev -c envoy/access-log/otel.yaml --component-log-level filter:debug,route
 ```shell
 curl  127.0.0.1:10000/
 
-curl -H "x-b3-traceid:80f198ee56343ba864fe8b2a57d3eff7"  127.0.0.1:10000/
+curl -H "x-b3-traceid:80f198ee56343ba864fe8b2a57d3eff7" -H "x-b3-spanid:64bdd57d8eda52dd" 127.0.0.1:10000/
 
 docker logs otel-collector
 ```
