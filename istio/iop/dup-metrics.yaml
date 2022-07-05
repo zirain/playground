@@ -1,0 +1,15 @@
+# export mesh_id cluster_id in metrics
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  name: dup-metrics
+  namespace: istio-system
+spec:
+  values:
+    global:
+      meshID: mesh1
+  meshConfig:
+    defaultConfig:
+      extraStatTags:
+        - destination_x
+        - source_x
