@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: ratelimit-redis
+    component: redis
+  name: ratelimit-redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ratelimit-redis
+      component: redis
+  template:
+    metadata:
+      labels:
+        app: ratelimit-redis
+        component: redis
+        sidecar.istio.io/inject: "false" # do not inject
+    spec:
+      containers:
+        - image: redis:5.0.5
+          imagePullPolicy: IfNotPresent
+          name: istio-ratelimit-redis
+          resources:
+            limits:
+              cpu: 1500m
+              memory: 512Mi
+            requests:
+              cpu: 200m
+              memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: ratelimit-redis
+  name: redis
+spec:
+  ports:
+    - name: redis
+      port: 6379
+      protocol: TCP
+      targetPort: 6379
+  selector:
+    app: ratelimit-redis
+    component: redis

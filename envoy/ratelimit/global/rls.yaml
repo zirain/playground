@@ -1,0 +1,96 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: ratelimit
+    component: istio-ratelimit
+  name: ratelimit
+spec:
+  selector:
+    matchLabels:
+      app: ratelimit
+      component: istio-ratelimit
+  template:
+    metadata:
+      labels:
+        app: ratelimit
+        component: istio-ratelimit
+        sidecar.istio.io/inject: "false" # do not inject
+    spec:
+      containers:
+        - command:
+            - /bin/ratelimit
+          env:
+            - name: LOG_LEVEL
+              value: debug
+            - name: USE_STATSD
+              value: "false"
+            - name: REDIS_SOCKET_TYPE
+              value: tcp
+            - name: REDIS_URL
+              value: redis:6379 # points to the Service we've created above
+            - name: RUNTIME_ROOT
+              value: /data
+            - name: RUNTIME_SUBDIRECTORY
+              value: ratelimit
+            - name: RUNTIME_IGNOREDOTFILES
+              value: "true"
+            - name: RUNTIME_WATCH_ROOT
+              value: "false"
+          image: zirain/ratelimit:dev
+          name: ratelimit
+          resources:
+            limits:
+              cpu: 1500m
+              memory: 512Mi
+            requests:
+              cpu: 200m
+              memory: 256Mi
+          volumeMounts:
+            - mountPath: /data/ratelimit/config
+              name: config-volume
+      volumes:
+        - configMap:
+            defaultMode: 420
+            name: ratelimit
+          name: config-volume
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: ratelimit
+  name: ratelimit
+spec:
+  ports:
+    - name: http-ratelimit
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+    - name: grpc-ratelimit
+      port: 8081
+      protocol: TCP
+      targetPort: 8081
+    - name: http-debug
+      port: 6070
+      protocol: TCP
+      targetPort: 6070
+  selector:
+    app: ratelimit
+    component: istio-ratelimit
+---
+apiVersion: v1
+data:
+  config.yaml: |
+    domain: httpbin
+    descriptors:
+       - key: header_match
+         value: "get"
+         rate_limit:
+           unit: minute
+           requests_per_unit: 1
+kind: ConfigMap
+metadata:
+  labels:
+    app: ratelimit
+  name: ratelimit
