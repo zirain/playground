@@ -1,0 +1,74 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  labels:
+    app: ratelimit
+  name: filter-ratelimit
+spec:
+  workloadSelector:
+    labels:
+      app: httpbin
+  configPatches:
+    - applyTo: HTTP_FILTER
+      match:
+        context: SIDECAR_INBOUND
+        listener:
+          filterChain:
+            filter:
+              name: "envoy.filters.network.http_connection_manager"
+              subFilter:
+                name: "envoy.filters.http.router"
+      patch:
+        operation: INSERT_BEFORE
+        value:
+          name: envoy.filters.http.ratelimit
+          typed_config:
+            "@type": type.googleapis.com/envoy.extensions.filters.http.ratelimit.v3.RateLimit
+            domain: httpbin # must match domain in ratelimit ConfigMap
+            failure_mode_deny: false # run plugin in fail-open mode, no limiting happens if ratelimit is unavailable
+            rate_limit_service:
+              grpc_service:
+                envoy_grpc:
+                  cluster_name: rate_limit_service
+                timeout: 0.25s
+              transport_api_version: V3
+    - applyTo: CLUSTER
+      match:
+        cluster:
+          service: ratelimit.default.svc.cluster.local
+      patch:
+        operation: ADD
+        value:
+          name: rate_limit_service
+          type: STRICT_DNS
+          lb_policy: ROUND_ROBIN
+          http2_protocol_options: {}
+          connect_timeout: 10s
+          load_assignment:
+            cluster_name: rate_limit_cluster
+            endpoints:
+              - lb_endpoints:
+                  - endpoint:
+                      address:
+                        socket_address:
+                          address: ratelimit.default.svc.cluster.local
+                          port_value: 8081
+    - applyTo: HTTP_ROUTE
+      match:
+        context: SIDECAR_INBOUND
+        routeConfiguration:
+          vhost:
+            name: inbound|http|8000 # port must be a port your Service is listening on
+            route:
+              action: ANY
+      patch:
+        operation: MERGE
+        value:
+          route:
+            rate_limits:
+              - actions: # any actions in here
+                  - header_value_match:
+                      descriptor_value: path
+                      headers:
+                        - name: ":path"
+                          prefix_match: /get
