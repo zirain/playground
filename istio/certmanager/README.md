@@ -1,7 +1,6 @@
 # cert-manager CA 集成
 
-原文: https://docs.tetrate.io/zh/istio-ca-certs-integrations/cert-manager-integration/
-
+# install
 
 ```console
 helm repo add jetstack https://charts.jetstack.io
@@ -49,7 +48,7 @@ istioctl install -f istio/certmanager/iop.yaml -y
 istioctl proxy-config secret $(kubectl get pods -o jsonpath='{.items..metadata.name}' --selector app=httpbin) -o json | jq -r '.dynamicActiveSecrets[0].secret.tlsCertificate.certificateChain.inlineBytes' | base64 --decode | openssl x509 -text -noout
 ```
 
-# cleanup
+## cleanup
 
 ```
 istioctl x uninstall --purge -y
@@ -60,3 +59,8 @@ kubectl delete -f istio/certmanager/certmanger.yaml -nistio-system
 
 helm uninstall -n cert-manager cert-manager
 ```
+
+## Reference
+
+- https://docs.tetrate.io/zh/istio-ca-certs-integrations/cert-manager-integration/
+- https://cert-manager.io/docs/projects/istio-csr/
