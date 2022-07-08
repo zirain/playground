@@ -1,0 +1,18 @@
+oap:
+  image:
+    tag: 9.1.0
+  replicas: 1
+  storageType: elasticsearch
+
+ui:
+  image:
+    tag: 9.1.0
+
+elasticsearch:
+  enabled: false
+  config: # For users of an existing elasticsearch cluster,takes effect when `elasticsearch.enabled` is false
+    host: elasticsearch.skywalking
+    port:
+      http: 9200
+    # user: "xxx" # [optional]
+    # password: "xxx" # [optional]

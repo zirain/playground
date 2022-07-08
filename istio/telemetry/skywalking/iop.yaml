@@ -1,0 +1,10 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+spec:
+  meshConfig:
+    accessLogFile: /dev/stdout
+    extensionProviders:
+      - skywalking:
+          service: skywalking-oap.skywalking.svc.cluster.local
+          port: 11800
+        name: skywalking
