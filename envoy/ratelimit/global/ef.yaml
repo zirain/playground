@@ -48,6 +48,7 @@ spec:
             rate_limits:
               - actions: # any actions in here
                   - header_value_match:
+                      descriptor_key: clustome_key
                       descriptor_value: get
                       headers:
                         - name: ":path"

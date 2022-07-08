@@ -7,6 +7,9 @@ kind load docker-image zirain/ratelimit:dev
 
 test stats:
 ```
+
+kubectl apply -f envoy/ratelimit/global/ef.yaml 
+
 k exec -it sleep-5887ccbb67-gxqxl -- curl -v ratelimit:6070/stats
 
 k exec -it sleep-5887ccbb67-gxqxl -- curl -v ratelimit:6070/rlconfig
