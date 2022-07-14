@@ -41,6 +41,12 @@ cd $GOPATH/src/istio.io/istio
 go test -tags=integ ./tests/integration/telemetry
 ```
 
+# Run benchmark test
+
+```console
+go test -benchmem -run=^$ -bench ^BenchmarkListenerGeneration$ istio.io/istio/pilot/pkg/xds
+```
+
 # debug ECDS
 
 ```shell
