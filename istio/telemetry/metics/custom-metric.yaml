@@ -9,6 +9,7 @@ spec:
       proxyStatsMatcher:
         inclusionRegexps:
           - ".*circuit_breakers.*"
+          - ".*upstream_rq_xx.*"
         inclusionPrefixes:
           - "upstream_rq_retry"
           - "upstream_cx"
