@@ -74,3 +74,14 @@ make istioctl && make docker.proxyv2 && make docker.pilot && kind load docker-im
 kubectl rollout restart deployment istiod -nistio-system
 
 ```
+
+
+# build
+
+```
+cd /root/go/src/istio.io/istio
+export HUB=istio
+export TAG=1.15-dev
+make build && make docker.operator && make docker.proxyv2 && make docker.pilot && make docker.install-cni && kind load docker-image istio/proxyv2:$TAG --name istio && kind load docker-image istio/pilot:$TAG --name istio && kind load docker-image istio/operator:$TAG --name istio && kind load docker-image istio/install-cni:$TAG --name istio && unset TAG && unset HUB && docker image prune -f
+kubectl delete po --all
+```
