@@ -1,0 +1,12 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+spec:
+  components:
+    cni:
+      enabled: true
+  values:
+    cni:
+      logLevel: debug
+    global:
+      logging:
+        level: default:info,cni:info
