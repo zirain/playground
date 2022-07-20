@@ -75,11 +75,11 @@ do
 done
 
 echo "install istio in primary"
-istioctl install --kubeconfig="${MAIN_KUBECONFIG}" -f iop/primary.yaml -y
+istioctl install --kubeconfig="${MAIN_KUBECONFIG}" -f iop/primary-eastwest.yaml -y
 # config annotation on namespace
 kubectl label --kubeconfig=${MAIN_KUBECONFIG} namespace istio-system topology.istio.io/network=network1 --overwrite
 # install eastwest gateway
-istioctl install --kubeconfig="${MAIN_KUBECONFIG}" -f iop/primary-eastwest.yaml -y 
+#istioctl install --kubeconfig="${MAIN_KUBECONFIG}" -f iop/primary-eastwest.yaml -y 
 # expose istiod
 kubectl apply --kubeconfig=${MAIN_KUBECONFIG} -f expose-istiod.yaml
 # expose services
@@ -103,13 +103,13 @@ kubectl get secret -nistio-system istio-ca-secret -oyaml --kubeconfig=${MAIN_KUB
 
 istioctl install --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${REMOTE_CLUSTER_1_NAME}" \
     --set values.global.remotePilotAddress="${DISCOVER_ADDRESS}" \
-    -f iop/remote1.yaml -y
+    -f iop/remote1-eastwest.yaml -y
 # config annotation on namespace
 kubectl label --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${REMOTE_CLUSTER_1_NAME}" namespace istio-system topology.istio.io/network=network1 --overwrite
 # install eastwest gateway
-istioctl install --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${REMOTE_CLUSTER_1_NAME}" \
-    --set values.global.remotePilotAddress="${DISCOVER_ADDRESS}" \
-    -f iop/remote1-eastwest.yaml -y
+# istioctl install --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${REMOTE_CLUSTER_1_NAME}" \
+#     --set values.global.remotePilotAddress="${DISCOVER_ADDRESS}" \
+#     -f iop/remote1-eastwest.yaml -y
 
 # expose services
 kubectl apply --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${REMOTE_CLUSTER_1_NAME}" -f expose-services.yaml
@@ -129,13 +129,13 @@ kubectl get secret -nistio-system istio-ca-secret -oyaml \
     kubectl apply --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${REMOTE_CLUSTER_2_NAME}" -f -
 istioctl install --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${REMOTE_CLUSTER_2_NAME}" \
     --set values.global.remotePilotAddress="${DISCOVER_ADDRESS}" \
-    -f iop/remote2.yaml -y
+    -f iop/remote2-eastwest.yaml -y
 # config annotation on namespace
 kubectl label --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${REMOTE_CLUSTER_2_NAME}" namespace istio-system topology.istio.io/network=network2 --overwrite
 # install eastwest gateway
-istioctl install --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${REMOTE_CLUSTER_2_NAME}" \
-    --set values.global.remotePilotAddress="${DISCOVER_ADDRESS}" \
-    -f iop/remote2-eastwest.yaml -y
+# istioctl install --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${REMOTE_CLUSTER_2_NAME}" \
+#     --set values.global.remotePilotAddress="${DISCOVER_ADDRESS}" \
+#     -f iop/remote2-eastwest.yaml -y
 
 # expose services
 kubectl apply --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${REMOTE_CLUSTER_2_NAME}" -f expose-services.yaml
