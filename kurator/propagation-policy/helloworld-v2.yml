@@ -1,0 +1,13 @@
+apiVersion: policy.karmada.io/v1alpha1
+kind: PropagationPolicy
+metadata:
+  name: helloworld-v2
+spec:
+  placement:
+    clusterAffinity:
+      clusterNames:
+        - member2
+  resourceSelectors:
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: helloworld-v2

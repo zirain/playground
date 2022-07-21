@@ -1,0 +1,19 @@
+apiVersion: policy.karmada.io/v1alpha1
+kind: PropagationPolicy
+metadata:
+  name: sleep
+spec:
+  placement:
+    clusterAffinity:
+      clusterNames:
+        - member1
+  resourceSelectors:
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: sleep
+    - apiVersion: v1
+      kind: Service
+      name: sleep
+    - apiVersion: v1
+      kind: ServiceAccount
+      name: sleep
