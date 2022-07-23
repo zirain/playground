@@ -1,0 +1,1 @@
+copy from https://github.com/tetratelabs/proxy-wasm-go-sdk/tree/main/examples/network
