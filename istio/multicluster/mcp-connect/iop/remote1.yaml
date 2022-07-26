@@ -1,0 +1,13 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+spec:
+  meshConfig:
+    accessLogFile: /dev/stdout
+    configSources:
+    - address: xds://172.18.255.155:15020
+  values:
+    global:
+      meshID: mesh1
+      multiCluster:
+        clusterName: remote1
+      network: network1
