@@ -1,0 +1,30 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: filter-ratelimit
+  namespace: istio-system
+spec:
+  workloadSelector:
+    # select by label in the same namespace
+    labels:
+      istio: ingressgateway
+  configPatches:
+    - applyTo: CLUSTER
+      patch:
+        operation: ADD
+        # Adds the rate limit service cluster for rate limit service defined in step 1.
+        value:
+          name: rate_limit_cluster
+          type: STRICT_DNS
+          connect_timeout: 10s
+          lb_policy: ROUND_ROBIN
+          http2_protocol_options: {}
+          load_assignment:
+            cluster_name: rate_limit_cluster
+            endpoints:
+              - lb_endpoints:
+                  - endpoint:
+                      address:
+                        socket_address:
+                          address: ratelimit.default.svc.cluster.local
+                          port_value: 8081
