@@ -4,7 +4,7 @@ spec:
   meshConfig:
     accessLogFile: /dev/stdout
     configSources:
-    - address: xds://172.18.255.155:15020
+      - address: xds://172.18.255.155:15010
   values:
     global:
       meshID: mesh1

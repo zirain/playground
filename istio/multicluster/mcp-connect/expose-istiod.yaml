@@ -15,6 +15,12 @@ spec:
       hosts:
         - "*"
     - port:
+        name: grpc-xds
+        number: 15010
+        protocol: grpc
+      hosts:
+        - "*"
+    - port:
         name: tls-istiodwebhook
         number: 15017
         protocol: tls
@@ -32,6 +38,16 @@ spec:
     - "*"
   gateways:
     - istiod-gateway
+  http:
+    - match:
+        - port: 15010
+          gateways:
+            - istiod-gateway
+      route:
+        - destination:
+            host: istiod.istio-system.svc.cluster.local
+            port:
+              number: 15010
   tls:
     - match:
         - port: 15012
