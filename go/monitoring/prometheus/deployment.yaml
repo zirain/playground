@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prom-monitor
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prom-monitor
+  template:
+    metadata:
+      labels:
+        app: prom-monitor
+      annotations:
+        cci.vk/scrape: "true"
+        cci.vk/port: "15014"
+    spec:
+      containers:
+        - name: monitoring
+          image: ghcr.io/zirain/prom-monitor
