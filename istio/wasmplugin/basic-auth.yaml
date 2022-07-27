@@ -1,0 +1,20 @@
+apiVersion: extensions.istio.io/v1alpha1
+kind: WasmPlugin
+metadata:
+  name: basic-auth
+  namespace: istio-system
+spec:
+  selector:
+    matchLabels:
+      istio: ingressgateway
+  url: oci://ghcr.io/istio-ecosystem/wasm-extensions/basic_auth:1.12.0
+  phase: AUTHN
+  pluginConfig:
+    basic_auth_rules:
+      - prefix: "/productpage"
+        request_methods:
+          - "GET"
+          - "POST"
+        credentials:
+          - "ok:test"
+          - "YWRtaW4zOmFkbWluMw=="
