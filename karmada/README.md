@@ -20,3 +20,11 @@ kubectl apply -f karmada/ClusterOverridePolicy --kubeconfig=/root/.kube/karmada.
 kubectl get ns --show-labels --kubeconfig=/root/.kube/members.config --context=member1
 kubectl get ns --show-labels --kubeconfig=/root/.kube/members.config --context=member2
 ```
+
+
+## run e2e test
+
+```
+# put --focus before the testDir(./test/e2e/)
+ginkgo -v --race --trace --fail-fast --focus="Namespace propagation testing" --randomize-all ./test/e2e/
+```
