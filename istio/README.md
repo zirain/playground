@@ -41,6 +41,12 @@ cd $GOPATH/src/istio.io/istio
 go test -tags=integ ./tests/integration/telemetry
 ```
 
+# Run race test
+
+```bash
+go clean -testcache && go test -v -count=1 -race -timeout 30s -run ^TestEDSUnhealthyEndpoints$ istio.io/istio/pilot/pkg/xds
+```
+
 # Run benchmark test
 
 ```console
