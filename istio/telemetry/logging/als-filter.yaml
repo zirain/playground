@@ -5,5 +5,8 @@ metadata:
   namespace: istio-system
 spec:
   accessLogging:
-    - providers:
-        - name: envoy
+  - providers:
+    - name: file-log
+    # disabled: true
+    filter: 
+      expression: response.code >= 500
