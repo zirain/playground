@@ -1,0 +1,20 @@
+kind: GatewayClass
+apiVersion: gateway.networking.k8s.io/v1beta1
+metadata:
+  name: contour
+spec:
+  controllerName: projectcontour.io/gateway-controller
+---
+apiVersion: gateway.networking.k8s.io/v1alpha2
+kind: Gateway
+metadata:
+  name: contour-gateway
+spec:
+  gatewayClassName: contour
+  listeners:
+    - name: default
+      port: 8080
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: All
