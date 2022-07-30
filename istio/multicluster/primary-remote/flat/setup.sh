@@ -3,7 +3,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-# set -x
+ set -x
 
 # This script starts a local karmada control plane based on current codebase and with a certain number of clusters joined.
 # Parameters: [HOST_IPADDRESS](optional) if you want to export clusters' API server port to specific IP address
@@ -15,6 +15,7 @@ source "${REPO_ROOT}"/util.sh
 
 # variable define
 KUBECONFIG_PATH=${KUBECONFIG_PATH:-"${HOME}/.kube"}
+ISTIO_TAG=${ISTIO_TAG:-"1.14.1"}
 MAIN_KUBECONFIG=${MAIN_KUBECONFIG:-"${KUBECONFIG_PATH}/istio-primary.config"}
 MEMBER_CLUSTER_KUBECONFIG=${MEMBER_CLUSTER_KUBECONFIG:-"${KUBECONFIG_PATH}/istio-remotes.config"}
 PRIMARY_CLUSTER_NAME=${PRIMARY_CLUSTER_NAME:-"primary"}
@@ -48,6 +49,17 @@ sleep 5s
 util::check_clusters_ready "${MEMBER_CLUSTER_KUBECONFIG}" "${REMOTE_CLUSTER_2_NAME}"
 sleep 5s
 
+# load images
+docker pull istio/proxyv2:${ISTIO_TAG} 
+docker pull istio/pilot:${ISTIO_TAG}
+
+KIND_CLUSTES=("${PRIMARY_CLUSTER_NAME}" "${REMOTE_CLUSTER_1_NAME}" "${REMOTE_CLUSTER_2_NAME}")
+for cluster in "${KIND_CLUSTES[@]}"; do
+    echo "load image to ${cluster}"
+    kind load docker-image istio/proxyv2:${ISTIO_TAG} --name ${cluster}
+    kind load docker-image istio/pilot:${ISTIO_TAG} --name ${cluster}
+done
+
 # connecting networks between primary, remote1 and remote2 clusters
 echo "connect remote1 <-> remote2"
 util::connect_kind_clusters "${REMOTE_CLUSTER_1_NAME}" "${MEMBER_CLUSTER_KUBECONFIG}" "${REMOTE_CLUSTER_2_NAME}" "${MEMBER_CLUSTER_KUBECONFIG}" 1
@@ -61,7 +73,9 @@ util::connect_kind_clusters "${PRIMARY_CLUSTER_NAME}" "${MAIN_KUBECONFIG}" "${RE
 echo "cluster networks connected"
 
 echo "install istio in primary"
-istioctl install --kubeconfig="${MAIN_KUBECONFIG}" -f iop/primary.yaml -y
+istioctl install --kubeconfig="${MAIN_KUBECONFIG}" \
+    --set values.global.tag="${ISTIO_TAG}" \
+    -f iop/primary.yaml -y
 DISCOVER_ADDRESS=$(kubectl get --kubeconfig=${MAIN_KUBECONFIG} svc -nistio-system istiod -ojsonpath="{ .spec.clusterIP }")
 
 kubectl label --kubeconfig=${MAIN_KUBECONFIG} namespace default istio-injection=enabled
@@ -78,6 +92,7 @@ istioctl x create-remote-secret --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} \
 kubectl get secret -nistio-system istio-ca-secret -oyaml --kubeconfig=${MAIN_KUBECONFIG} | kubectl apply --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${REMOTE_CLUSTER_1_NAME}" -f -
 istioctl install --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${REMOTE_CLUSTER_1_NAME}" \
     --set values.global.remotePilotAddress="${DISCOVER_ADDRESS}" \
+    --set values.global.tag="${ISTIO_TAG}" \
     -f iop/remote1.yaml -y
 
 # install helloworld-v1
@@ -99,6 +114,7 @@ kubectl get secret -nistio-system istio-ca-secret -oyaml \
     kubectl apply --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${REMOTE_CLUSTER_2_NAME}" -f -
 istioctl install --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${REMOTE_CLUSTER_2_NAME}" \
     --set values.global.remotePilotAddress="${DISCOVER_ADDRESS}" \
+    --set values.global.tag="${ISTIO_TAG}" \
     -f iop/remote2.yaml -y
 
 # install helloworld-v1
