@@ -8,3 +8,4 @@ spec:
         clusterName: remote1
       network: network1
       remotePilotAddress: ${DISCOVERY_ADDRESS}
+      caAddress: istiod-remote.istio-system.svc:15012 # use primary CA server

@@ -4,6 +4,6 @@ set -o nounset
 set -o pipefail
 
 
-docker rm -f primary-control-plane remote1-control-plane remote2-control-plane
+kind delete clusters primary remote1 remote2
 docker volume prune -f
 docker image prune -f

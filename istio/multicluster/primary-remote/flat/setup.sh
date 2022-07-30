@@ -30,10 +30,12 @@ KIND_LOG_FILE=${KIND_LOG_FILE:-"/tmp/istio"}
 
 #prepare for kindClusterConfig
 TEMP_PATH=$(mktemp -d)
+KIND_CONFIGS_PATH="./kind-configs"
+ADDONS_PATH="./addons/"
 echo -e "Preparing kindClusterConfig in path: ${TEMP_PATH}"
-cp -rf primary.yaml "${TEMP_PATH}"/primary.yaml
-cp -rf remote1.yaml "${TEMP_PATH}"/remote1.yaml
-cp -rf remote2.yaml "${TEMP_PATH}"/remote2.yaml
+cp -rf ${KIND_CONFIGS_PATH}/primary.yaml "${TEMP_PATH}"/primary.yaml
+cp -rf ${KIND_CONFIGS_PATH}/remote1.yaml "${TEMP_PATH}"/remote1.yaml
+cp -rf ${KIND_CONFIGS_PATH}/remote2.yaml "${TEMP_PATH}"/remote2.yaml
 
 util::create_cluster "${PRIMARY_CLUSTER_NAME}" "${MAIN_KUBECONFIG}" "${CLUSTER_VERSION}" "${KIND_LOG_FILE}"
 util::create_cluster "${REMOTE_CLUSTER_1_NAME}" "${MEMBER_CLUSTER_KUBECONFIG}" "${CLUSTER_VERSION}" "${KIND_LOG_FILE}" "${TEMP_PATH}"/remote1.yaml
@@ -65,6 +67,8 @@ DISCOVER_ADDRESS=$(kubectl get --kubeconfig=${MAIN_KUBECONFIG} svc -nistio-syste
 kubectl label --kubeconfig=${MAIN_KUBECONFIG} namespace default istio-injection=enabled
 kubectl apply --kubeconfig=${MAIN_KUBECONFIG} -f https://raw.githubusercontent.com/istio/istio/master/samples/httpbin/sample-client/fortio-deploy.yaml
 kubectl apply --kubeconfig=${MAIN_KUBECONFIG} -f https://raw.githubusercontent.com/istio/istio/master/samples/sleep/sleep.yaml
+# apply helloworld service and dr
+kubectl apply --kubeconfig=${MAIN_KUBECONFIG} -f ${ADDONS_PATH}/helloworld/helloworld.yaml
 
 echo "install istio in remote1"
 istioctl x create-remote-secret --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} \
@@ -109,7 +113,7 @@ echo -e "remote2 prometheus endpoint: ${REMOTE2_PROMETHEUS_SVC_IP}"
 # install prometheus in primary
 kubectl apply --kubeconfig=${MAIN_KUBECONFIG} -f https://raw.githubusercontent.com/istio/istio/master/samples/addons/prometheus.yaml
 kubectl apply --kubeconfig=${MAIN_KUBECONFIG} -f https://raw.githubusercontent.com/istio/istio/master/samples/addons/grafana.yaml
-cp prometheus.yaml prometheus-temp.yaml 
+cp ${ADDONS_PATH}/prometheus.yaml prometheus-temp.yaml 
 sed -i -- "s/REMOTE1_PROMETHEUS_SVC_IP/${REMOTE1_PROMETHEUS_SVC_IP}/g" prometheus-temp.yaml
 sed -i -- "s/REMOTE2_PROMETHEUS_SVC_IP/${REMOTE2_PROMETHEUS_SVC_IP}/g" prometheus-temp.yaml
 kubectl apply --kubeconfig=${MAIN_KUBECONFIG} -f prometheus-temp.yaml
