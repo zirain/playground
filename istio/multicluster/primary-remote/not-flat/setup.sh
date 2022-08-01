@@ -22,6 +22,7 @@ REMOTE_CLUSTER_1_NAME=${REMOTE_CLUSTER_1_NAME:-"remote1"}
 REMOTE_CLUSTER_2_NAME=${REMOTE_CLUSTER_2_NAME:-"remote2"}
 HOST_IPADDRESS=${1:-}
 
+ISTIO_TAG=${ISTIO_TAG:-"1.14.1"}
 METALLB_VERSION=${METALLB_VERSION:-"v0.10.2"}
 CLUSTER_VERSION=${CLUSTER_VERSION:-"kindest/node:v1.23.4"}
 KIND_LOG_FILE=${KIND_LOG_FILE:-"/tmp/istio"}
@@ -58,6 +59,15 @@ echo "connect primary <-> remote2"
 util::connect_kind_clusters "${PRIMARY_CLUSTER_NAME}" "${MAIN_KUBECONFIG}" "${REMOTE_CLUSTER_2_NAME}" "${MEMBER_CLUSTER_KUBECONFIG}" 1
 
 echo "cluster networks connected"
+
+KIND_CLUSTES=("${PRIMARY_CLUSTER_NAME}" "${REMOTE_CLUSTER_1_NAME}" "${REMOTE_CLUSTER_2_NAME}")
+for cluster in "${KIND_CLUSTES[@]}"; do
+    echo "load image to ${cluster}"
+    kind load docker-image quay.io/metallb/controller:${METALLB_VERSION} --name ${cluster}
+    kind load docker-image quay.io/metallb/speaker:${METALLB_VERSION} --name ${cluster}
+    kind load docker-image istio/proxyv2:${ISTIO_TAG} --name ${cluster}
+    kind load docker-image istio/pilot:${ISTIO_TAG} --name ${cluster}
+done
 
 echo "starting install metallb in primary cluster"
 kubectl create ns metallb-system --kubeconfig="${MAIN_KUBECONFIG}" --context="${PRIMARY_CLUSTER_NAME}"
