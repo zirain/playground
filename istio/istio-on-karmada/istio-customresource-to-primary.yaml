@@ -1,0 +1,54 @@
+apiVersion: policy.karmada.io/v1alpha1
+kind: ClusterPropagationPolicy
+metadata:
+  creationTimestamp: "2022-08-01T02:54:24Z"
+  generation: 1
+  name: istio-customresource-to-primary
+spec:
+  placement:
+    clusterAffinity:
+      clusterNames:
+      - member1
+  resourceSelectors:
+  - apiVersion: security.istio.io/v1beta1
+    kind: AuthorizationPolicy
+  - apiVersion: networking.istio.io/v1alpha3
+    kind: DestinationRule
+  - apiVersion: networking.istio.io/v1beta1
+    kind: DestinationRule
+  - apiVersion: networking.istio.io/v1alpha3
+    kind: EnvoyFilter
+  - apiVersion: networking.istio.io/v1alpha3
+    kind: Gateway
+  - apiVersion: networking.istio.io/v1beta1
+    kind: Gateway
+  - apiVersion: security.istio.io/v1beta1
+    kind: PeerAuthentication
+  - apiVersion: networking.istio.io/v1beta1
+    kind: ProxyConfig
+  - apiVersion: security.istio.io/v1beta1
+    kind: RequestAuthentication
+  - apiVersion: networking.istio.io/v1alpha3
+    kind: ServiceEntry
+  - apiVersion: networking.istio.io/v1beta1
+    kind: ServiceEntry
+  - apiVersion: networking.istio.io/v1alpha3
+    kind: Sidecar
+  - apiVersion: networking.istio.io/v1beta1
+    kind: Sidecar
+  - apiVersion: telemetry.istio.io/v1alpha1
+    kind: Telemetry
+  - apiVersion: networking.istio.io/v1alpha3
+    kind: VirtualService
+  - apiVersion: networking.istio.io/v1beta1
+    kind: VirtualService
+  - apiVersion: extensions.istio.io/v1alpha1
+    kind: WasmPlugin
+  - apiVersion: networking.istio.io/v1alpha3
+    kind: WorkloadEntry
+  - apiVersion: networking.istio.io/v1beta1
+    kind: WorkloadEntry
+  - apiVersion: networking.istio.io/v1alpha3
+    kind: WorkloadGroup
+  - apiVersion: networking.istio.io/v1beta1
+    kind: WorkloadGroup
