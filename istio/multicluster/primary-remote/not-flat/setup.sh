@@ -81,9 +81,9 @@ kubectl label --kubeconfig=${MAIN_KUBECONFIG} namespace istio-system topology.is
 # install eastwest gateway
 #istioctl install --kubeconfig="${MAIN_KUBECONFIG}" -f iop/primary-eastwest.yaml -y 
 # expose istiod
-kubectl apply --kubeconfig=${MAIN_KUBECONFIG} -f expose-istiod.yaml
+kubectl apply --kubeconfig=${MAIN_KUBECONFIG} -f expose-istiod.yaml -nistio-system
 # expose services
-kubectl apply --kubeconfig=${MAIN_KUBECONFIG} -f expose-services.yaml
+kubectl apply --kubeconfig=${MAIN_KUBECONFIG} -f expose-services.yaml -nistio-system
 
 kubectl apply --kubeconfig=${MAIN_KUBECONFIG} -f helloworld/helloworld.yaml
 
