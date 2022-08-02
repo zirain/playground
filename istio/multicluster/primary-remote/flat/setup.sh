@@ -14,6 +14,7 @@ REPO_ROOT=$(dirname "${BASH_SOURCE[0]}")
 source "${REPO_ROOT}"/util.sh
 
 # variable define
+WITH_PROMETHEUS=${WITH_PROMETHEUS:-'false'}
 KUBECONFIG_PATH=${KUBECONFIG_PATH:-"${HOME}/.kube"}
 ISTIO_TAG=${ISTIO_TAG:-"1.14.1"}
 MAIN_KUBECONFIG=${MAIN_KUBECONFIG:-"${KUBECONFIG_PATH}/istio-primary.config"}
@@ -23,6 +24,7 @@ REMOTE_CLUSTER_1_NAME=${REMOTE_CLUSTER_1_NAME:-"remote1"}
 REMOTE_CLUSTER_2_NAME=${REMOTE_CLUSTER_2_NAME:-"remote2"}
 HOST_IPADDRESS=${1:-}
 
+METALLB_VERSION=${METALLB_VERSION:-"v0.10.2"}
 CLUSTER_VERSION=${CLUSTER_VERSION:-"kindest/node:v1.23.4"}
 KIND_LOG_FILE=${KIND_LOG_FILE:-"/tmp/istio"}
 
@@ -50,12 +52,16 @@ util::check_clusters_ready "${MEMBER_CLUSTER_KUBECONFIG}" "${REMOTE_CLUSTER_2_NA
 sleep 5s
 
 # load images
+docker pull quay.io/metallb/controller:${METALLB_VERSION}
+docker pull quay.io/metallb/speaker:${METALLB_VERSION}
 docker pull istio/proxyv2:${ISTIO_TAG} 
 docker pull istio/pilot:${ISTIO_TAG}
 
 KIND_CLUSTES=("${PRIMARY_CLUSTER_NAME}" "${REMOTE_CLUSTER_1_NAME}" "${REMOTE_CLUSTER_2_NAME}")
 for cluster in "${KIND_CLUSTES[@]}"; do
     echo "load image to ${cluster}"
+    kind load docker-image quay.io/metallb/controller:${METALLB_VERSION} --name ${cluster}
+    kind load docker-image quay.io/metallb/speaker:${METALLB_VERSION} --name ${cluster}
     kind load docker-image istio/proxyv2:${ISTIO_TAG} --name ${cluster}
     kind load docker-image istio/pilot:${ISTIO_TAG} --name ${cluster}
 done
@@ -72,11 +78,29 @@ util::connect_kind_clusters "${PRIMARY_CLUSTER_NAME}" "${MAIN_KUBECONFIG}" "${RE
 
 echo "cluster networks connected"
 
+echo "starting install metallb in primary cluster"
+kubectl create ns metallb-system --kubeconfig="${MAIN_KUBECONFIG}" --context="${PRIMARY_CLUSTER_NAME}"
+util::install_metallb ${MAIN_KUBECONFIG} ${PRIMARY_CLUSTER_NAME}
+kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/${METALLB_VERSION}/manifests/metallb.yaml --kubeconfig="${MAIN_KUBECONFIG}" --context="${PRIMARY_CLUSTER_NAME}"
+
+echo "starting install metallb in member clusters"
+MEMBER_CLUSTERS=(${REMOTE_CLUSTER_1_NAME} ${REMOTE_CLUSTER_2_NAME})
+for c in ${MEMBER_CLUSTERS[@]}
+do
+  echo "install metallb in $c"
+  kubectl create ns metallb-system --kubeconfig="${MEMBER_CLUSTER_KUBECONFIG}" --context="${c}"
+  util::install_metallb ${MEMBER_CLUSTER_KUBECONFIG} ${c}
+  kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/${METALLB_VERSION}/manifests/metallb.yaml --kubeconfig="${MEMBER_CLUSTER_KUBECONFIG}" --context="${c}"
+done
+
 echo "install istio in primary"
 istioctl install --kubeconfig="${MAIN_KUBECONFIG}" \
     --set values.global.tag="${ISTIO_TAG}" \
     -f iop/primary.yaml -y
-DISCOVER_ADDRESS=$(kubectl get --kubeconfig=${MAIN_KUBECONFIG} svc -nistio-system istiod -ojsonpath="{ .spec.clusterIP }")
+# expose istiod
+kubectl apply --kubeconfig=${MAIN_KUBECONFIG} -f expose-istiod.yaml -nistio-system
+
+DISCOVER_ADDRESS=$(kubectl get --kubeconfig=${MAIN_KUBECONFIG} svc -nistio-system istio-eastwestgateway  -o jsonpath="{.status.loadBalancer.ingress[0].ip}")
 
 kubectl label --kubeconfig=${MAIN_KUBECONFIG} namespace default istio-injection=enabled
 kubectl apply --kubeconfig=${MAIN_KUBECONFIG} -f https://raw.githubusercontent.com/istio/istio/master/samples/httpbin/sample-client/fortio-deploy.yaml
@@ -85,10 +109,13 @@ kubectl apply --kubeconfig=${MAIN_KUBECONFIG} -f https://raw.githubusercontent.c
 kubectl apply --kubeconfig=${MAIN_KUBECONFIG} -f ${ADDONS_PATH}/helloworld/helloworld.yaml
 
 echo "install istio in remote1"
+# create secret for primary access remote1
 istioctl x create-remote-secret --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} \
+    --type=remote \
     --context="${REMOTE_CLUSTER_1_NAME}" \
     --name=${REMOTE_CLUSTER_1_NAME} | \
     kubectl apply -f - --kubeconfig="${MAIN_KUBECONFIG}"
+# sync root ca
 kubectl get secret -nistio-system istio-ca-secret -oyaml --kubeconfig=${MAIN_KUBECONFIG} | kubectl apply --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${REMOTE_CLUSTER_1_NAME}" -f -
 istioctl install --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${REMOTE_CLUSTER_1_NAME}" \
     --set values.global.remotePilotAddress="${DISCOVER_ADDRESS}" \
@@ -99,10 +126,6 @@ istioctl install --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${REMOTE_C
 kubectl label --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${REMOTE_CLUSTER_1_NAME}" namespace default istio-injection=enabled
 kubectl apply --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${REMOTE_CLUSTER_1_NAME}" -f https://raw.githubusercontent.com/istio/istio/master/samples/helloworld/helloworld.yaml
 kubectl delete deploy helloworld-v2 --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${REMOTE_CLUSTER_1_NAME}"
-
-kubectl apply --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${REMOTE_CLUSTER_1_NAME}" -f https://raw.githubusercontent.com/istio/istio/master/samples/addons/prometheus.yaml
-export REMOTE1_PROMETHEUS_SVC_IP=$(kubectl get svc prometheus -nistio-system --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${REMOTE_CLUSTER_1_NAME}" -o jsonpath='{.spec.clusterIP}')
-echo -e "remote1 prometheus endpoint: ${REMOTE1_PROMETHEUS_SVC_IP}"
 
 echo "install istio in remote2"
 istioctl x create-remote-secret --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} \
@@ -117,23 +140,31 @@ istioctl install --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${REMOTE_C
     --set values.global.tag="${ISTIO_TAG}" \
     -f iop/remote2.yaml -y
 
-# install helloworld-v1
+# install helloworld-v2
 kubectl label --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${REMOTE_CLUSTER_2_NAME}" namespace default istio-injection=enabled
 kubectl apply --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${REMOTE_CLUSTER_2_NAME}" -f https://raw.githubusercontent.com/istio/istio/master/samples/helloworld/helloworld.yaml
 kubectl delete deploy helloworld-v1 --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${REMOTE_CLUSTER_2_NAME}"
 
-kubectl apply --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${REMOTE_CLUSTER_2_NAME}" -f https://raw.githubusercontent.com/istio/istio/master/samples/addons/prometheus.yaml
-export REMOTE2_PROMETHEUS_SVC_IP=$(kubectl get svc prometheus -nistio-system --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${REMOTE_CLUSTER_2_NAME}" -o jsonpath='{.spec.clusterIP}')
-echo -e "remote2 prometheus endpoint: ${REMOTE2_PROMETHEUS_SVC_IP}"
+if [ $WITH_PROMETHEUS == 'true' ]; then
+    # install prometheus in remote2
+    kubectl apply --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${REMOTE_CLUSTER_2_NAME}" -f https://raw.githubusercontent.com/istio/istio/master/samples/addons/prometheus.yaml
+    export REMOTE2_PROMETHEUS_SVC_IP=$(kubectl get svc prometheus -nistio-system --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${REMOTE_CLUSTER_2_NAME}" -o jsonpath='{.spec.clusterIP}')
+    echo -e "remote2 prometheus endpoint: ${REMOTE2_PROMETHEUS_SVC_IP}"
 
-# install prometheus in primary
-kubectl apply --kubeconfig=${MAIN_KUBECONFIG} -f https://raw.githubusercontent.com/istio/istio/master/samples/addons/prometheus.yaml
-kubectl apply --kubeconfig=${MAIN_KUBECONFIG} -f https://raw.githubusercontent.com/istio/istio/master/samples/addons/grafana.yaml
-cp ${ADDONS_PATH}/prometheus.yaml prometheus-temp.yaml 
-sed -i -- "s/REMOTE1_PROMETHEUS_SVC_IP/${REMOTE1_PROMETHEUS_SVC_IP}/g" prometheus-temp.yaml
-sed -i -- "s/REMOTE2_PROMETHEUS_SVC_IP/${REMOTE2_PROMETHEUS_SVC_IP}/g" prometheus-temp.yaml
-kubectl apply --kubeconfig=${MAIN_KUBECONFIG} -f prometheus-temp.yaml
-rm -rf prometheus-temp.yaml
+    # install prometheus in remote1
+    kubectl apply --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${REMOTE_CLUSTER_1_NAME}" -f https://raw.githubusercontent.com/istio/istio/master/samples/addons/prometheus.yaml
+    export REMOTE1_PROMETHEUS_SVC_IP=$(kubectl get svc prometheus -nistio-system --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${REMOTE_CLUSTER_1_NAME}" -o jsonpath='{.spec.clusterIP}')
+    echo -e "remote1 prometheus endpoint: ${REMOTE1_PROMETHEUS_SVC_IP}"
+
+    # install prometheus in primary
+    kubectl apply --kubeconfig=${MAIN_KUBECONFIG} -f https://raw.githubusercontent.com/istio/istio/master/samples/addons/prometheus.yaml
+    kubectl apply --kubeconfig=${MAIN_KUBECONFIG} -f https://raw.githubusercontent.com/istio/istio/master/samples/addons/grafana.yaml
+    cp ${ADDONS_PATH}/prometheus.yaml prometheus-temp.yaml 
+    sed -i -- "s/REMOTE1_PROMETHEUS_SVC_IP/${REMOTE1_PROMETHEUS_SVC_IP}/g" prometheus-temp.yaml
+    sed -i -- "s/REMOTE2_PROMETHEUS_SVC_IP/${REMOTE2_PROMETHEUS_SVC_IP}/g" prometheus-temp.yaml
+    kubectl apply --kubeconfig=${MAIN_KUBECONFIG} -f prometheus-temp.yaml
+    rm -rf prometheus-temp.yaml
+fi
 
 function print_success() {
   echo "Multicluster Istio is running."

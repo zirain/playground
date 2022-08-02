@@ -1,11 +1,7 @@
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 spec:
+  profile: external
   values:
-    global:
-      meshID: mesh1
-      multiCluster:
-        clusterName: remote1
-      network: network1
-      remotePilotAddress: ${DISCOVERY_ADDRESS}
-      caAddress: istiod-remote.istio-system.svc:15012 # use primary CA server
+    istiodRemote:
+      injectionURL: https://172.18.255.155:15017/inject/:ENV:cluster=remote1:ENV:net=network1

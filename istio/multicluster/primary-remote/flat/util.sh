@@ -580,3 +580,43 @@ function util::connect_kind_clusters() {
     docker exec "${C2_NODE}" ip route add "${C1_SVC_CIDR}" via "${C1_DOCKER_IP}"
   fi
 }
+
+# util::install_metallb will install metallb for given kind cluster
+# Parameters:
+#  - $1: kubeconfig of the kind cluster want to install metallb
+#  - $2: context of the kind cluster want to install metallb
+function util::install_metallb() {
+  if [ -z "${METALLB_IPS[*]}" ]; then
+    # Take IPs from the end of the docker kind network subnet to use for MetalLB IPs
+    DOCKER_KIND_SUBNET="$(docker inspect kind | jq '.[0].IPAM.Config[0].Subnet' -r)"
+    METALLB_IPS=()
+    while read -r ip; do
+      echo $ip ==============
+      METALLB_IPS+=("$ip")
+    done < <(util::cidr_to_ips "$DOCKER_KIND_SUBNET" | tail -n 100)
+  fi
+
+  # Give this cluster of those IPs
+  RANGE="${METALLB_IPS[0]}-${METALLB_IPS[9]}"
+  METALLB_IPS=("${METALLB_IPS[@]:10}")
+
+  echo 'apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: metallb-system
+  name: config
+data:
+  config: |
+    address-pools:
+    - name: default
+      protocol: layer2
+      addresses:
+      - '"$RANGE" | kubectl apply --kubeconfig="$1" --context="$2" -f - 
+}
+
+function util::cidr_to_ips() {
+    CIDR="$1"
+    python3 - <<EOF
+from ipaddress import IPv4Network; [print(str(ip)) for ip in IPv4Network('$CIDR').hosts()]
+EOF
+}
