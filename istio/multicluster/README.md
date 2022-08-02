@@ -1,6 +1,10 @@
 
+# Multicluster with istio
 
-# Switch context 
+
+
+
+## Switch context 
 
 ```console
 export KUBECONFIG='/root/.kube/istio-primary.config'
