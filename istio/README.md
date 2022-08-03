@@ -102,3 +102,12 @@ REGISTRY=zirain VERSION=dev make docker_image
 kind load docker-image zirain/ratelimit:dev --name istio
 kubectl rollout restart deployment ratelimit
 ```
+
+# grafana
+
+```console
+make gen-addons && kubectl apply -f samples/addons/grafana.yaml && kubectl rollout restart deployment grafana -nistio-system
+
+# port-forward
+kubectl port-forward -nistio-system pod/`kubectl get po -nistio-system | grep grafana | awk '{print $1}'` 3000:3000 --address 0.0.0.0
+```
