@@ -1,0 +1,1 @@
+get more info: https://github.com/istio/istio/tree/master/tests/integration/telemetry/stats/prometheus/wasm/wasm_modules/header_injector
