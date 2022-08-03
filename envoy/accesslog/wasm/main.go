@@ -49,9 +49,9 @@ func (ctx *httpHeaders) OnHttpRequestHeaders(numHeaders int, endOfStream bool) t
 		proxywasm.LogCriticalf("GetProperty: %v", err)
 	}
 
-	unixMicro := binary.LittleEndian.Uint64(startTime) // 小字节序
-	proxywasm.LogCriticalf("startTime UnixMicro: %d", unixMicro)
-	t := time.UnixMicro(int64(unixMicro) / 1000)
+	unix_nano := binary.LittleEndian.Uint64(startTime) // 小字节序
+	proxywasm.LogCriticalf("startTime UnixNano: %d", unix_nano)
+	t := time.UnixMicro(int64(unix_nano) / 1000)
 	proxywasm.LogCriticalf("startTime: %v", t)
 
 	hs, err := proxywasm.GetHttpRequestHeaders()

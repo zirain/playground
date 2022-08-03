@@ -1,11 +1,7 @@
 #include <string>
 #include <unordered_map>
 
-//#include <google/protobuf/util/time_util.h>
 #include "proxy_wasm_intrinsics.h"
-
-// Allows mapping from google::protobuf::util to other util libraries.
-namespace ProtobufUtil = google::protobuf::util;
 
 class ExampleContext : public Context {
 public:
@@ -27,12 +23,6 @@ FilterHeadersStatus ExampleContext::onRequestHeaders(uint32_t headers, bool end_
 void ExampleContext::onDone() { logInfo("onDone " + std::to_string(id())); }
 
 void ExampleContext::onLog() {
-  // uint64_t unix_micros = 0;
-  // if (getValue({"request", "time"}, &unix_micros)){
-  //   auto request_time = ProtobufUtil::TimeUtil::NanosecondsToTimestamp(unix_micros);
-  //   LOG_WARN(std::string("start_time @ " + ProtobufUtil::TimeUtil::ToString(request_time)));
-  // }
-
   auto request_id = getProperty({"request", "id"});
   if (request_id.has_value()){
     LOG_WARN(std::string("request id @ " + request_id.value()->toString()));
