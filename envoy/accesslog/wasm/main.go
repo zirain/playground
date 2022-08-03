@@ -1,6 +1,9 @@
 package main
 
 import (
+	"encoding/binary"
+	"time"
+
 	"github.com/tetratelabs/proxy-wasm-go-sdk/proxywasm"
 	"github.com/tetratelabs/proxy-wasm-go-sdk/proxywasm/types"
 )
@@ -39,14 +42,17 @@ type httpHeaders struct {
 }
 
 func (ctx *httpHeaders) OnHttpRequestHeaders(numHeaders int, endOfStream bool) types.Action {
-	path := []string{"%START_TIME%"}
+	path := []string{"request", "time"}
 	startTime, err := proxywasm.GetProperty(path)
 
 	if err != nil {
 		proxywasm.LogCriticalf("GetProperty: %v", err)
 	}
 
-	proxywasm.LogCriticalf("startTime: %s", string(startTime))
+	unixMicro := binary.LittleEndian.Uint64(startTime) // 小字节序
+	proxywasm.LogCriticalf("startTime UnixMicro: %d", unixMicro)
+	t := time.UnixMicro(int64(unixMicro) / 1000)
+	proxywasm.LogCriticalf("startTime: %v", t)
 
 	hs, err := proxywasm.GetHttpRequestHeaders()
 	if err != nil {
@@ -61,14 +67,14 @@ func (ctx *httpHeaders) OnHttpRequestHeaders(numHeaders int, endOfStream bool) t
 
 // Override types.DefaultHttpContext.
 func (ctx *httpHeaders) OnHttpStreamDone() {
-	path := []string{"%START_TIME%"}
+	path := []string{"request", "time"}
 	startTime, err := proxywasm.GetProperty(path)
 
 	if err != nil {
 		proxywasm.LogCriticalf("GetProperty: %v", err)
-
 	}
 
-	proxywasm.LogCriticalf("startTime: %s", string(startTime))
+	proxywasm.LogCriticalf("startTime: %v", startTime)
+
 	proxywasm.LogCriticalf("%d finished", ctx.contextID)
 }
