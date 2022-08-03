@@ -2,6 +2,13 @@
 
 https://github.com/howardjohn/local-istio-development
 
+
+# get istioctl
+
+```console
+curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.13.2 TARGET_ARCH=x86_64 sh -
+```
+
 # istio devstats
 
 https://istio.teststats.cncf.io/
