@@ -5,6 +5,6 @@ spec:
     accessLogFile: /dev/stdout
     extensionProviders:
       - skywalking:
-          service: skywalking-oap.skywalking.svc.cluster.local
+          service: tracing.istio-system.svc.cluster.local
           port: 11800
         name: skywalking

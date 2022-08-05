@@ -26,6 +26,8 @@ helm install skywalking skywalking/skywalking -n skywalking -f istio/telemetry/s
 # port forward skywalking ui
 kubectl port-forward svc/skywalking-ui 3000:80 --namespace skywalking --address 0.0.0.0
 
+
+kubectl port-forward svc/tracing-ui 3000:8080 --namespace istio-system --address 0.0.0.0
 ```
 
 
@@ -48,7 +50,7 @@ kubectl apply -f istio/telemetry/skywalking/iop.yaml
 
 kubectl label namespace default istio-injection=enabled --overwrite
 kubectl apply -f https://raw.githubusercontent.com/istio/istio/master/samples/bookinfo/platform/kube/bookinfo.yaml
-
+kubectl apply -f https://raw.githubusercontent.com/istio/istio/master/samples/bookinfo/platform/kube/bookinfo.yaml
 ```
 
 
