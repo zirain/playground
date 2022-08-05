@@ -1,0 +1,31 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+spec:
+  components:
+    pilot:
+      enabled: true
+      k8s:
+        replicaCount: 1
+        hpaSpec:
+          maxReplicas: 5
+          metrics:
+            - resource:
+                name: cpu
+                target:
+                  averageUtilization: 80
+                  type: Utilization
+              type: Resource
+          minReplicas: 1
+          scaleTargetRef:
+            apiVersion: apps/v1
+            kind: Deployment
+            name: istiod
+  values:
+    pilot:
+      autoscaleEnabled: true
+    global:
+      # set your mesh name
+      meshID: mesh1
+      # set your cluster name even on a single cluster mesh
+      multiCluster:
+        clusterName: "cluster1"
