@@ -1,4 +1,28 @@
-# Ratelimit
+# Ratelimi
+
+
+
+```console
+envoy-dev -c envoy/ratelimit/global/envoy.yaml --component-log-level filter:debug,router:debug
+
+curl 127.0.0.1:18000/
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ```console
 REGISTRY=zirain VERSION=dev make docker_image
