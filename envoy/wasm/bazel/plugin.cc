@@ -12,27 +12,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "absl/time/time.h"
 #include "plugin.h"
 
-#ifndef INJECTION_VERSION
-#error INJECTION_VERSION must be defined
-#endif // INJECTION_VERSION
-
-#define xstr(s) str(s)
-#define str(s) #s
-
-// Boilderplate code to register the extension implementation.
-static RegisterContextFactory register_HeaderInjector(CONTEXT_FACTORY(HeaderInjectorContext),
-                                               ROOT_FACTORY(HeaderInjectorRootContext));
-
-bool HeaderInjectorRootContext::onConfigure(size_t) { return true; }
-
-FilterHeadersStatus HeaderInjectorContext::onRequestHeaders(uint32_t, bool) {
-  addRequestHeader("X-Req-Injection", xstr(INJECTION_VERSION));
+FilterHeadersStatus ExampleContext::onRequestHeaders(uint32_t headers, bool end_of_stream) {
+  logInfo(std::string("onRequestHeaders ") + std::to_string(id()));
+  auto path = getRequestHeader(":path");
+  logInfo(std::string("header path ") + std::string(path->view()));
   return FilterHeadersStatus::Continue;
 }
 
-FilterHeadersStatus HeaderInjectorContext::onResponseHeaders(uint32_t, bool) {
-  addResponseHeader("X-Resp-Injection", xstr(INJECTION_VERSION));
-  return FilterHeadersStatus::Continue;
+void ExampleContext::onDone() { logInfo("onDone " + std::to_string(id())); }
+
+void ExampleContext::onLog() {
+  uint64_t timestamp;
+  getValue({"request", "time"}, &timestamp);
+  LOG_WARN(std::string("request time @ " + absl::FormatTime(absl::FromUnixNanos(timestamp))));
+
+
+  auto request_id = getProperty({"request", "id"});
+  if (request_id.has_value()){
+    LOG_WARN(std::string("request id @ " + request_id.value()->toString()));
+  }
+
+  auto request_user = getProperty({"request", "headers", "x-real-user"});
+  if (request_user.has_value()){
+    LOG_WARN(std::string("request user @ " + request_user.value()->toString()));
+  }
+
+  LOG_WARN(std::string("id " + std::to_string(id())));
 }

@@ -7,23 +7,11 @@ wasm_cc_binary(
         "plugin.h",
     ],
     deps = [
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/time",
         "@proxy_wasm_cpp_sdk//:proxy_wasm_intrinsics",
     ],
     defines = [
         "INJECTION_VERSION=0.0.1"
-    ],
-)
-
-wasm_cc_binary(
-    name = "plugin-0.0.2.wasm",
-    srcs = [
-        "plugin.cc",
-        "plugin.h",
-    ],
-    deps = [
-        "@proxy_wasm_cpp_sdk//:proxy_wasm_intrinsics",
-    ],
-    defines = [
-        "INJECTION_VERSION=0.0.2"
     ],
 )
