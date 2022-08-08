@@ -1,3 +1,4 @@
+# need re-injected after resource applied
 apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
@@ -19,7 +20,7 @@ spec:
                     runtime: "envoy.wasm.runtime.v8"
                     code:
                       remote:
-                        sha256: " " # required
+                        sha256: "527746dd851481ec1a8912ae3b0b94ecdf9953a4ec587c327a7471d4924e4c05" # required
                         http_uri:
                           uri: ghcr.io/zirain/display-metadata:latest
                           cluster: "_" # required
