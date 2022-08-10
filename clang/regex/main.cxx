@@ -18,10 +18,21 @@ int main()
     std::match_results<std::string::iterator> match;
     if (std::regex_search<std::string::iterator>(stat_name.begin(), stat_name.end(), match, word_regex) && match.size() > 1)
     {
+        std::cout << "match size: " << match.size() << std::endl;
         for (auto iter = match.begin(); iter != match.end(); iter++)
         {
             std::cout << iter->str() << std::endl;
         }
-        std::cout << std::endl;
+    }
+
+    std::regex word_regex2("_rq(_(\\d{3}))|(response_code=\\.=(.+?);\\.;)");
+    std::match_results<std::string::iterator> match2;
+    if (std::regex_search<std::string::iterator>(stat_name.begin(), stat_name.end(), match2, word_regex2) && match2.size() > 1)
+    {
+        std::cout << "match size: " << match2.size() << std::endl;
+        for (auto iter = match2.begin(); iter != match2.end(); iter++)
+        {
+            std::cout << iter->str() << std::endl;
+        }
     }
 }

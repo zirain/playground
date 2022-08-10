@@ -108,4 +108,5 @@ dist
 *.wasm
 
 envoy/wasm/bazel/bazel-*
-clang/regex/regex
+clang/bazel-*
+.gitignore
