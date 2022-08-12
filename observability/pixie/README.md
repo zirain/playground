@@ -108,3 +108,8 @@ kustomize build k8s/cloud/public/ | kubectl delete -f -
 kustomize build k8s/cloud_deps/base/elastic/operator | kubectl delete -f -
 kustomize build k8s/cloud_deps/public | kubectl delete -f -
 ```
+
+```console
+sudo k0s stop
+sudo k0s reset
+```
