@@ -4,7 +4,8 @@ stats_config:
     - tag_name: response_code
       #regex: "_rq(_(\\d{3}))$"
       #regex: "(response_code=\\.=(.+?);\\.;)|_rq(_(\\d{3}))$"
-      regex: "_rq(_(\\d{3}))$|(response_code=\\.=(.+?);\\.;)"
+      #regex: "_rq(_(\\d{3}))$|(response_code=\\.=(.+?);\\.;)"
+      regex: response_code=\.=(.+?);\.;|_rq_(\d{3})$
 admin:
   access_log_path: /tmp/admin_access.log
   address:
