@@ -27,3 +27,10 @@ kubectl create -f https://raw.githubusercontent.com/cilium/cilium/v1.12/examples
 ```
 helm uninstall cilium
 ```
+
+
+## Summary
+
+- Hubble需要基于Cilium CNI，无法像Pixie一样单独部署
+- Hubble UI默认不支持多集群
+- 目前Tetragon与Hubble没有继承
