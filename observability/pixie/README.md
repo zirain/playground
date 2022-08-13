@@ -97,7 +97,7 @@ helm repo add pixie-operator https://pixie-operator-charts.storage.googleapis.co
 # Get latest information about Pixie chart.
 helm repo update
 # Install Pixie with a memory limit for the PEM pods (per node). 2Gi is the default, 1Gi is the minimum recommended.
-helm install pixie pixie-operator/pixie-operator-chart --set deployKey="px-dep-31a4d0e4-56d8-4372-86c7-02cf44d2adbc" --set clusterName=default-cluster --namespace pl --create-namespace --set devCloudNamespace=plc
+helm install pixie pixie-operator/pixie-operator-chart --set deployKey="<px-dep-*>" --set clusterName=default-cluster --namespace pl --create-namespace --set devCloudNamespace=plc
 ```
 
 ## Cleanup
