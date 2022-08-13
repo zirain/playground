@@ -1,0 +1,16 @@
+version: 1.12.0
+kubeProxyReplacement: partial
+operator:
+  replicas: 1
+externalIPs:
+  enabled: true
+hostPort:
+  enabled: true
+nodePort:
+  enabled: true
+hubble:
+  enabled: true
+  relay:
+    enabled: true
+  ui:
+    enabled: true
