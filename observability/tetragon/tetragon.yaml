@@ -1,0 +1,127 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  labels:
+    app.kubernetes.io/instance: tetragon
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: tetragon
+  name: tetragon
+  namespace: kube-system
+spec:
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: tetragon
+      app.kubernetes.io/name: tetragon
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app.kubernetes.io/instance: tetragon
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: tetragon
+    spec:
+      containers:
+        - args:
+            - /var/run/cilium/tetragon/tetragon.log
+          command:
+            - hubble-export-stdout
+          image: quay.io/isovalent/hubble-export-stdout:v1.0.0
+          imagePullPolicy: IfNotPresent
+          name: export-stdout
+          resources: {}
+          securityContext: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+            - mountPath: /var/run/cilium/tetragon
+              name: export-logs
+        - args:
+            - --config-dir=/etc/tetragon
+          command:
+            - /usr/bin/tetragon
+          env:
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: spec.nodeName
+          image: quay.io/cilium/tetragon:v0.8.0
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            exec:
+              command:
+                - tetra
+                - status
+            failureThreshold: 3
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+          name: tetragon
+          resources: {}
+          securityContext:
+            privileged: true
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+            - mountPath: /var/lib/tetragon/metadata
+              name: metadata-files
+            - mountPath: /etc/tetragon
+              name: tetragon-config
+              readOnly: true
+            - mountPath: /sys/fs/bpf
+              mountPropagation: Bidirectional
+              name: bpf-maps
+            - mountPath: /var/run/cilium
+              name: cilium-run
+            - mountPath: /var/run/cilium/tetragon
+              name: export-logs
+            - mountPath: /procRoot
+              name: host-proc
+      dnsPolicy: Default
+      hostNetwork: true
+      initContainers:
+        - command:
+            - tetragon-operator
+          image: quay.io/cilium/tetragon-operator:v0.8.0
+          imagePullPolicy: IfNotPresent
+          name: tetragon-operator
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      serviceAccount: tetragon
+      serviceAccountName: tetragon
+      terminationGracePeriodSeconds: 1
+      tolerations:
+        - operator: Exists
+      volumes:
+        - hostPath:
+            path: /var/run/cilium
+            type: DirectoryOrCreate
+          name: cilium-run
+        - hostPath:
+            path: /var/run/cilium/tetragon
+            type: DirectoryOrCreate
+          name: export-logs
+        - configMap:
+            defaultMode: 420
+            name: tetragon-config
+          name: tetragon-config
+        - hostPath:
+            path: /sys/fs/bpf
+            type: DirectoryOrCreate
+          name: bpf-maps
+        - hostPath:
+            path: /proc
+            type: Directory
+          name: host-proc
+        - emptyDir: {}
+          name: metadata-files
+  updateStrategy:
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 1
+    type: RollingUpdate
