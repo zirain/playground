@@ -17,5 +17,9 @@ mainline --list
 
 更新内核支持 [Tetragon](https://github.com/cilium/tetragon):
 ```console
-sudo mainline --install 5.5.19
+# 5.10.5 支持BTF，可以安装 cilium/tetragon
+sudo mainline --install 5.10.5
 ```
+
+
+参考资料: https://tinychen.com/20190614-ubuntu-update-kernel/
