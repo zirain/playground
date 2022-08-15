@@ -8,7 +8,7 @@ The Pixie platform consists of multiple components:
 - **Pixie CLI**: Used to deploy Pixie. Can also be used to run queries and manage resources like API keys.
 - **Pixie Client API**: Used for programmatic access to Pixie (e.g. integrations, Slackbots, and custom user logic requiring Pixie data as an input)
 
-![Pixie arch](https://docs.px.dev/static/89e9eba20e9182a89a53c1e5157de6ff/product-arch.svg)
+![Pixie arch](./pixie.png)
 
 ## Pixie 101
 
