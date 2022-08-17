@@ -66,7 +66,11 @@ https://docs.px.dev/installing-pixie/install-guides/self-hosted-pixie#1.-deploy-
 ### Install Pixie cloud
 
 ```console
- cd ~/go/src/pixie-io/pixie && ./dev_dns_updater --domain-name="dev.withpixie.dev"  --kubeconfig=$HOME/.kube/config --n=plc`
+kubectl create namespace plc
+```
+
+```console
+cd ~/go/src/pixie-io/pixie && ./dev_dns_updater --domain-name="dev.withpixie.dev"  --kubeconfig=$HOME/.kube/config --n=plc`
 ```
 
 Deploy Pixie Cloud dependencies(postgres, es, nats etc.):
@@ -83,7 +87,7 @@ kustomize build k8s/cloud/public/ | kubectl apply -f -
 ```
 k logs create-admin-job-42gkp -nplc
 ```
-time="2022-08-11T06:39:40Z" level=info msg="Please go to 'https://work.dev.withpixie.dev/oauth/kratos/self-service/recovery/methods/link?flow=85dd96b8-04b2-4e35-bd39-5be980315269&token=dZcDLGrYb8fnc66bgbVrKxxiocGOOKDM' to set password for 'admin@default.com'"
+time="2022-08-17T07:46:45Z" level=info msg="Please go to 'https://work.dev.withpixie.dev/oauth/kratos/self-service/recovery/methods/link?flow=8faf0adc-740f-4167-8a91-1a124ded449c&token=iSeO6VmjOOBgUs2ks1J9n2mF6fYWuFAb' to set password for 'admin@default.com'"
 
 Visit `https://work.dev.withpixie.dev/auth/login?local_mode=true` get access token:
 
