@@ -117,3 +117,11 @@ kustomize build k8s/cloud_deps/public | kubectl delete -f -
 sudo k0s stop
 sudo k0s reset
 ```
+
+## DNS
+
+```
+# pixie
+159.138.129.168   dev.withpixie.dev work.dev.withpixie.dev segment.dev.withpixie.dev docs.dev.withpixie.dev
+159.138.129.168   cloud.dev.withpixie.dev
+```
