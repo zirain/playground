@@ -1,0 +1,35 @@
+time="2022-08-20T07:40:19Z" level=info msg="Loaded config from directory" config-dir=/etc/tetragon
+time="2022-08-20T07:40:19Z" level=info msg="Starting tetragon" version=v0.8.0
+time="2022-08-20T07:40:19Z" level=info msg="config settings" config="map[bpf-lib:/var/lib/tetragon/ btf: cilium-bpf: config-dir:/etc/tetragon config-file: debug:false enable-cilium-api:false enable-export-aggregation:false enable-k8s-api:true enable-process-ancestors:true enable-process-cred:false enable-process-ns:false export-aggregation-buffer-size:10000 export-aggregation-window-size:15s export-allowlist:{\"event_set\":[\"PROCESS_EXEC\", \"PROCESS_EXIT\", \"PROCESS_KPROBE\"]} export-denylist:{\"health_check\":true}\n{\"namespace\":[\"\", \"cilium\", \"kube-system\"]} export-file-compress:false export-file-max-backups:5 export-file-max-size-mb:10 export-file-rotation-interval:0s export-filename:/var/run/cilium/tetragon/tetragon.log export-rate-limit:-1 force-small-progs:false ignore-missing-progs:false kernel: log-format:text log-level:info metrics-server::2112 netns-dir:/var/run/docker/netns/ process-cache-size:65536 procfs:/procRoot run-standalone:false server-address:localhost:54321 verbose:0]"
+time="2022-08-20T07:40:19Z" level=warning msg="BPF filesystem is going to be mounted automatically in /run/cilium/bpffs. However, it probably means that Cilium is running inside container and BPFFS is not mounted on the host. for more information, see: https://cilium.link/err-bpf-mount"
+time="2022-08-20T07:40:19Z" level=info msg="Available sensors" sensors=
+time="2022-08-20T07:40:19Z" level=info msg="Registered tracing sensors" sensors="kprobe sensor, tracepoint sensor"
+time="2022-08-20T07:40:19Z" level=info msg="Registered probe types" types="kprobe sensor, tracepoint sensor"
+time="2022-08-20T07:40:19Z" level=info msg="Enabling Kubernetes API"
+time="2022-08-20T07:40:19Z" level=info msg="Starting metrics server" addr=":2112"
+time="2022-08-20T07:40:19Z" level=info msg="Initialized pod cache" num_pods=19
+time="2022-08-20T07:40:19Z" level=info msg="Disabling Cilium API"
+time="2022-08-20T07:40:19Z" level=info msg="Starting process manager" enableCilium=false enableEventCache=true enableProcessCred=false enableProcessNs=false
+time="2022-08-20T07:40:19Z" level=info msg="Starting gRPC server" address="localhost:54321"
+time="2022-08-20T07:40:19Z" level=info msg="Starting JSON exporter" logger="&{/var/run/cilium/tetragon/tetragon.log 10 0 5 false false 0 <nil> {0 0} <nil> {0 {0 0}}}" request="allow_list:{event_set:PROCESS_EXEC  event_set:PROCESS_EXIT  event_set:PROCESS_KPROBE}  deny_list:{health_check:{value:true}}  deny_list:{namespace:\"\"  namespace:\"cilium\"  namespace:\"kube-system\"}"
+time="2022-08-20T07:40:19Z" level=info msg="Exporter configuration" enabled=true fileName=/var/run/cilium/tetragon/tetragon.log
+time="2022-08-20T07:40:19Z" level=info msg="Using metadata file" metadata=
+time="2022-08-20T07:40:19Z" level=info msg="Loading sensor" name=__main__
+time="2022-08-20T07:40:19Z" level=info msg="Loading kernel version 5.10.5"
+time="2022-08-20T07:40:19Z" level=info msg="Started watching tracing policies"
+time="2022-08-20T07:40:19Z" level=info msg="tetragon, map loaded." map=execve_map path=/run/cilium/bpffs/tcpmon/execve_map sensor=__main__
+time="2022-08-20T07:40:19Z" level=info msg="tetragon, map loaded." map=execve_map_stats path=/run/cilium/bpffs/tcpmon/execve_map_stats sensor=__main__
+time="2022-08-20T07:40:19Z" level=info msg="tetragon, map loaded." map=names_map path=/run/cilium/bpffs/tcpmon/names_map sensor=__main__
+time="2022-08-20T07:40:19Z" level=info msg="tetragon, map loaded." map=tcpmon_map path=/run/cilium/bpffs/tcpmon/tcpmon_map sensor=__main__
+time="2022-08-20T07:40:19Z" level=info msg="BPF prog was loaded" label=tracepoint/sys_exit prog=/var/lib/tetragon/bpf_exit.o
+time="2022-08-20T07:40:19Z" level=info msg="BPF prog was loaded" label=kprobe/wake_up_new_task prog=/var/lib/tetragon/bpf_fork.o
+time="2022-08-20T07:40:19Z" level=info msg="Load probe" Program=/var/lib/tetragon/bpf_execve_event_v53.o Type=execve
+time="2022-08-20T07:40:20Z" level=info msg="Read ProcFS /procRoot appended 206/400 entries"
+time="2022-08-20T07:40:20Z" level=warning msg="Procfs execve event pods/ identifier error" error="open /procRoot/0/cgroup: no such file or directory"
+time="2022-08-20T07:40:20Z" level=info msg="BPF prog was loaded" label=tracepoint/sys_execve prog=/var/lib/tetragon/bpf_execve_event_v53.o
+time="2022-08-20T07:40:20Z" level=info msg="Loaded BPF maps and events for sensor successfully" sensor=__main__
+time="2022-08-20T07:40:20Z" level=info msg="Using metadata file" metadata=
+time="2022-08-20T07:40:20Z" level=info msg="Loading sensor" name=__main__
+time="2022-08-20T07:40:20Z" level=info msg="Loading kernel version 5.10.5"
+time="2022-08-20T07:40:20Z" level=info msg="Loaded BPF maps and events for sensor successfully" sensor=__main__
+time="2022-08-20T07:40:20Z" level=info msg="Listening for events..."
