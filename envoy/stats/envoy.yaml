@@ -3,9 +3,9 @@ stats_config:
   stats_tags:
     - tag_name: response_code
       #regex: "_rq(_(\\d{3}))$"
-      #regex: "(response_code=\\.=(.+?);\\.;)|_rq(_(\\d{3}))$"
+      regex: "(response_code=\\.=(.+?);\\.;)|_rq(_(\\d{3}))$"
       #regex: "_rq(_(\\d{3}))$|(response_code=\\.=(.+?);\\.;)"
-      regex: response_code=\.=(.+?);\.;|_rq_(\d{3})$
+      #regex: response_code=\.=(.+?);\.;|_rq_(\d{3})$
 admin:
   access_log_path: /tmp/admin_access.log
   address:
@@ -44,11 +44,11 @@ static_resources:
                     typed_config:
                       "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
 
-    - name: staticreply-8080
+    - name: staticreply-10080
       address:
         socket_address:
           address: 127.0.0.1
-          port_value: 8080
+          port_value: 10080
       filter_chains:
         - filters:
             - name: envoy.http_connection_manager
@@ -84,4 +84,4 @@ static_resources:
                   address:
                     socket_address:
                       address: 127.0.0.1
-                      port_value: 8080
+                      port_value: 10080

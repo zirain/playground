@@ -3,7 +3,7 @@
 ## start envoy
 
 ```shell
-envoy -c envoy/stats/envoy.yaml --component-log-level filter:debug,router:debug
+envoy-dev -c envoy/stats/envoy.yaml --component-log-level filter:debug,router:debug
 ```
 
 
