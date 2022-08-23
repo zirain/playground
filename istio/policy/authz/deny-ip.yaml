@@ -1,0 +1,17 @@
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: deny-ip
+spec:
+  action: DENY
+  rules:
+    - to:
+        - operation:
+            methods:
+              - GET
+              - POST
+            paths:
+              - /ip
+  selector:
+    matchLabels:
+      app: httpbin
