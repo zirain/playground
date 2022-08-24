@@ -1,0 +1,1 @@
+controller-gen object paths=./
