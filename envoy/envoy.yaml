@@ -42,15 +42,15 @@ static_resources:
                 stat_prefix: ingress_http
                 codec_type: auto
                 route_config:
-                  name: local_istio_io
+                  name: local
                   virtual_hosts:
-                    - name: local_istio_io
+                    - name: local_hugo_serve
                       domains: ["*"]
                       routes:
                         - match:
-                            prefix: "/latest"
+                            prefix: "/"
                           route:
-                            cluster: local_istio_io
+                            cluster: local_hugo_serve
                             timeout: 3600s
                         # - match:
                         #     prefix: "/ip"
@@ -92,11 +92,11 @@ static_resources:
                     socket_address:
                       address: 172.18.255.155
                       port_value: 8080
-    - name: local_istio_io
+    - name: local_hugo_serve
       type: STRICT_DNS
       lb_policy: ROUND_ROBIN
       load_assignment:
-        cluster_name: local_istio_io
+        cluster_name: local_hugo_serve
         endpoints:
           - lb_endpoints:
               - endpoint:
