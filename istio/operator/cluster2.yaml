@@ -1,0 +1,12 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  name: eastwest
+  namespace: istio-system
+spec:
+  values:
+    global:
+      meshID: mesh2
+      multiCluster:
+        clusterName: cluster2
+      network: network2
