@@ -47,6 +47,8 @@ TAG="1.13.3" TEST_ENV=kind ADDITIONAL_CONTAINER_OPTIONS="--network host" make do
 ```
 cd $GOPATH/src/istio.io/istio
 go test -tags=integ ./tests/integration/telemetry
+
+go test -tags=integ ./tests/integration/telemetry/api -run ^TestAccessLogsDefaultProvider -istio.test.nocleanup
 ```
 
 # Run race test
