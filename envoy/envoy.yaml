@@ -44,6 +44,22 @@ static_resources:
                 route_config:
                   name: local
                   virtual_hosts:
+                    - name: thanos
+                      domains: ["grafana.zirain.info:3000"]
+                      routes:
+                        - match:
+                            prefix: "/"
+                          route:
+                            cluster: thanos
+                            timeout: 3600s
+                    - name: grafana
+                      domains: ["grafana.zirain.info:3000"]
+                      routes:
+                        - match:
+                            prefix: "/"
+                          route:
+                            cluster: grafana
+                            timeout: 3600s
                     - name: local_hugo_serve
                       domains: ["*"]
                       routes:
@@ -92,6 +108,7 @@ static_resources:
                     socket_address:
                       address: 172.18.255.155
                       port_value: 8080
+
     - name: local_hugo_serve
       type: STRICT_DNS
       lb_policy: ROUND_ROBIN
@@ -104,6 +121,32 @@ static_resources:
                     socket_address:
                       address: 127.0.0.1
                       port_value: 1313
+
+    - name: thanos
+      type: STRICT_DNS
+      lb_policy: ROUND_ROBIN
+      load_assignment:
+        cluster_name: thanos
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: 172.18.255.166
+                      port_value: 9090
+
+    - name: grafana
+      type: STRICT_DNS
+      lb_policy: ROUND_ROBIN
+      load_assignment:
+        cluster_name: grafana
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: 172.18.255.168
+                      port_value: 3000
       # transport_socket:
       #   name: envoy.transport_sockets.tls
       #   typed_config:
