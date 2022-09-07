@@ -1,0 +1,39 @@
+# The preview profile contains features that are experimental.
+# This is intended to explore new features coming to Istio.
+# Stability, security, and performance are not guaranteed - use at your own risk.
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+spec:
+  meshConfig:
+    extensionProviders:
+      - name: file-log
+        envoyFileAccessLog:
+          path: /dev/stdout
+          logFormat:
+            text: "[%START_TIME%] \"%REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)% %PROTOCOL%\" %RESPONSE_CODE% %RESPONSE_FLAGS% \"%UPSTREAM_TRANSPORT_FAILURE_REASON%\" %BYTES_RECEIVED% %BYTES_SENT% %DURATION% %RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)% \"%REQ(X-FORWARDED-FOR)%\" \"%REQ(USER-AGENT)%\" \"%REQ(X-REQUEST-ID)%\" \"%REQ(:AUTHORITY)%\" \"%UPSTREAM_HOST%\" %UPSTREAM_CLUSTER% %UPSTREAM_LOCAL_ADDRESS% %DOWNSTREAM_LOCAL_ADDRESS% %DOWNSTREAM_REMOTE_ADDRESS% %REQUESTED_SERVER_NAME% %ROUTE_NAME%\n"
+      - name: file-log2
+        envoyFileAccessLog:
+          path: /dev/stdout
+          logFormat:
+            labels:
+              "startTime": "[%START_TIME%]"
+              "method": "%REQ(:METHOD)%"
+              "path": "%REQ(X-ENVOY-ORIGINAL-PATH?:PATH)%"
+              "protocol": "%PROTOCOL%"
+              "reponseCode": "%RESPONSE_CODE%"
+              "reponseFlags": "%RESPONSE_FLAGS%"
+              "failureRease": "%UPSTREAM_TRANSPORT_FAILURE_REASON%"
+              "bytesReceived": "%BYTES_RECEIVED% %BYTES_SENT%"
+              "duration": "%DURATION%"
+              "envoyUpstreamServiceTime": "%RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)%"
+              "forwardedFor": "%REQ(X-FORWARDED-FOR)%"
+              "userAgent": "%REQ(USER-AGENT)%"
+              "requestID": "%REQ(X-REQUEST-ID)%"
+              "authority": "%REQ(:AUTHORITY)%"
+              "host": "%UPSTREAM_HOST%"
+              "upstreamCluster": "%UPSTREAM_CLUSTER%"
+              "upstreamLocalAdress": "%UPSTREAM_LOCAL_ADDRESS%"
+              "downstreamLocalAddress": "%DOWNSTREAM_LOCAL_ADDRESS%"
+              "downstreamRemoteAddress": "%DOWNSTREAM_REMOTE_ADDRESS%"
+              "requestedServerName": "%REQUESTED_SERVER_NAME%"
+              "routeName": "%ROUTE_NAME%"
