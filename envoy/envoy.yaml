@@ -45,7 +45,7 @@ static_resources:
                   name: local
                   virtual_hosts:
                     - name: thanos
-                      domains: ["grafana.zirain.info:3000"]
+                      domains: ["thanos.zirain.info:3000"]
                       routes:
                         - match:
                             prefix: "/"
@@ -145,7 +145,7 @@ static_resources:
               - endpoint:
                   address:
                     socket_address:
-                      address: 172.18.255.168
+                      address: 172.18.255.201
                       port_value: 3000
       # transport_socket:
       #   name: envoy.transport_sockets.tls
