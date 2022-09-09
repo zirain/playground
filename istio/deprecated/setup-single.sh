@@ -5,7 +5,7 @@ kind create cluster --name istio
 kubectl cluster-info --context kind-istio
 
 echo "install metalb"
-bash ../metalb/install-metalb.sh
+bash ../metalb/install-metallb.sh
 
 echo "instal istio"
 istioctl install --set profile=minimal -y
