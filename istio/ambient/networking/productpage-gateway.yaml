@@ -1,0 +1,8 @@
+apiVersion: gateway.networking.k8s.io/v1alpha2
+kind: Gateway
+metadata:
+ name: productpage
+ annotations:
+   istio.io/service-account: bookinfo-productpage
+spec:
+ gatewayClassName: istio-mesh
