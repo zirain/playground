@@ -2,7 +2,7 @@ version: '3'
 services:
   envoy:
     network_mode: "host"
-    image: envoyproxy/envoy-dev:9730d717d289a93c7cdd52f756951d034fae88a8
+    image: envoyproxy/envoy:v1.23-latest
     ports:
       - "3000:3000"
     volumes:
