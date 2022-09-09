@@ -1,0 +1,16 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: helloworld
+spec:
+  host: helloworld
+  trafficPolicy:
+    loadBalancer:
+      simple: RANDOM
+  subsets:
+  - name: cluster1
+    labels:
+      topology.istio.io/network: network1
+  - name: cluster2
+    labels:
+      topology.istio.io/network: network2  
