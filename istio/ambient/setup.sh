@@ -23,6 +23,8 @@ HOST_IPADDRESS=${1:-}
 METALLB_VERSION=${METALLB_VERSION:-"v0.10.2"}
 CLUSTER_VERSION=${CLUSTER_VERSION:-"kindest/node:v1.24.0"}
 KIND_LOG_FILE=${KIND_LOG_FILE:-"/tmp/istio"}
+AMBIENT_IMAGE_TAG=${AMBIENT_IMAGE_TAG:-"0.0.0-ambient.191fe680b52c1754ee72a06b3e0d3f9d116f2e82"}
+BOOKINFO_IMAGE_TAG=${BOOKINFO_IMAGE_TAG:-"1.17.0"}
 
 # create host cluster and member clusters in parallel
 # host IP address: script parameter ahead of macOS IP
@@ -36,16 +38,28 @@ util::create_cluster "${CLUSTER_NAME}" "${AMBIENT_KUBECONFIG}" "${CLUSTER_VERSIO
 
 util::check_clusters_ready "${AMBIENT_KUBECONFIG}" "${CLUSTER_NAME}"
 
-IMAGES=("quay.io/metallb/controller:${METALLB_VERSION}" "quay.io/metallb/speaker:${METALLB_VERSION}")
+IMAGES=("quay.io/metallb/controller:${METALLB_VERSION}" \
+"quay.io/metallb/speaker:${METALLB_VERSION}" \
+"gcr.io/istio-testing/install-cni:${AMBIENT_IMAGE_TAG}" \
+"gcr.io/istio-testing/proxyv2:${AMBIENT_IMAGE_TAG}" \
+"gcr.io/istio-testing/pilot:${AMBIENT_IMAGE_TAG}" \
+"istio/examples-bookinfo-details-v1:${BOOKINFO_IMAGE_TAG}" \
+"istio/examples-bookinfo-productpage-v1:${BOOKINFO_IMAGE_TAG}" \
+"istio/examples-bookinfo-ratings-v1:${BOOKINFO_IMAGE_TAG}" \
+"istio/examples-bookinfo-reviews-v1:${BOOKINFO_IMAGE_TAG}" \
+"istio/examples-bookinfo-reviews-v2:${BOOKINFO_IMAGE_TAG}" \
+"istio/examples-bookinfo-reviews-v3:${BOOKINFO_IMAGE_TAG}" \
+"curlimages/curl")
 for img in "${IMAGES[@]}"; do
     docker pull ${img}
 done
 
 KIND_CLUSTES=("${CLUSTER_NAME}")
 for cluster in "${KIND_CLUSTES[@]}"; do
-    echo "load image to ${cluster}"
-    kind load docker-image quay.io/metallb/controller:${METALLB_VERSION} --name ${cluster}
-    kind load docker-image quay.io/metallb/speaker:${METALLB_VERSION} --name ${cluster}
+    for img in "${IMAGES[@]}"; do
+        echo "load image ${img} to ${cluster}"
+        kind load docker-image ${img} --name ${cluster}
+    done
 
     echo "install metallb in $cluster"
     kubectl create ns metallb-system --kubeconfig="${AMBIENT_KUBECONFIG}" --context="${cluster}"
@@ -56,8 +70,6 @@ done
 echo "install istio in ambient cluster"
 
 istioctl-ambient install --kubeconfig=${AMBIENT_KUBECONFIG} --context="${CLUSTER_NAME}" --set profile=ambient -y --set meshConfig.accessLogFile=/dev/stdout
-# config annotation on namespace
-kubectl label --kubeconfig=${AMBIENT_KUBECONFIG} --context="${CLUSTER_NAME}" namespace istio-system topology.istio.io/network=network1 --overwrite
 
 kubectl apply -f https://raw.githubusercontent.com/istio/istio/master/samples/bookinfo/platform/kube/bookinfo.yaml --kubeconfig=${AMBIENT_KUBECONFIG} --context="${CLUSTER_NAME}"
 kubectl apply -f https://raw.githubusercontent.com/istio/istio/master/samples/bookinfo/networking/bookinfo-gateway.yaml --kubeconfig=${AMBIENT_KUBECONFIG} --context="${CLUSTER_NAME}"
