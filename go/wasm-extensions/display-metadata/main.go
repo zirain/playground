@@ -59,6 +59,16 @@ var additionalHeaders = map[string]string{
 	"x-envoy-wasm-plugin": "display-metadata",
 }
 
+func (ctx *pluginContext) OnPluginStart(pluginConfigurationSize int) types.OnPluginStartStatus {
+	_, err := proxywasm.GetPluginConfiguration()
+	if err != nil && err != types.ErrorStatusNotFound {
+		proxywasm.LogCriticalf("error reading plugin configuration: %v", err)
+		return types.OnPluginStartStatusFailed
+	}
+
+	return types.OnPluginStartStatusOK
+}
+
 func (ctx *httpContext) OnHttpResponseHeaders(numHeaders int, endOfStream bool) types.Action {
 	for key, value := range additionalHeaders {
 		proxywasm.AddHttpResponseHeader(key, value)
