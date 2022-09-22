@@ -4,11 +4,9 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-export KUBECONFIG=/etc/karmada/karmada-apiserver.config
-k delete crd $(k get crd | grep istio.io |awk  '{print $1}')
-k delete clusterrole istio-operator
-k delete clusterrolebinding istio-operator
-k delete ns istio-operator istio-system
-k delete cpp istio-customresource-to-primary istio-operator
-
-k delete cop istio-system-member2
+kubectl delete crd $(k get crd | grep istio.io |awk  '{print $1}') --kubeconfig /etc/karmada/karmada-apiserver.config
+kubectl delete clusterrole istio-operator --kubeconfig /etc/karmada/karmada-apiserver.config
+kubectl delete clusterrolebinding istio-operator --kubeconfig /etc/karmada/karmada-apiserver.config
+kubectl delete ns istio-operator istio-system --kubeconfig /etc/karmada/karmada-apiserver.config
+kubectl delete cpp istio-customresource-to-primary istio-operator --kubeconfig /etc/karmada/karmada-apiserver.config
+kubectl delete cop --all --kubeconfig /etc/karmada/karmada-apiserver.config
