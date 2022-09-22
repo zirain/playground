@@ -64,7 +64,6 @@ done
 
 echo "install istio in cluster1"
 
-
 istioctl install --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${CLUSTER1_NAME}" \
     -f iop/cluster1-eastwest.yaml -y
 # config annotation on namespace
@@ -81,12 +80,14 @@ kubectl label --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${CLUSTER1_NA
 kubectl apply --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${CLUSTER1_NAME}" -f https://raw.githubusercontent.com/istio/istio/master/samples/helloworld/helloworld.yaml
 kubectl delete deploy helloworld-v2 --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${CLUSTER1_NAME}"
 
-echo "install istio in cluster2"
 # add cluster2 to cluster1
 istioctl x create-remote-secret --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} \
     --context="${CLUSTER2_NAME}" \
     --name=${CLUSTER2_NAME} | \
     kubectl apply --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${CLUSTER1_NAME}" -f - 
+
+echo "install istio in cluster2"
+
 # copy istio-ca-secret from cluster1
 kubectl get secret -nistio-system istio-ca-secret -oyaml \
     --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} --context="${CLUSTER1_NAME}" | \
