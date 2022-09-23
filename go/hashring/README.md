@@ -1,0 +1,1 @@
+come from: https://github.com/geektutu/7days-golang/tree/master/gee-cache/day4-consistent-hash/geecache/consistenthash
