@@ -1,0 +1,13 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: istio-ingress
+  namespace: istio-ingress
+spec:
+  selector:
+    matchLabels:
+      key1: value1
+  template:
+    metadata:
+      labels:
+        key1: value1
