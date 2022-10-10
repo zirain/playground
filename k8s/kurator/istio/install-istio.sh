@@ -4,4 +4,4 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-LOGGING_LEVEL=debug kurator install istio --primary member1 --remote member2 --network-mode non-flat
+LOGGING_LEVEL=debug kurator install istio --primary member1 --remote member2
