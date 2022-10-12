@@ -1,0 +1,9 @@
+version: '3'
+services:
+  nginx:
+    network_mode: "host"
+    image: nginx:1.14
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
