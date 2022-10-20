@@ -16,7 +16,7 @@ source "${REPO_ROOT}"/util.sh
 # variable define
 WITH_PROMETHEUS=${WITH_PROMETHEUS:-'false'}
 KUBECONFIG_PATH=${KUBECONFIG_PATH:-"${HOME}/.kube"}
-ISTIO_TAG=${ISTIO_TAG:-"1.14.1"}
+ISTIO_TAG=${ISTIO_TAG:-"1.15.2"} # same as istioctl
 MAIN_KUBECONFIG=${MAIN_KUBECONFIG:-"${KUBECONFIG_PATH}/istio-primary.config"}
 MEMBER_CLUSTER_KUBECONFIG=${MEMBER_CLUSTER_KUBECONFIG:-"${KUBECONFIG_PATH}/istio-remotes.config"}
 PRIMARY_CLUSTER_NAME=${PRIMARY_CLUSTER_NAME:-"primary"}
@@ -25,7 +25,7 @@ REMOTE_CLUSTER_2_NAME=${REMOTE_CLUSTER_2_NAME:-"remote2"}
 HOST_IPADDRESS=${1:-}
 
 METALLB_VERSION=${METALLB_VERSION:-"v0.10.2"}
-CLUSTER_VERSION=${CLUSTER_VERSION:-"kindest/node:v1.23.4"}
+CLUSTER_VERSION=${CLUSTER_VERSION:-"kindest/node:v1.24.0"}
 KIND_LOG_FILE=${KIND_LOG_FILE:-"/tmp/istio"}
 
 # create host cluster and member clusters in parallel
@@ -111,7 +111,6 @@ kubectl apply --kubeconfig=${MAIN_KUBECONFIG} -f ${ADDONS_PATH}/helloworld/hello
 echo "install istio in remote1"
 # create secret for primary access remote1
 istioctl x create-remote-secret --kubeconfig=${MEMBER_CLUSTER_KUBECONFIG} \
-    --type=remote \
     --context="${REMOTE_CLUSTER_1_NAME}" \
     --name=${REMOTE_CLUSTER_1_NAME} | \
     kubectl apply -f - --kubeconfig="${MAIN_KUBECONFIG}"
