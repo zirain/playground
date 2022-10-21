@@ -1,34 +1,19 @@
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
-metadata:
-  namespace: istio-system
-  name: hpav2
 spec:
-  values:
-    pilot:
-      autoscaleEnabled: true
-  profile: demo
   components:
-    pilot:
+    ingressGateways:
+    - enabled: true
       k8s:
         hpaSpec:
-          scaleTargetRef:
-            apiVersion: extensions/v1beta1
-            kind: Deployment
-            name: istiod
-          minReplicas: 1
-          maxReplicas: 5
-          behavior:
-            scaleDown:
-              policies: # follow v2beta2 spec
-              - periodSeconds: 30
-                type: Pods
-                value: 1
-              stabilizationWindowSeconds: 300
           metrics:
-          - type: Resource
-            resource:
+          - resource:
               name: cpu
-              target: # follow v2beta2 spec
-                 averageUtilization: 1000
-                 type: Utilization
+              target:
+                type: Utilization
+                averageUtilization: 80
+      name: istio-ingressgateway
+  values:
+    pilot:
+      cpu:
+        targetAverageUtilization: 80
