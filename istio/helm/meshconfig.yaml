@@ -1,0 +1,7 @@
+meshConfig:
+  defaultConfig:
+    proxyMetadata:
+      # Enable basic DNS proxying
+      ISTIO_META_DNS_CAPTURE: "true"
+      # Enable automatic address allocation, optional
+      ISTIO_META_DNS_AUTO_ALLOCATE: "true"
