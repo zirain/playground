@@ -3,6 +3,9 @@
 # Stability, security, and performance are not guaranteed - use at your own risk.
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
+metadata:
+  name: xds-agent
+  namespace: istio-system
 spec:
   meshConfig:
     accessLogFile: /dev/stdout
