@@ -69,7 +69,7 @@ done
 
 echo "install istio in ambient cluster"
 
-istioctl-ambient install --kubeconfig=${AMBIENT_KUBECONFIG} --context="${CLUSTER_NAME}" -f "${REPO_ROOT}/iop.yaml"
+istioctl-ambient install --kubeconfig=${AMBIENT_KUBECONFIG} --context="${CLUSTER_NAME}" -f "${REPO_ROOT}/iop.yaml" -y
 
 kubectl apply -f https://raw.githubusercontent.com/istio/istio/master/samples/bookinfo/platform/kube/bookinfo.yaml --kubeconfig=${AMBIENT_KUBECONFIG} --context="${CLUSTER_NAME}"
 kubectl apply -f https://raw.githubusercontent.com/istio/istio/master/samples/bookinfo/networking/bookinfo-gateway.yaml --kubeconfig=${AMBIENT_KUBECONFIG} --context="${CLUSTER_NAME}"
