@@ -66,11 +66,12 @@ go test -benchmem -run=^$ -bench ^BenchmarkListenerGeneration$ istio.io/istio/pi
 # debug ECDS
 
 ```shell
-kubectl exec -it `kubectl get po -nistio-system| grep istiod | grep Running | awk '{print $1}'` -nistio-system -- pilot-discovery request get '/debug/ecdsz?proxyID=httpbin-74fb669cc6-htg48'
+export WORKLOAD_ID=ztunnel-gj74n
+kubectl exec -it `kubectl get po -nistio-system| grep istiod | grep Running | awk '{print $1}'` -nistio-system -- pilot-discovery request get "/debug/ecdsz?proxyID=${WORKLOAD_ID}"
 ```
 
 ```shell
-kubectl exec -it `kubectl get po -nistio-system| grep istiod | grep Running | awk '{print $1}'` -nistio-system -- pilot-discovery request get '/debug/config_dump?types=ecds&proxyID=httpbin-74fb669cc6-htg48'
+kubectl exec -it `kubectl get po -nistio-system| grep istiod | grep Running | awk '{print $1}'` -nistio-system -- pilot-discovery request get "/debug/config_dump?types=ecds&proxyID=${WORKLOAD_ID}"
 ```
 
 # istioctl x metric
@@ -86,11 +87,9 @@ export HUB=istio
 export TAG=1.14-dev
 make istioctl && make docker.proxyv2 && make docker.pilot && kind load docker-image istio/proxyv2:$TAG --name istio && kind load docker-image istio/pilot:$TAG --name istio && unset TAG && unset HUB && docker image prune -f
 
-
+# rollout istiod
 kubectl rollout restart deployment istiod -nistio-system
-
 ```
-
 
 # build
 
@@ -111,13 +110,4 @@ make compile
 REGISTRY=zirain VERSION=dev make docker_image
 kind load docker-image zirain/ratelimit:dev --name istio
 kubectl rollout restart deployment ratelimit
-```
-
-# grafana
-
-```console
-make gen-addons && kubectl apply -f samples/addons/grafana.yaml && kubectl rollout restart deployment grafana -nistio-system
-
-# port-forward
-kubectl port-forward -nistio-system pod/`kubectl get po -nistio-system | grep grafana | awk '{print $1}'` 3000:3000 --address 0.0.0.0
 ```
