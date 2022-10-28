@@ -13,3 +13,7 @@ spec:
       envoyOtelAls:
         service: opentelemetry-collector.istio-system.svc.cluster.local
         port: 4317
+    - name: zipkin
+      zipkin:
+        service: zipkin.istio-system.svc.cluster.local
+        port: 9411
