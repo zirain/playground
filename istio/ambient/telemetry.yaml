@@ -4,6 +4,9 @@ metadata:
   name: mesh-default
   namespace: istio-system
 spec:
+  accessLogging:
+  - providers:
+    - name: "envoy"
   tracing:
   - providers:
     - name: "zipkin"

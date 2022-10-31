@@ -1,0 +1,1 @@
+- design doc of HBONE: https://docs.google.com/document/d/1ubUG78rNQbwwkqpvYcr7KgM14kEHwitSsuorCZjR6qY
