@@ -1,7 +1,5 @@
-resource "helm_release" "base" {
-  name       = "base"
-  repository = "https://istio-release.storage.googleapis.com/charts"
-  chart      = "base"
-  version    = null #the latest
-  namespace  = "istio-system"
+resource "kubernetes_namespace" "istio-system" {
+  metadata {
+    name = "istio-system"
+  }
 }
