@@ -1,0 +1,26 @@
+# The preview profile contains features that are experimental.
+# This is intended to explore new features coming to Istio.
+# Stability, security, and performance are not guaranteed - use at your own risk.
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+spec:
+  meshConfig:
+    extensionProviders:
+    - name: otel
+      envoyOtelAls:
+        service: otel-collector.istio-system.svc.cluster.local
+        port: 4317
+        logFormat:
+          labels:
+            traceID: "%REQ(X-B3-Traceid)%"
+            spanID: "%REQ(X-B3-Spanid)%"
+            hostname: "%HOSTNAME%"
+    - name: otel-zipkin
+      zipkin:
+        service: otel-collector.istio-system.svc.cluster.local
+        port: 9411
+    # defaultProviders:
+    #   accessLogging:
+    #   - otel
+    #   tracing:
+    #   - otel-zipkin
