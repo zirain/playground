@@ -1,0 +1,17 @@
+[core]
+        autocrlf = input
+[user]
+        name = zirain
+        email = hejianpeng2@huawei.com
+[alias]
+        co = checkout
+        ch = cherry-pick
+        st = status
+        br = branch
+        c = commit -s
+        hist = log --pretty=format:'%C(yellow)[%ad]%C(reset) %C(green)[%h]%C(reset) | %C(red)%s %C(bold red){{%an}}%C(reset) %C(blue)%d%C(reset)' --graph --date=short
+[filter "lfs"]
+        smudge = git-lfs smudge -- %f
+        process = git-lfs filter-process
+        required = true
+        clean = git-lfs clean -- %f
