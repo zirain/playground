@@ -1,0 +1,20 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+spec:
+  meshConfig:
+    accessLogFile: /dev/stdout
+    defaultConfig:
+      discoveryAddress: istiod.istio-system.svc:15012
+      proxyMetadata: {}
+      tracing:
+        sampling: 100.0
+        datadog:
+          address: datadog-agent.dg:8126
+    extensionProviders:
+    - name: dg
+      datadog:
+        service: datadog-agent.dg.svc.cluster.local
+        port: 8126
+  # values:
+  #   global:
+  #     imagePullPolicy: Always
