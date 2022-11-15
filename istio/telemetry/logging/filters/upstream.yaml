@@ -1,12 +1,11 @@
 apiVersion: telemetry.istio.io/v1alpha1
 kind: Telemetry
 metadata:
-  name: mesh-default
+  name: upstream
   namespace: istio-system
 spec:
   accessLogging:
   - providers:
-    - name: file-log
-    # disabled: true
+    - name: envoy
     filter: 
-      expression: response.code >= 500
+      expression: upstream.port == 80
