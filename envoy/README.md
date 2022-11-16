@@ -14,6 +14,22 @@ cp bazel-bin/source/exe/envoy-static /usr/local/bin/envoy-dev
 ./ci/run_envoy_docker.sh './ci/do_ci.sh bazel.dev'
 ```
 
+```
+cd /root/go/src/istio.io/envoy
+#bazel/setup_clang.sh /usr/lib/llvm-10/
+sha256sum /usr/local/bin/envoy-dev
+bazel build -c opt envoy && cp bazel-bin/source/exe/envoy-static /usr/local/bin/envoy-dev
+sha256sum /usr/local/bin/envoy-dev
+```
+
+build istio proxy with local envoy:
+
+```
+cd ~/go/src/istio.io/proxy
+BAZEL_BUILD_ARGS='--override_repository=envoy=/root/go/src/istio.io/envoy' make build 
+cp bazel-bin/src/envoy/envoy /usr/local/bin/envoy-dev
+```
+
 ## release
 
 ```
@@ -28,9 +44,13 @@ bazel test //test/extensions/access_loggers/open_telemetry:grpc_access_log_impl_
 bazel test //test/common/router:router_ratelimit_test
 
 bazel test //test/common/common:matchers_test
+
+bazel test //test/extensions/tracers/datadog:datadog_tracer_impl_test
 ```
 
 ## make doc
+
+***please commit your changes before run following command***
 
 ```console
 ci/run_envoy_docker.sh 'ci/do_ci.sh docs'
