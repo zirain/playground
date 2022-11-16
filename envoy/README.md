@@ -1,5 +1,9 @@
 # how to dev
 
+## setup
+
+https://cloud.tencent.com/developer/article/1996907
+
 ## build
 
 ```console
