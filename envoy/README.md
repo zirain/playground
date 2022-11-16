@@ -43,6 +43,7 @@ ci/run_envoy_docker.sh 'ci/do_ci.sh docs'
 
 ci/run_envoy_docker.sh 'ci/do_ci.sh format_pre'
 
+./ci/run_envoy_docker.sh './ci/do_ci.sh fix_proto_format' && ./ci/run_envoy_docker.sh './ci/do_ci.sh format' && ./ci/run_envoy_docker.sh 'ci/check_and_fix_format.sh'
 ```
 
 # envoy-handbook
