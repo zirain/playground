@@ -1,0 +1,10 @@
+apiVersion: telemetry.istio.io/v1alpha1
+kind: Telemetry
+metadata:
+  name: reporting-interval
+  namespace: istio-system
+spec:
+  metrics:
+    - providers:
+        - name: prometheus
+      reportingInterval: 10s
