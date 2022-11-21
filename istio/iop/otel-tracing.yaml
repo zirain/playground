@@ -1,0 +1,9 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+spec:
+  meshConfig:
+    extensionProviders:
+    - name: test-otel
+      opentelemetry:
+        service: opentelemetry-collector.istio-system.svc.cluster.local
+        port: 4317

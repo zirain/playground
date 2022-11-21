@@ -1,0 +1,14 @@
+apiVersion: telemetry.istio.io/v1alpha1
+kind: Telemetry
+metadata:
+  name: test-otel
+  namespace: istio-system
+spec:
+  tracing:
+  - providers:
+    - name: test-otel
+    randomSamplingPercentage: 100.0
+    customTags:
+      "provider":
+        literal:
+          value: "otel"
