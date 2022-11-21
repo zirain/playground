@@ -32,7 +32,7 @@ static_resources:
                         name: envoy.access_loggers.extension_filters.cel
                         typedConfig:
                           '@type': type.googleapis.com/envoy.extensions.access_loggers.filters.cel.v3.ExpressionFilter
-                          expression: upstream.cluster == 'cluster1'
+                          expression: upstream.cluster_name == 'cluster1'
                 stat_prefix: ingress_http
                 codec_type: auto
                 route_config:
