@@ -2,6 +2,12 @@ apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 spec:
   meshConfig:
+    enableTracing: true
+    defaultConfig:
+      tracing:
+        openCensusAgent:
+          address: "dns:opentelemetry-collector.istio-system.svc:55678"
+          context: [B3]
     extensionProviders:
     - name: test-otel
       opentelemetry:
