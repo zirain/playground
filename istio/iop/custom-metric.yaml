@@ -1,3 +1,4 @@
+# blog from https://blog.christianposta.com/understanding-istio-telemetry-v2/
 # export mesh_id cluster_id in metrics
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
