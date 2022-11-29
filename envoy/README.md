@@ -1,5 +1,17 @@
 # how to dev
 
+## dev with vscode
+
+install extesions:
+- bazel-statck-vscode-cc
+- clangd
+
+```
+bazel build --override_repository=bazel_vscode_compdb=/root/.vscode-server/extensions/stackbuild.bazel-stack-vscode-cc-1.2.0/compdb/ --aspects=@bazel_vscode_compdb//:aspects.bzl%compilation_database_aspect --color=no --show_result=2147483647 --noshow_progress --noshow_loading_progress --output_groups=compdb_files,header_files --build_event_json_file=/tmp/tmp-envoy envoy
+
+/root/.vscode-server/extensions/stackbuild.bazel-stack-vscode-cc-1.2.0/compdb/postprocess.py -b /tmp/tmp-envoy && rm /tmp/tmp-envoy
+```
+
 ## setup
 
 https://cloud.tencent.com/developer/article/1996907
