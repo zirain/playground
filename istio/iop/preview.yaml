@@ -43,8 +43,8 @@ spec:
         WASM_INSECURE_REGISTRIES: "kind-registry:5000,ghcr.io"        
   values:
     global:
-    # logging:
-    #   level: "default:debug,cache:debug"
+      logging:
+        level: "default:debug,cache:debug"
     telemetry:
       v2:
         metadataExchange:
