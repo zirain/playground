@@ -12,7 +12,7 @@ docker rm -f otel-collector && docker run -d --name otel-collector \
 ## start envoy
 
 ```shell
-envoy-dev -c envoy/access-log/otel.yaml --component-log-level filter:debug,router:debug
+envoy-dev -c envoy/accesslog/otel/als.yaml --component-log-level filter:debug,router:debug
 ```
 
 ## verify 
