@@ -70,9 +70,20 @@ bazel test //test/extensions/tracers/datadog:datadog_tracer_impl_test
 
 ```console
 ci/run_envoy_docker.sh 'ci/do_ci.sh docs'
+
+# witout docker
+docs/build.sh
 ```
 
 ## lint
+
+```shell
+# check api
+tools/proto_format/proto_format.sh
+
+# check clang format
+CLANG_FORMAT=clang-format ./tools/code_format/check_format.py fix
+```
 
 ```console
 ./ci/run_envoy_docker.sh './ci/do_ci.sh fix_format'
