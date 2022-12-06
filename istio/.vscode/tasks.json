@@ -1,0 +1,33 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "Build Image",
+        "type": "shell",
+        "command": "HUB=istio TAG=1.17-dev make build docker.pilot docker.proxyv2",
+        "group": {
+          "kind": "build",
+          "isDefault": true
+        }
+      },
+      {
+        "label": "Load Image",
+        "type": "shell",
+        "command": "kind load docker-image istio/proxyv2:1.17-dev --name istio && kind load docker-image istio/pilot:1.17-dev --name istio",
+        "group": {
+          "kind": "build",
+        }
+      },
+      {
+        "label": "install",
+        "type": "shell",
+        "command": "kubectl label namespace default istio-injection=enabled --overwrite && istioctl install --set tag=1.17-dev -f /root/go/src/github.com/zirain/playground/istio/iop/local-dev.yaml -y",
+        "group": {
+          "kind": "build",
+        }
+      }
+    ]
+  }
+  
