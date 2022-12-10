@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: echoserver
+  namespace: echoserver
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    # 使用internet-facing时，务必使用public类型的子网
+    alb.ingress.kubernetes.io/subnets: capi-quickstart-subnet-public-us-east-1a,capi-quickstart-subnet-public-us-east-1b, capi-quickstart-subnet-public-us-east-1c
+    alb.ingress.kubernetes.io/tags: Environment=dev,Team=test
+spec:
+  ingressClassName: alb
+  rules:
+    - host: echoserver.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Exact
+            backend:
+              service:
+                name: echoserver
+                port:
+                  number: 80
