@@ -19,11 +19,19 @@
 ## EKS默认`ingress`/`ELB`方案是否为 `AWS Load Balancer Controller`？
 
    https://docs.aws.amazon.com/eks/latest/userguide/alb-ingress.html
+   支持 IRSA，IAM instance profile
 
 ## CSI 跟 S3/EVS/SFS 的集成，对齐EKS?
 
    [EBS](https://github.com/kubernetes-sigs/aws-ebs-csi-driver)
+      https://github.com/kubernetes-sigs/aws-ebs-csi-driver/blob/master/docs/install.md#installation
+      支持 IRSA，IAM instance profile，secret object
+
    [EFS](https://github.com/kubernetes-sigs/aws-efs-csi-driver)
+      https://github.com/kubernetes-sigs/aws-efs-csi-driver#installation
+      https://github.com/kubernetes-sigs/aws-ebs-csi-driver/blob/master/docs/install.md#installation
+      支持 IRSA，IAM instance profile
+
    [FSx](https://github.com/kubernetes-sigs/aws-fsx-csi-driver)
 
 ## `Secret`加解密对接KMS
@@ -34,9 +42,14 @@
 
    [kube2iam](https://github.com/jtblin/kube2iam)
 
+   [IRSA](https://github.com/aws/amazon-eks-pod-identity-webhook/blob/master/SELF_HOSTED_SETUP.md)
+
 ## 节点OS image支持自定义，不同region镜像名是否一致？
 
     https://cluster-api-aws.sigs.k8s.io/topics/images/amis.html
 
 
-    clusterctl get kubeconfig capi-multitenancy > /root/.kube/capi-quickstart.kubeconfig
+## DEBUG
+
+   clusterctl get kubeconfig capi-quickstart > /root/.kube/capi-quickstart.kubeconfig
+   kubectl --kubeconfig=/root/.kube/capi-quickstart.kubeconfig apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.24.1/manifests/calico.yaml
