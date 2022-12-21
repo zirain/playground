@@ -725,6 +725,8 @@ spec:
       labels:
         app.kubernetes.io/component: controller
         app.kubernetes.io/name: aws-load-balancer-controller
+      annotations:
+        iam.amazonaws.com/role: AWSLoadBalancerController
     spec:
       containers:
       - args:

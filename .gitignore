@@ -109,3 +109,7 @@ dist
 
 envoy/wasm/bazel/bazel-*
 clang/bazel-*
+
+
+*.key
+*.pub
