@@ -5,8 +5,14 @@ apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 spec:
   meshConfig:
-    accessLogFile: /dev/stdout   
+    accessLogFile: /dev/stdout  
+    defaultConfig:
+      proxyMetadata:
+        # Enable Istio agent to handle DNS requests for known hosts
+        # Unknown hosts will automatically be resolved using upstream dns servers in resolv.conf
+        WASM_MODULE_EXPIRY: 10m
+        WASM_PURGE_INTERVAL: 1m
   values:
     global:
       logging:
-        level: "default:debug,xdsproxy:debug"
+        level: "default:debug,xdsproxy:debug,wasm:debug"
