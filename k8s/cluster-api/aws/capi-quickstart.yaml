@@ -48,9 +48,10 @@ spec:
       apiServer:
         extraArgs:
           cloud-provider: aws
-          # service-account-key-file: /etc/kubernetes/oidc/sa-signer-pkcs8.pub
-          # service-account-signing-key-file: /etc/kubernetes/oidc/sa-signer.key
-          # service-account-issuer: s3-us-east-1.amazonaws.com/kurator-operator-test
+          service-account-key-file: /etc/kubernetes/pki/sa-signer-pkcs8.pub
+          service-account-signing-key-file: /etc/kubernetes/pki/sa-signer.key
+          service-account-issuer: https://kurator-operator-test.s3.amazonaws.com
+          api-audiences: sts.amazonaws.com
       controllerManager:
         extraArgs:
           cloud-provider: aws
@@ -64,6 +65,9 @@ spec:
         kubeletExtraArgs:
           cloud-provider: aws
         name: '{{ ds.meta_data.local_hostname }}'
+    preKubeadmCommands:
+    - aws s3 cp s3://kurator-operator-test/sa-signer-pkcs8.pub /etc/kubernetes/pki/sa-signer-pkcs8.pub # 与L51一致
+    - aws s3 cp s3://kurator-operator-test/sa-signer.key /etc/kubernetes/pki/sa-signer.key && chmod 0600 /etc/kubernetes/pki/sa-signer.key # 与L53一致
   machineTemplate:
     infrastructureRef:
       apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
@@ -91,7 +95,7 @@ metadata:
   namespace: default
 spec:
   clusterName: capi-quickstart
-  replicas: 1 
+  replicas: 1
   selector:
     matchLabels: null
   template:

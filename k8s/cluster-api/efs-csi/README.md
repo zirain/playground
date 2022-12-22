@@ -13,6 +13,8 @@ security_group_id=$(aws ec2 create-security-group --group-name MyEfsSecurityGrou
 aws ec2 authorize-security-group-ingress --group-id $security_group_id --protocol tcp --port 2049 --cidr $cidr_range
 ```
 
+通过console创建 sa 并放通安全组
+
 ## Install wit helm
 
 ```
@@ -25,6 +27,8 @@ helm upgrade --install aws-efs-csi-driver --namespace kube-system aws-efs-csi-dr
 # kube2iam
 helm upgrade --install aws-efs-csi-driver --namespace kube-system aws-efs-csi-driver/aws-efs-csi-driver -f /root/aws/efs-csi-values.yaml
 ```
+
+helm delete aws-efs-csi-driver --namespace kube-system
 
 
 ## Examples
