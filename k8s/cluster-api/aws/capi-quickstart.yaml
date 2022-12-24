@@ -66,6 +66,7 @@ spec:
           cloud-provider: aws
         name: '{{ ds.meta_data.local_hostname }}'
     preKubeadmCommands:
+    - /sbin/iptables -P FORWARD ACCEPT -w 5
     - aws s3 cp s3://kurator-operator-test/sa-signer-pkcs8.pub /etc/kubernetes/pki/sa-signer-pkcs8.pub # 与L51一致
     - aws s3 cp s3://kurator-operator-test/sa-signer.key /etc/kubernetes/pki/sa-signer.key && chmod 0600 /etc/kubernetes/pki/sa-signer.key # 与L53一致
   machineTemplate:
@@ -74,7 +75,7 @@ spec:
       kind: AWSMachineTemplate
       name: capi-quickstart-control-plane
   replicas: 1
-  version: v1.25.0
+  version: v1.23.0
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
 kind: AWSMachineTemplate
@@ -95,7 +96,7 @@ metadata:
   namespace: default
 spec:
   clusterName: capi-quickstart
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels: null
   template:
@@ -110,7 +111,7 @@ spec:
         apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
         kind: AWSMachineTemplate
         name: capi-quickstart-md-0
-      version: v1.25.0
+      version: v1.23.0
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
 kind: AWSMachineTemplate
@@ -120,6 +121,7 @@ metadata:
 spec:
   template:
     spec:
+      #imageLookupBaseOS: ubuntu-18.04
       iamInstanceProfile: nodes.cluster-api-provider-aws.sigs.k8s.io
       instanceType: t3.large
       sshKeyName: default
@@ -137,5 +139,7 @@ spec:
       joinConfiguration:
         nodeRegistration:
           kubeletExtraArgs:
-            cloud-provider: aws
+            cloud-provider: aws   
           name: '{{ ds.meta_data.local_hostname }}'
+      preKubeadmCommands:
+      - /sbin/iptables -P FORWARD ACCEPT -w 5
