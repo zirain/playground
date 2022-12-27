@@ -25,6 +25,13 @@ metadata:
 spec:
   region: us-east-1
   sshKeyName: default
+  network:
+    cni:
+      cniIngressRules:
+      - protocol: "-1"
+        fromPort: -1
+        toPort: 65535
+        description: "Amazon VPC CNI"
   identityRef:
     kind: AWSClusterStaticIdentity
     name: capi-multitenancy
