@@ -1,0 +1,1699 @@
+apiVersion: v1
+items:
+- apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
+  kind: KubeadmConfig
+  metadata:
+    creationTimestamp: "2022-12-27T03:19:58Z"
+    generation: 2
+    labels:
+      cluster.x-k8s.io/cluster-name: capi-quickstart
+      cluster.x-k8s.io/control-plane: ""
+    name: capi-quickstart-control-plane-98js5
+    namespace: default
+    ownerReferences:
+    - apiVersion: controlplane.cluster.x-k8s.io/v1beta1
+      kind: KubeadmControlPlane
+      name: capi-quickstart-control-plane
+      uid: d0b49772-f957-4316-ba33-6462049222ef
+    - apiVersion: cluster.x-k8s.io/v1beta1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Machine
+      name: capi-quickstart-control-plane-67sb7
+      uid: 191844ab-e3b3-4549-af7c-b79b792c9bde
+    resourceVersion: "2025147"
+    uid: 24d24cca-0aa4-4c1a-8ee3-3574a8faf661
+  spec:
+    clusterConfiguration:
+      apiServer:
+        extraArgs:
+          cloud-provider: aws
+      controllerManager:
+        extraArgs:
+          cloud-provider: aws
+      dns: {}
+      etcd: {}
+      networking: {}
+      scheduler: {}
+    format: cloud-config
+    joinConfiguration:
+      controlPlane:
+        localAPIEndpoint: {}
+      discovery:
+        bootstrapToken:
+          apiServerEndpoint: capi-quickstart-apiserver-79154910.us-east-1.elb.amazonaws.com:6443
+          caCertHashes:
+          - sha256:7c8f95ec59d3ca8d6948de286a5cab78f54152c7f62e85e7c9302ab44aa38e89
+          token: zqf8ct.xi3mg9wil9asu99g
+      nodeRegistration:
+        kubeletExtraArgs:
+          cloud-provider: aws
+        name: '{{ ds.meta_data.local_hostname }}'
+  status:
+    conditions:
+    - lastTransitionTime: "2022-12-27T03:19:59Z"
+      status: "True"
+      type: Ready
+    - lastTransitionTime: "2022-12-27T03:19:58Z"
+      status: "True"
+      type: CertificatesAvailable
+    - lastTransitionTime: "2022-12-27T03:19:59Z"
+      status: "True"
+      type: DataSecretAvailable
+    dataSecretName: capi-quickstart-control-plane-98js5
+    observedGeneration: 2
+    ready: true
+- apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
+  kind: KubeadmConfig
+  metadata:
+    creationTimestamp: "2022-12-27T03:14:48Z"
+    generation: 2
+    labels:
+      cluster.x-k8s.io/cluster-name: capi-quickstart
+      cluster.x-k8s.io/control-plane: ""
+    name: capi-quickstart-control-plane-ttrh6
+    namespace: default
+    ownerReferences:
+    - apiVersion: controlplane.cluster.x-k8s.io/v1beta1
+      kind: KubeadmControlPlane
+      name: capi-quickstart-control-plane
+      uid: d0b49772-f957-4316-ba33-6462049222ef
+    - apiVersion: cluster.x-k8s.io/v1beta1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Machine
+      name: capi-quickstart-control-plane-j8ctn
+      uid: 94fd1ebf-bada-4725-911b-a0ee8b2f06bc
+    resourceVersion: "2024402"
+    uid: 3e49d452-ff01-4cb3-91ae-9ccf3a8d40ca
+  spec:
+    clusterConfiguration:
+      apiServer:
+        extraArgs:
+          cloud-provider: aws
+      clusterName: capi-quickstart
+      controlPlaneEndpoint: capi-quickstart-apiserver-79154910.us-east-1.elb.amazonaws.com:6443
+      controllerManager:
+        extraArgs:
+          cloud-provider: aws
+      dns: {}
+      etcd: {}
+      kubernetesVersion: v1.25.0
+      networking:
+        podSubnet: 192.168.0.0/16
+      scheduler: {}
+    format: cloud-config
+    initConfiguration:
+      localAPIEndpoint: {}
+      nodeRegistration:
+        kubeletExtraArgs:
+          cloud-provider: aws
+        name: '{{ ds.meta_data.local_hostname }}'
+  status:
+    conditions:
+    - lastTransitionTime: "2022-12-27T03:14:48Z"
+      status: "True"
+      type: Ready
+    - lastTransitionTime: "2022-12-27T03:14:48Z"
+      status: "True"
+      type: CertificatesAvailable
+    - lastTransitionTime: "2022-12-27T03:14:48Z"
+      status: "True"
+      type: DataSecretAvailable
+    dataSecretName: capi-quickstart-control-plane-ttrh6
+    observedGeneration: 2
+    ready: true
+- apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
+  kind: KubeadmConfig
+  metadata:
+    annotations:
+      cluster.x-k8s.io/cloned-from-groupkind: KubeadmConfigTemplate.bootstrap.cluster.x-k8s.io
+      cluster.x-k8s.io/cloned-from-name: capi-quickstart-md-0
+    creationTimestamp: "2022-12-27T03:11:11Z"
+    generation: 2
+    labels:
+      cluster.x-k8s.io/cluster-name: capi-quickstart
+      cluster.x-k8s.io/deployment-name: capi-quickstart-md-0
+      machine-template-hash: "3322807912"
+    name: capi-quickstart-md-0-2xw8z
+    namespace: default
+    ownerReferences:
+    - apiVersion: cluster.x-k8s.io/v1beta1
+      kind: MachineSet
+      name: capi-quickstart-md-0-7766d4cf56
+      uid: 9dc0e479-1db8-4240-827c-093532103149
+    - apiVersion: cluster.x-k8s.io/v1beta1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Machine
+      name: capi-quickstart-md-0-7766d4cf56-8mkp6
+      uid: 8f13739b-f79b-4ab0-8120-39ef0db69573
+    resourceVersion: "2024704"
+    uid: afb45769-8f5b-4329-aa11-3cb8b7a0d573
+  spec:
+    format: cloud-config
+    joinConfiguration:
+      discovery:
+        bootstrapToken:
+          apiServerEndpoint: capi-quickstart-apiserver-79154910.us-east-1.elb.amazonaws.com:6443
+          caCertHashes:
+          - sha256:7c8f95ec59d3ca8d6948de286a5cab78f54152c7f62e85e7c9302ab44aa38e89
+          token: k0foom.0cky2g4r7acvz489
+      nodeRegistration:
+        kubeletExtraArgs:
+          cloud-provider: aws
+        name: '{{ ds.meta_data.local_hostname }}'
+  status:
+    conditions:
+    - lastTransitionTime: "2022-12-27T03:16:48Z"
+      status: "True"
+      type: Ready
+    - lastTransitionTime: "2022-12-27T03:16:47Z"
+      status: "True"
+      type: CertificatesAvailable
+    - lastTransitionTime: "2022-12-27T03:16:48Z"
+      status: "True"
+      type: DataSecretAvailable
+    dataSecretName: capi-quickstart-md-0-2xw8z
+    observedGeneration: 2
+    ready: true
+- apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
+  kind: KubeadmConfig
+  metadata:
+    annotations:
+      cluster.x-k8s.io/cloned-from-groupkind: KubeadmConfigTemplate.bootstrap.cluster.x-k8s.io
+      cluster.x-k8s.io/cloned-from-name: capi-quickstart-md-0
+    creationTimestamp: "2022-12-27T03:11:11Z"
+    generation: 2
+    labels:
+      cluster.x-k8s.io/cluster-name: capi-quickstart
+      cluster.x-k8s.io/deployment-name: capi-quickstart-md-0
+      machine-template-hash: "3322807912"
+    name: capi-quickstart-md-0-lnw6g
+    namespace: default
+    ownerReferences:
+    - apiVersion: cluster.x-k8s.io/v1beta1
+      kind: MachineSet
+      name: capi-quickstart-md-0-7766d4cf56
+      uid: 9dc0e479-1db8-4240-827c-093532103149
+    - apiVersion: cluster.x-k8s.io/v1beta1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Machine
+      name: capi-quickstart-md-0-7766d4cf56-8m8f4
+      uid: 10313637-5355-4f73-ad9c-f2a097e596a2
+    resourceVersion: "2024707"
+    uid: 98161a5e-b603-4aa6-a038-8a0805db3347
+  spec:
+    format: cloud-config
+    joinConfiguration:
+      discovery:
+        bootstrapToken:
+          apiServerEndpoint: capi-quickstart-apiserver-79154910.us-east-1.elb.amazonaws.com:6443
+          caCertHashes:
+          - sha256:7c8f95ec59d3ca8d6948de286a5cab78f54152c7f62e85e7c9302ab44aa38e89
+          token: xwrx3d.9fpngelrdihi2b3a
+      nodeRegistration:
+        kubeletExtraArgs:
+          cloud-provider: aws
+        name: '{{ ds.meta_data.local_hostname }}'
+  status:
+    conditions:
+    - lastTransitionTime: "2022-12-27T03:16:49Z"
+      status: "True"
+      type: Ready
+    - lastTransitionTime: "2022-12-27T03:16:48Z"
+      status: "True"
+      type: CertificatesAvailable
+    - lastTransitionTime: "2022-12-27T03:16:49Z"
+      status: "True"
+      type: DataSecretAvailable
+    dataSecretName: capi-quickstart-md-0-lnw6g
+    observedGeneration: 2
+    ready: true
+- apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
+  kind: KubeadmConfig
+  metadata:
+    annotations:
+      cluster.x-k8s.io/cloned-from-groupkind: KubeadmConfigTemplate.bootstrap.cluster.x-k8s.io
+      cluster.x-k8s.io/cloned-from-name: capi-quickstart-md-0
+    creationTimestamp: "2022-12-27T03:11:11Z"
+    generation: 2
+    labels:
+      cluster.x-k8s.io/cluster-name: capi-quickstart
+      cluster.x-k8s.io/deployment-name: capi-quickstart-md-0
+      machine-template-hash: "3322807912"
+    name: capi-quickstart-md-0-wtf9w
+    namespace: default
+    ownerReferences:
+    - apiVersion: cluster.x-k8s.io/v1beta1
+      kind: MachineSet
+      name: capi-quickstart-md-0-7766d4cf56
+      uid: 9dc0e479-1db8-4240-827c-093532103149
+    - apiVersion: cluster.x-k8s.io/v1beta1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Machine
+      name: capi-quickstart-md-0-7766d4cf56-xqgqt
+      uid: 8ac21a99-3bb7-49a4-8518-a5d6f3a65974
+    resourceVersion: "2024711"
+    uid: d9279437-7de9-4f10-8691-0ac6b85577ed
+  spec:
+    format: cloud-config
+    joinConfiguration:
+      discovery:
+        bootstrapToken:
+          apiServerEndpoint: capi-quickstart-apiserver-79154910.us-east-1.elb.amazonaws.com:6443
+          caCertHashes:
+          - sha256:7c8f95ec59d3ca8d6948de286a5cab78f54152c7f62e85e7c9302ab44aa38e89
+          token: x81fgz.tkvjb3pgjmm68oxx
+      nodeRegistration:
+        kubeletExtraArgs:
+          cloud-provider: aws
+        name: '{{ ds.meta_data.local_hostname }}'
+  status:
+    conditions:
+    - lastTransitionTime: "2022-12-27T03:16:50Z"
+      status: "True"
+      type: Ready
+    - lastTransitionTime: "2022-12-27T03:16:49Z"
+      status: "True"
+      type: CertificatesAvailable
+    - lastTransitionTime: "2022-12-27T03:16:50Z"
+      status: "True"
+      type: DataSecretAvailable
+    dataSecretName: capi-quickstart-md-0-wtf9w
+    observedGeneration: 2
+    ready: true
+- apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
+  kind: KubeadmConfigTemplate
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"bootstrap.cluster.x-k8s.io/v1beta1","kind":"KubeadmConfigTemplate","metadata":{"annotations":{},"name":"capi-quickstart-md-0","namespace":"default"},"spec":{"template":{"spec":{"joinConfiguration":{"nodeRegistration":{"kubeletExtraArgs":{"cloud-provider":"aws"},"name":"{{ ds.meta_data.local_hostname }}"}}}}}}
+    creationTimestamp: "2022-12-27T03:11:11Z"
+    generation: 1
+    name: capi-quickstart-md-0
+    namespace: default
+    ownerReferences:
+    - apiVersion: cluster.x-k8s.io/v1beta1
+      kind: Cluster
+      name: capi-quickstart
+      uid: 5a484c1e-d52f-46a4-a010-52232c2f25a3
+    resourceVersion: "2023892"
+    uid: 7a9ad2e2-e3d1-432d-a4bd-03921964893d
+  spec:
+    template:
+      spec:
+        format: cloud-config
+        joinConfiguration:
+          discovery: {}
+          nodeRegistration:
+            kubeletExtraArgs:
+              cloud-provider: aws
+            name: '{{ ds.meta_data.local_hostname }}'
+- apiVersion: cluster.x-k8s.io/v1beta1
+  kind: Machine
+  metadata:
+    annotations:
+      controlplane.cluster.x-k8s.io/kubeadm-cluster-configuration: '{"etcd":{},"networking":{},"apiServer":{"extraArgs":{"cloud-provider":"aws"}},"controllerManager":{"extraArgs":{"cloud-provider":"aws"}},"scheduler":{},"dns":{}}'
+    creationTimestamp: "2022-12-27T03:19:58Z"
+    finalizers:
+    - machine.cluster.x-k8s.io
+    generation: 2
+    labels:
+      cluster.x-k8s.io/cluster-name: capi-quickstart
+      cluster.x-k8s.io/control-plane: ""
+    name: capi-quickstart-control-plane-67sb7
+    namespace: default
+    ownerReferences:
+    - apiVersion: controlplane.cluster.x-k8s.io/v1beta1
+      blockOwnerDeletion: true
+      controller: true
+      kind: KubeadmControlPlane
+      name: capi-quickstart-control-plane
+      uid: d0b49772-f957-4316-ba33-6462049222ef
+    resourceVersion: "2025153"
+    uid: 191844ab-e3b3-4549-af7c-b79b792c9bde
+  spec:
+    bootstrap:
+      configRef:
+        apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
+        kind: KubeadmConfig
+        name: capi-quickstart-control-plane-98js5
+        namespace: default
+        uid: 24d24cca-0aa4-4c1a-8ee3-3574a8faf661
+      dataSecretName: capi-quickstart-control-plane-98js5
+    clusterName: capi-quickstart
+    failureDomain: us-east-1b
+    infrastructureRef:
+      apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
+      kind: AWSMachine
+      name: capi-quickstart-control-plane-msz5m
+      namespace: default
+      uid: aabfeab7-185c-4010-ae69-d3f2bdefc349
+    nodeDeletionTimeout: 10s
+    version: v1.25.0
+  status:
+    bootstrapReady: true
+    conditions:
+    - lastTransitionTime: "2022-12-27T03:19:59Z"
+      message: 1 of 2 completed
+      reason: InstanceProvisionStarted
+      severity: Info
+      status: "False"
+      type: Ready
+    - lastTransitionTime: "2022-12-27T03:19:59Z"
+      status: "True"
+      type: BootstrapReady
+    - lastTransitionTime: "2022-12-27T03:19:59Z"
+      message: 0 of 3 completed
+      reason: InstanceProvisionStarted
+      severity: Info
+      status: "False"
+      type: InfrastructureReady
+    - lastTransitionTime: "2022-12-27T03:19:58Z"
+      reason: WaitingForNodeRef
+      severity: Info
+      status: "False"
+      type: NodeHealthy
+    lastUpdated: "2022-12-27T03:19:59Z"
+    observedGeneration: 2
+    phase: Provisioning
+- apiVersion: cluster.x-k8s.io/v1beta1
+  kind: Machine
+  metadata:
+    annotations:
+      controlplane.cluster.x-k8s.io/kubeadm-cluster-configuration: '{"etcd":{},"networking":{},"apiServer":{"extraArgs":{"cloud-provider":"aws"}},"controllerManager":{"extraArgs":{"cloud-provider":"aws"}},"scheduler":{},"dns":{}}'
+    creationTimestamp: "2022-12-27T03:14:48Z"
+    finalizers:
+    - machine.cluster.x-k8s.io
+    generation: 3
+    labels:
+      cluster.x-k8s.io/cluster-name: capi-quickstart
+      cluster.x-k8s.io/control-plane: ""
+    name: capi-quickstart-control-plane-j8ctn
+    namespace: default
+    ownerReferences:
+    - apiVersion: controlplane.cluster.x-k8s.io/v1beta1
+      blockOwnerDeletion: true
+      controller: true
+      kind: KubeadmControlPlane
+      name: capi-quickstart-control-plane
+      uid: d0b49772-f957-4316-ba33-6462049222ef
+    resourceVersion: "2025124"
+    uid: 94fd1ebf-bada-4725-911b-a0ee8b2f06bc
+  spec:
+    bootstrap:
+      configRef:
+        apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
+        kind: KubeadmConfig
+        name: capi-quickstart-control-plane-ttrh6
+        namespace: default
+        uid: 3e49d452-ff01-4cb3-91ae-9ccf3a8d40ca
+      dataSecretName: capi-quickstart-control-plane-ttrh6
+    clusterName: capi-quickstart
+    failureDomain: us-east-1a
+    infrastructureRef:
+      apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
+      kind: AWSMachine
+      name: capi-quickstart-control-plane-b2vrv
+      namespace: default
+      uid: 86af9fd2-583c-4c1b-9c1b-50041590490e
+    nodeDeletionTimeout: 10s
+    providerID: aws:///us-east-1a/i-0acd72fb52d034491
+    version: v1.25.0
+  status:
+    addresses:
+    - address: ip-10-0-88-169.ec2.internal
+      type: InternalDNS
+    - address: 10.0.88.169
+      type: InternalIP
+    bootstrapReady: true
+    conditions:
+    - lastTransitionTime: "2022-12-27T03:15:10Z"
+      status: "True"
+      type: Ready
+    - lastTransitionTime: "2022-12-27T03:19:54Z"
+      status: "True"
+      type: APIServerPodHealthy
+    - lastTransitionTime: "2022-12-27T03:14:48Z"
+      status: "True"
+      type: BootstrapReady
+    - lastTransitionTime: "2022-12-27T03:19:54Z"
+      status: "True"
+      type: ControllerManagerPodHealthy
+    - lastTransitionTime: "2022-12-27T03:19:58Z"
+      status: "True"
+      type: EtcdMemberHealthy
+    - lastTransitionTime: "2022-12-27T03:19:54Z"
+      status: "True"
+      type: EtcdPodHealthy
+    - lastTransitionTime: "2022-12-27T03:15:10Z"
+      status: "True"
+      type: InfrastructureReady
+    - lastTransitionTime: "2022-12-27T03:19:53Z"
+      message: 'Node condition Ready is False. '
+      reason: NodeConditionsFailed
+      severity: Warning
+      status: "False"
+      type: NodeHealthy
+    - lastTransitionTime: "2022-12-27T03:19:54Z"
+      status: "True"
+      type: SchedulerPodHealthy
+    infrastructureReady: true
+    lastUpdated: "2022-12-27T03:19:53Z"
+    nodeInfo:
+      architecture: amd64
+      bootID: 41543b27-8666-426b-9e34-e1fcbfb32a95
+      containerRuntimeVersion: containerd://1.6.2
+      kernelVersion: 5.4.0-1083-aws
+      kubeProxyVersion: v1.25.0
+      kubeletVersion: v1.25.0
+      machineID: ec27382537934f80eb668d381c1764e2
+      operatingSystem: linux
+      osImage: Ubuntu 18.04.6 LTS
+      systemUUID: ec273825-3793-4f80-eb66-8d381c1764e2
+    nodeRef:
+      apiVersion: v1
+      kind: Node
+      name: ip-10-0-88-169.ec2.internal
+      uid: 16b676a6-a9a0-47c4-aedd-b2c2a6b41a9e
+    observedGeneration: 3
+    phase: Running
+- apiVersion: cluster.x-k8s.io/v1beta1
+  kind: Machine
+  metadata:
+    creationTimestamp: "2022-12-27T03:11:11Z"
+    finalizers:
+    - machine.cluster.x-k8s.io
+    generateName: capi-quickstart-md-0-7766d4cf56-
+    generation: 3
+    labels:
+      cluster.x-k8s.io/cluster-name: capi-quickstart
+      cluster.x-k8s.io/deployment-name: capi-quickstart-md-0
+      machine-template-hash: "3322807912"
+    name: capi-quickstart-md-0-7766d4cf56-8m8f4
+    namespace: default
+    ownerReferences:
+    - apiVersion: cluster.x-k8s.io/v1beta1
+      blockOwnerDeletion: true
+      controller: true
+      kind: MachineSet
+      name: capi-quickstart-md-0-7766d4cf56
+      uid: 9dc0e479-1db8-4240-827c-093532103149
+    resourceVersion: "2025100"
+    uid: 10313637-5355-4f73-ad9c-f2a097e596a2
+  spec:
+    bootstrap:
+      configRef:
+        apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
+        kind: KubeadmConfig
+        name: capi-quickstart-md-0-lnw6g
+        namespace: default
+        uid: 98161a5e-b603-4aa6-a038-8a0805db3347
+      dataSecretName: capi-quickstart-md-0-lnw6g
+    clusterName: capi-quickstart
+    infrastructureRef:
+      apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
+      kind: AWSMachine
+      name: capi-quickstart-md-0-6mr2w
+      namespace: default
+      uid: 2b1c8714-76ae-4819-8de9-d76edb3b75bb
+    nodeDeletionTimeout: 10s
+    providerID: aws:///us-east-1a/i-07bed3d45cfd0a0a5
+    version: v1.25.0
+  status:
+    addresses:
+    - address: ip-10-0-94-168.ec2.internal
+      type: InternalDNS
+    - address: 10.0.94.168
+      type: InternalIP
+    bootstrapReady: true
+    conditions:
+    - lastTransitionTime: "2022-12-27T03:17:09Z"
+      status: "True"
+      type: Ready
+    - lastTransitionTime: "2022-12-27T03:16:49Z"
+      status: "True"
+      type: BootstrapReady
+    - lastTransitionTime: "2022-12-27T03:17:09Z"
+      status: "True"
+      type: InfrastructureReady
+    - lastTransitionTime: "2022-12-27T03:19:53Z"
+      message: 'Node condition Ready is False. '
+      reason: NodeConditionsFailed
+      severity: Warning
+      status: "False"
+      type: NodeHealthy
+    infrastructureReady: true
+    lastUpdated: "2022-12-27T03:19:53Z"
+    nodeInfo:
+      architecture: amd64
+      bootID: bbf45e0b-93ec-4433-bb73-cfb2794ba63d
+      containerRuntimeVersion: containerd://1.6.2
+      kernelVersion: 5.4.0-1083-aws
+      kubeProxyVersion: v1.25.0
+      kubeletVersion: v1.25.0
+      machineID: ec2d1b35c53f37a7e9187c193ddd28e8
+      operatingSystem: linux
+      osImage: Ubuntu 18.04.6 LTS
+      systemUUID: ec2d1b35-c53f-37a7-e918-7c193ddd28e8
+    nodeRef:
+      apiVersion: v1
+      kind: Node
+      name: ip-10-0-94-168.ec2.internal
+      uid: df0ab924-8d1b-4afa-8c33-49e8ca6de990
+    observedGeneration: 3
+    phase: Running
+- apiVersion: cluster.x-k8s.io/v1beta1
+  kind: Machine
+  metadata:
+    creationTimestamp: "2022-12-27T03:11:11Z"
+    finalizers:
+    - machine.cluster.x-k8s.io
+    generateName: capi-quickstart-md-0-7766d4cf56-
+    generation: 3
+    labels:
+      cluster.x-k8s.io/cluster-name: capi-quickstart
+      cluster.x-k8s.io/deployment-name: capi-quickstart-md-0
+      machine-template-hash: "3322807912"
+    name: capi-quickstart-md-0-7766d4cf56-8mkp6
+    namespace: default
+    ownerReferences:
+    - apiVersion: cluster.x-k8s.io/v1beta1
+      blockOwnerDeletion: true
+      controller: true
+      kind: MachineSet
+      name: capi-quickstart-md-0-7766d4cf56
+      uid: 9dc0e479-1db8-4240-827c-093532103149
+    resourceVersion: "2025097"
+    uid: 8f13739b-f79b-4ab0-8120-39ef0db69573
+  spec:
+    bootstrap:
+      configRef:
+        apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
+        kind: KubeadmConfig
+        name: capi-quickstart-md-0-2xw8z
+        namespace: default
+        uid: afb45769-8f5b-4329-aa11-3cb8b7a0d573
+      dataSecretName: capi-quickstart-md-0-2xw8z
+    clusterName: capi-quickstart
+    infrastructureRef:
+      apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
+      kind: AWSMachine
+      name: capi-quickstart-md-0-rkttc
+      namespace: default
+      uid: 5407467b-4172-46a2-89ee-9a931aee6648
+    nodeDeletionTimeout: 10s
+    providerID: aws:///us-east-1a/i-0ec1a9e9e2631455e
+    version: v1.25.0
+  status:
+    addresses:
+    - address: ip-10-0-69-131.ec2.internal
+      type: InternalDNS
+    - address: 10.0.69.131
+      type: InternalIP
+    bootstrapReady: true
+    conditions:
+    - lastTransitionTime: "2022-12-27T03:17:08Z"
+      status: "True"
+      type: Ready
+    - lastTransitionTime: "2022-12-27T03:16:48Z"
+      status: "True"
+      type: BootstrapReady
+    - lastTransitionTime: "2022-12-27T03:17:08Z"
+      status: "True"
+      type: InfrastructureReady
+    - lastTransitionTime: "2022-12-27T03:19:53Z"
+      message: 'Node condition Ready is False. '
+      reason: NodeConditionsFailed
+      severity: Warning
+      status: "False"
+      type: NodeHealthy
+    infrastructureReady: true
+    lastUpdated: "2022-12-27T03:19:53Z"
+    nodeInfo:
+      architecture: amd64
+      bootID: 345ba419-d7ee-4f1d-880f-49af373e7488
+      containerRuntimeVersion: containerd://1.6.2
+      kernelVersion: 5.4.0-1083-aws
+      kubeProxyVersion: v1.25.0
+      kubeletVersion: v1.25.0
+      machineID: ec2a0ae2da6775f1458166cb2044dbb9
+      operatingSystem: linux
+      osImage: Ubuntu 18.04.6 LTS
+      systemUUID: ec2a0ae2-da67-75f1-4581-66cb2044dbb9
+    nodeRef:
+      apiVersion: v1
+      kind: Node
+      name: ip-10-0-69-131.ec2.internal
+      uid: 8489dbe9-555c-4434-aaa8-9d214a2a8d4d
+    observedGeneration: 3
+    phase: Running
+- apiVersion: cluster.x-k8s.io/v1beta1
+  kind: Machine
+  metadata:
+    creationTimestamp: "2022-12-27T03:11:11Z"
+    finalizers:
+    - machine.cluster.x-k8s.io
+    generateName: capi-quickstart-md-0-7766d4cf56-
+    generation: 3
+    labels:
+      cluster.x-k8s.io/cluster-name: capi-quickstart
+      cluster.x-k8s.io/deployment-name: capi-quickstart-md-0
+      machine-template-hash: "3322807912"
+    name: capi-quickstart-md-0-7766d4cf56-xqgqt
+    namespace: default
+    ownerReferences:
+    - apiVersion: cluster.x-k8s.io/v1beta1
+      blockOwnerDeletion: true
+      controller: true
+      kind: MachineSet
+      name: capi-quickstart-md-0-7766d4cf56
+      uid: 9dc0e479-1db8-4240-827c-093532103149
+    resourceVersion: "2025103"
+    uid: 8ac21a99-3bb7-49a4-8518-a5d6f3a65974
+  spec:
+    bootstrap:
+      configRef:
+        apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
+        kind: KubeadmConfig
+        name: capi-quickstart-md-0-wtf9w
+        namespace: default
+        uid: d9279437-7de9-4f10-8691-0ac6b85577ed
+      dataSecretName: capi-quickstart-md-0-wtf9w
+    clusterName: capi-quickstart
+    infrastructureRef:
+      apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
+      kind: AWSMachine
+      name: capi-quickstart-md-0-lv9ms
+      namespace: default
+      uid: 9b212c97-e370-4ea6-ade0-ce0d938e4bb9
+    nodeDeletionTimeout: 10s
+    providerID: aws:///us-east-1a/i-042e9596b90474e70
+    version: v1.25.0
+  status:
+    addresses:
+    - address: ip-10-0-99-122.ec2.internal
+      type: InternalDNS
+    - address: 10.0.99.122
+      type: InternalIP
+    bootstrapReady: true
+    conditions:
+    - lastTransitionTime: "2022-12-27T03:17:10Z"
+      status: "True"
+      type: Ready
+    - lastTransitionTime: "2022-12-27T03:16:50Z"
+      status: "True"
+      type: BootstrapReady
+    - lastTransitionTime: "2022-12-27T03:17:10Z"
+      status: "True"
+      type: InfrastructureReady
+    - lastTransitionTime: "2022-12-27T03:19:53Z"
+      message: 'Node condition Ready is False. '
+      reason: NodeConditionsFailed
+      severity: Warning
+      status: "False"
+      type: NodeHealthy
+    infrastructureReady: true
+    lastUpdated: "2022-12-27T03:19:53Z"
+    nodeInfo:
+      architecture: amd64
+      bootID: b6400838-15a1-498b-ab97-3fabd0cdf371
+      containerRuntimeVersion: containerd://1.6.2
+      kernelVersion: 5.4.0-1083-aws
+      kubeProxyVersion: v1.25.0
+      kubeletVersion: v1.25.0
+      machineID: ec2f9d4dc7983798325247ede9845e37
+      operatingSystem: linux
+      osImage: Ubuntu 18.04.6 LTS
+      systemUUID: ec2f9d4d-c798-3798-3252-47ede9845e37
+    nodeRef:
+      apiVersion: v1
+      kind: Node
+      name: ip-10-0-99-122.ec2.internal
+      uid: 0e5a9a37-26df-4338-84c0-c546cdfcc7fd
+    observedGeneration: 3
+    phase: Running
+- apiVersion: cluster.x-k8s.io/v1beta1
+  kind: MachineSet
+  metadata:
+    annotations:
+      machinedeployment.clusters.x-k8s.io/desired-replicas: "3"
+      machinedeployment.clusters.x-k8s.io/max-replicas: "4"
+      machinedeployment.clusters.x-k8s.io/revision: "1"
+    creationTimestamp: "2022-12-27T03:11:11Z"
+    generation: 1
+    labels:
+      cluster.x-k8s.io/cluster-name: capi-quickstart
+      cluster.x-k8s.io/deployment-name: capi-quickstart-md-0
+      machine-template-hash: "3322807912"
+    name: capi-quickstart-md-0-7766d4cf56
+    namespace: default
+    ownerReferences:
+    - apiVersion: cluster.x-k8s.io/v1beta1
+      blockOwnerDeletion: true
+      controller: true
+      kind: MachineDeployment
+      name: capi-quickstart-md-0
+      uid: 2de0a6b4-d758-4fdb-a91b-3647d74a2fa9
+    resourceVersion: "2024782"
+    uid: 9dc0e479-1db8-4240-827c-093532103149
+  spec:
+    clusterName: capi-quickstart
+    deletePolicy: Random
+    replicas: 3
+    selector:
+      matchLabels:
+        cluster.x-k8s.io/cluster-name: capi-quickstart
+        cluster.x-k8s.io/deployment-name: capi-quickstart-md-0
+        machine-template-hash: "3322807912"
+    template:
+      metadata:
+        labels:
+          cluster.x-k8s.io/cluster-name: capi-quickstart
+          cluster.x-k8s.io/deployment-name: capi-quickstart-md-0
+          machine-template-hash: "3322807912"
+      spec:
+        bootstrap:
+          configRef:
+            apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
+            kind: KubeadmConfigTemplate
+            name: capi-quickstart-md-0
+        clusterName: capi-quickstart
+        infrastructureRef:
+          apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
+          kind: AWSMachineTemplate
+          name: capi-quickstart-md-0
+        version: v1.25.0
+  status:
+    conditions:
+    - lastTransitionTime: "2022-12-27T03:11:11Z"
+      message: Scaling up MachineSet to 3 replicas (actual 0)
+      reason: ScalingUp
+      severity: Warning
+      status: "False"
+      type: Ready
+    - lastTransitionTime: "2022-12-27T03:11:11Z"
+      status: "True"
+      type: MachinesCreated
+    - lastTransitionTime: "2022-12-27T03:17:10Z"
+      status: "True"
+      type: MachinesReady
+    - lastTransitionTime: "2022-12-27T03:11:11Z"
+      message: Scaling up MachineSet to 3 replicas (actual 0)
+      reason: ScalingUp
+      severity: Warning
+      status: "False"
+      type: Resized
+    fullyLabeledReplicas: 3
+    observedGeneration: 1
+    replicas: 3
+    selector: cluster.x-k8s.io/cluster-name=capi-quickstart,cluster.x-k8s.io/deployment-name=capi-quickstart-md-0,machine-template-hash=3322807912
+- apiVersion: cluster.x-k8s.io/v1beta1
+  kind: MachineDeployment
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"cluster.x-k8s.io/v1beta1","kind":"MachineDeployment","metadata":{"annotations":{},"name":"capi-quickstart-md-0","namespace":"default"},"spec":{"clusterName":"capi-quickstart","replicas":3,"selector":{"matchLabels":null},"template":{"spec":{"bootstrap":{"configRef":{"apiVersion":"bootstrap.cluster.x-k8s.io/v1beta1","kind":"KubeadmConfigTemplate","name":"capi-quickstart-md-0"}},"clusterName":"capi-quickstart","infrastructureRef":{"apiVersion":"infrastructure.cluster.x-k8s.io/v1beta2","kind":"AWSMachineTemplate","name":"capi-quickstart-md-0"},"version":"v1.25.0"}}}}
+      machinedeployment.clusters.x-k8s.io/revision: "1"
+    creationTimestamp: "2022-12-27T03:11:11Z"
+    generation: 1
+    labels:
+      cluster.x-k8s.io/cluster-name: capi-quickstart
+    name: capi-quickstart-md-0
+    namespace: default
+    ownerReferences:
+    - apiVersion: cluster.x-k8s.io/v1beta1
+      kind: Cluster
+      name: capi-quickstart
+      uid: 5a484c1e-d52f-46a4-a010-52232c2f25a3
+    resourceVersion: "2023932"
+    uid: 2de0a6b4-d758-4fdb-a91b-3647d74a2fa9
+  spec:
+    clusterName: capi-quickstart
+    minReadySeconds: 0
+    progressDeadlineSeconds: 600
+    replicas: 3
+    revisionHistoryLimit: 1
+    selector:
+      matchLabels:
+        cluster.x-k8s.io/cluster-name: capi-quickstart
+        cluster.x-k8s.io/deployment-name: capi-quickstart-md-0
+    strategy:
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 0
+      type: RollingUpdate
+    template:
+      metadata:
+        labels:
+          cluster.x-k8s.io/cluster-name: capi-quickstart
+          cluster.x-k8s.io/deployment-name: capi-quickstart-md-0
+      spec:
+        bootstrap:
+          configRef:
+            apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
+            kind: KubeadmConfigTemplate
+            name: capi-quickstart-md-0
+        clusterName: capi-quickstart
+        infrastructureRef:
+          apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
+          kind: AWSMachineTemplate
+          name: capi-quickstart-md-0
+        version: v1.25.0
+  status:
+    conditions:
+    - lastTransitionTime: "2022-12-27T03:11:11Z"
+      message: Minimum availability requires 3 replicas, current 0 available
+      reason: WaitingForAvailableMachines
+      severity: Warning
+      status: "False"
+      type: Ready
+    - lastTransitionTime: "2022-12-27T03:11:11Z"
+      message: Minimum availability requires 3 replicas, current 0 available
+      reason: WaitingForAvailableMachines
+      severity: Warning
+      status: "False"
+      type: Available
+    observedGeneration: 1
+    phase: ScalingUp
+    replicas: 3
+    selector: cluster.x-k8s.io/cluster-name=capi-quickstart,cluster.x-k8s.io/deployment-name=capi-quickstart-md-0
+    unavailableReplicas: 3
+    updatedReplicas: 3
+- apiVersion: cluster.x-k8s.io/v1beta1
+  kind: Cluster
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"cluster.x-k8s.io/v1beta1","kind":"Cluster","metadata":{"annotations":{},"name":"capi-quickstart","namespace":"default"},"spec":{"clusterNetwork":{"pods":{"cidrBlocks":["192.168.0.0/16"]}},"controlPlaneRef":{"apiVersion":"controlplane.cluster.x-k8s.io/v1beta1","kind":"KubeadmControlPlane","name":"capi-quickstart-control-plane"},"infrastructureRef":{"apiVersion":"infrastructure.cluster.x-k8s.io/v1beta2","kind":"AWSCluster","name":"capi-quickstart"}}}
+    creationTimestamp: "2022-12-27T03:11:11Z"
+    finalizers:
+    - cluster.cluster.x-k8s.io
+    generation: 2
+    name: capi-quickstart
+    namespace: default
+    resourceVersion: "2025141"
+    uid: 5a484c1e-d52f-46a4-a010-52232c2f25a3
+  spec:
+    clusterNetwork:
+      pods:
+        cidrBlocks:
+        - 192.168.0.0/16
+    controlPlaneEndpoint:
+      host: capi-quickstart-apiserver-79154910.us-east-1.elb.amazonaws.com
+      port: 6443
+    controlPlaneRef:
+      apiVersion: controlplane.cluster.x-k8s.io/v1beta1
+      kind: KubeadmControlPlane
+      name: capi-quickstart-control-plane
+      namespace: default
+    infrastructureRef:
+      apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
+      kind: AWSCluster
+      name: capi-quickstart
+      namespace: default
+  status:
+    conditions:
+    - lastTransitionTime: "2022-12-27T03:19:58Z"
+      message: Scaling up control plane to 3 replicas (actual 2)
+      reason: ScalingUp
+      severity: Warning
+      status: "False"
+      type: Ready
+    - lastTransitionTime: "2022-12-27T03:16:31Z"
+      status: "True"
+      type: ControlPlaneInitialized
+    - lastTransitionTime: "2022-12-27T03:19:58Z"
+      message: Scaling up control plane to 3 replicas (actual 2)
+      reason: ScalingUp
+      severity: Warning
+      status: "False"
+      type: ControlPlaneReady
+    - lastTransitionTime: "2022-12-27T03:14:47Z"
+      status: "True"
+      type: InfrastructureReady
+    failureDomains:
+      us-east-1a:
+        controlPlane: true
+      us-east-1b:
+        controlPlane: true
+      us-east-1c:
+        controlPlane: true
+    infrastructureReady: true
+    observedGeneration: 2
+    phase: Provisioned
+- apiVersion: controlplane.cluster.x-k8s.io/v1beta1
+  kind: KubeadmControlPlane
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"controlplane.cluster.x-k8s.io/v1beta1","kind":"KubeadmControlPlane","metadata":{"annotations":{},"name":"capi-quickstart-control-plane","namespace":"default"},"spec":{"kubeadmConfigSpec":{"clusterConfiguration":{"apiServer":{"extraArgs":{"cloud-provider":"aws"}},"controllerManager":{"extraArgs":{"cloud-provider":"aws"}}},"initConfiguration":{"nodeRegistration":{"kubeletExtraArgs":{"cloud-provider":"aws"},"name":"{{ ds.meta_data.local_hostname }}"}},"joinConfiguration":{"nodeRegistration":{"kubeletExtraArgs":{"cloud-provider":"aws"},"name":"{{ ds.meta_data.local_hostname }}"}}},"machineTemplate":{"infrastructureRef":{"apiVersion":"infrastructure.cluster.x-k8s.io/v1beta2","kind":"AWSMachineTemplate","name":"capi-quickstart-control-plane"}},"replicas":3,"version":"v1.25.0"}}
+    creationTimestamp: "2022-12-27T03:11:11Z"
+    finalizers:
+    - kubeadm.controlplane.cluster.x-k8s.io
+    generation: 1
+    labels:
+      cluster.x-k8s.io/cluster-name: capi-quickstart
+    name: capi-quickstart-control-plane
+    namespace: default
+    ownerReferences:
+    - apiVersion: cluster.x-k8s.io/v1beta1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Cluster
+      name: capi-quickstart
+      uid: 5a484c1e-d52f-46a4-a010-52232c2f25a3
+    resourceVersion: "2025140"
+    uid: d0b49772-f957-4316-ba33-6462049222ef
+  spec:
+    kubeadmConfigSpec:
+      clusterConfiguration:
+        apiServer:
+          extraArgs:
+            cloud-provider: aws
+        controllerManager:
+          extraArgs:
+            cloud-provider: aws
+        dns: {}
+        etcd: {}
+        networking: {}
+        scheduler: {}
+      format: cloud-config
+      initConfiguration:
+        localAPIEndpoint: {}
+        nodeRegistration:
+          kubeletExtraArgs:
+            cloud-provider: aws
+          name: '{{ ds.meta_data.local_hostname }}'
+      joinConfiguration:
+        discovery: {}
+        nodeRegistration:
+          kubeletExtraArgs:
+            cloud-provider: aws
+          name: '{{ ds.meta_data.local_hostname }}'
+    machineTemplate:
+      infrastructureRef:
+        apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
+        kind: AWSMachineTemplate
+        name: capi-quickstart-control-plane
+        namespace: default
+      metadata: {}
+    replicas: 3
+    rolloutStrategy:
+      rollingUpdate:
+        maxSurge: 1
+      type: RollingUpdate
+    version: v1.25.0
+  status:
+    conditions:
+    - lastTransitionTime: "2022-12-27T03:19:58Z"
+      message: Scaling up control plane to 3 replicas (actual 2)
+      reason: ScalingUp
+      severity: Warning
+      status: "False"
+      type: Ready
+    - lastTransitionTime: "2022-12-27T03:16:31Z"
+      status: "True"
+      type: Available
+    - lastTransitionTime: "2022-12-27T03:14:48Z"
+      status: "True"
+      type: CertificatesAvailable
+    - lastTransitionTime: "2022-12-27T03:19:54Z"
+      status: "True"
+      type: ControlPlaneComponentsHealthy
+    - lastTransitionTime: "2022-12-27T03:19:58Z"
+      status: "True"
+      type: EtcdClusterHealthy
+    - lastTransitionTime: "2022-12-27T03:15:38Z"
+      status: "True"
+      type: MachinesReady
+    - lastTransitionTime: "2022-12-27T03:19:58Z"
+      message: Scaling up control plane to 3 replicas (actual 2)
+      reason: ScalingUp
+      severity: Warning
+      status: "False"
+      type: Resized
+    initialized: true
+    observedGeneration: 1
+    replicas: 2
+    selector: cluster.x-k8s.io/cluster-name=capi-quickstart,cluster.x-k8s.io/control-plane
+    unavailableReplicas: 2
+    updatedReplicas: 2
+    version: v1.25.0
+- apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
+  kind: AWSCluster
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"infrastructure.cluster.x-k8s.io/v1beta2","kind":"AWSCluster","metadata":{"annotations":{},"name":"capi-quickstart","namespace":"default"},"spec":{"region":"us-east-1","sshKeyName":"default"}}
+    creationTimestamp: "2022-12-27T03:11:11Z"
+    finalizers:
+    - awscluster.infrastructure.cluster.x-k8s.io
+    generation: 6
+    labels:
+      cluster.x-k8s.io/cluster-name: capi-quickstart
+    name: capi-quickstart
+    namespace: default
+    ownerReferences:
+    - apiVersion: cluster.x-k8s.io/v1beta1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Cluster
+      name: capi-quickstart
+      uid: 5a484c1e-d52f-46a4-a010-52232c2f25a3
+    resourceVersion: "2024367"
+    uid: c854a0b1-48a8-4566-beaf-8d43fc52f6c6
+  spec:
+    bastion:
+      allowedCIDRBlocks:
+      - 0.0.0.0/0
+      enabled: false
+    controlPlaneEndpoint:
+      host: capi-quickstart-apiserver-79154910.us-east-1.elb.amazonaws.com
+      port: 6443
+    controlPlaneLoadBalancer:
+      crossZoneLoadBalancing: false
+      scheme: internet-facing
+    identityRef:
+      kind: AWSClusterControllerIdentity
+      name: default
+    network:
+      cni:
+        cniIngressRules:
+        - description: bgp (calico)
+          fromPort: 179
+          protocol: tcp
+          toPort: 179
+        - description: IP-in-IP (calico)
+          fromPort: -1
+          protocol: "4"
+          toPort: 65535
+      subnets:
+      - availabilityZone: us-east-1a
+        cidrBlock: 10.0.0.0/20
+        id: subnet-08361221ff37b5e38
+        isPublic: true
+        natGatewayId: nat-0604c47762f6b2554
+        routeTableId: rtb-0d8c0bcb1e11ca67a
+        tags:
+          Name: capi-quickstart-subnet-public-us-east-1a
+          kubernetes.io/cluster/capi-quickstart: shared
+          kubernetes.io/role/elb: "1"
+          sigs.k8s.io/cluster-api-provider-aws/v2/cluster/capi-quickstart: owned
+          sigs.k8s.io/cluster-api-provider-aws/v2/role: public
+      - availabilityZone: us-east-1a
+        cidrBlock: 10.0.64.0/18
+        id: subnet-02d02b94f67bbccb8
+        isPublic: false
+        routeTableId: rtb-04a73a7c8832c4121
+        tags:
+          Name: capi-quickstart-subnet-private-us-east-1a
+          kubernetes.io/cluster/capi-quickstart: shared
+          kubernetes.io/role/internal-elb: "1"
+          sigs.k8s.io/cluster-api-provider-aws/v2/cluster/capi-quickstart: owned
+          sigs.k8s.io/cluster-api-provider-aws/v2/role: private
+      - availabilityZone: us-east-1b
+        cidrBlock: 10.0.16.0/20
+        id: subnet-057cb96465d8d5a36
+        isPublic: true
+        natGatewayId: nat-074e3d457ac0dda07
+        routeTableId: rtb-0da1f51ff1012a0a3
+        tags:
+          Name: capi-quickstart-subnet-public-us-east-1b
+          kubernetes.io/cluster/capi-quickstart: shared
+          kubernetes.io/role/elb: "1"
+          sigs.k8s.io/cluster-api-provider-aws/v2/cluster/capi-quickstart: owned
+          sigs.k8s.io/cluster-api-provider-aws/v2/role: public
+      - availabilityZone: us-east-1b
+        cidrBlock: 10.0.128.0/18
+        id: subnet-0f24bb28a7788eb68
+        isPublic: false
+        routeTableId: rtb-0803230bc3c232780
+        tags:
+          Name: capi-quickstart-subnet-private-us-east-1b
+          kubernetes.io/cluster/capi-quickstart: shared
+          kubernetes.io/role/internal-elb: "1"
+          sigs.k8s.io/cluster-api-provider-aws/v2/cluster/capi-quickstart: owned
+          sigs.k8s.io/cluster-api-provider-aws/v2/role: private
+      - availabilityZone: us-east-1c
+        cidrBlock: 10.0.32.0/20
+        id: subnet-0336407b64c248631
+        isPublic: true
+        natGatewayId: nat-0063aea8765d80299
+        routeTableId: rtb-0f1fb1d3a2c4cef9b
+        tags:
+          Name: capi-quickstart-subnet-public-us-east-1c
+          kubernetes.io/cluster/capi-quickstart: shared
+          kubernetes.io/role/elb: "1"
+          sigs.k8s.io/cluster-api-provider-aws/v2/cluster/capi-quickstart: owned
+          sigs.k8s.io/cluster-api-provider-aws/v2/role: public
+      - availabilityZone: us-east-1c
+        cidrBlock: 10.0.192.0/18
+        id: subnet-0861ab711deb6d849
+        isPublic: false
+        routeTableId: rtb-0563a461b59a7b717
+        tags:
+          Name: capi-quickstart-subnet-private-us-east-1c
+          kubernetes.io/cluster/capi-quickstart: shared
+          kubernetes.io/role/internal-elb: "1"
+          sigs.k8s.io/cluster-api-provider-aws/v2/cluster/capi-quickstart: owned
+          sigs.k8s.io/cluster-api-provider-aws/v2/role: private
+      vpc:
+        availabilityZoneSelection: Ordered
+        availabilityZoneUsageLimit: 3
+        cidrBlock: 10.0.0.0/16
+        id: vpc-0fc4fd2e7646e002b
+        internetGatewayId: igw-0fb57a05eee81b1a8
+        tags:
+          Name: capi-quickstart-vpc
+          sigs.k8s.io/cluster-api-provider-aws/v2/cluster/capi-quickstart: owned
+          sigs.k8s.io/cluster-api-provider-aws/v2/role: common
+    region: us-east-1
+    sshKeyName: default
+  status:
+    conditions:
+    - lastTransitionTime: "2022-12-27T03:14:47Z"
+      status: "True"
+      type: Ready
+    - lastTransitionTime: "2022-12-27T03:13:27Z"
+      status: "True"
+      type: ClusterSecurityGroupsReady
+    - lastTransitionTime: "2022-12-27T03:11:22Z"
+      status: "True"
+      type: InternetGatewayReady
+    - lastTransitionTime: "2022-12-27T03:14:47Z"
+      status: "True"
+      type: LoadBalancerReady
+    - lastTransitionTime: "2022-12-27T03:13:13Z"
+      status: "True"
+      type: NatGatewaysReady
+    - lastTransitionTime: "2022-12-27T03:11:11Z"
+      message: AWSClusterControllerIdentity.infrastructure.cluster.x-k8s.io "default"
+        not found
+      reason: PrincipalCredentialRetrievalFailed
+      severity: Error
+      status: "False"
+      type: PrincipalCredentialRetrieved
+    - lastTransitionTime: "2022-12-27T03:11:11Z"
+      status: "True"
+      type: PrincipalUsageAllowed
+    - lastTransitionTime: "2022-12-27T03:13:31Z"
+      status: "True"
+      type: RouteTablesReady
+    - lastTransitionTime: "2022-12-27T03:11:21Z"
+      status: "True"
+      type: SubnetsReady
+    - lastTransitionTime: "2022-12-27T03:11:15Z"
+      status: "True"
+      type: VpcReady
+    failureDomains:
+      us-east-1a:
+        controlPlane: true
+      us-east-1b:
+        controlPlane: true
+      us-east-1c:
+        controlPlane: true
+    networkStatus:
+      apiServerElb:
+        attributes:
+          idleTimeout: 600000000000
+        availabilityZones:
+        - us-east-1a
+        - us-east-1b
+        - us-east-1c
+        dnsName: capi-quickstart-apiserver-79154910.us-east-1.elb.amazonaws.com
+        name: capi-quickstart-apiserver
+        scheme: internet-facing
+        securityGroupIds:
+        - sg-07bcae2a37e83c265
+        subnetIds:
+        - subnet-0336407b64c248631
+        - subnet-057cb96465d8d5a36
+        - subnet-08361221ff37b5e38
+        tags:
+          Name: capi-quickstart-apiserver
+          sigs.k8s.io/cluster-api-provider-aws/v2/cluster/capi-quickstart: owned
+          sigs.k8s.io/cluster-api-provider-aws/v2/role: apiserver
+      securityGroups:
+        apiserver-lb:
+          id: sg-07bcae2a37e83c265
+          ingressRule:
+          - cidrBlocks:
+            - 0.0.0.0/0
+            description: Kubernetes API
+            fromPort: 6443
+            protocol: tcp
+            toPort: 6443
+          name: capi-quickstart-apiserver-lb
+          tags:
+            Name: capi-quickstart-apiserver-lb
+            sigs.k8s.io/cluster-api-provider-aws/v2/cluster/capi-quickstart: owned
+            sigs.k8s.io/cluster-api-provider-aws/v2/role: apiserver-lb
+        controlplane:
+          id: sg-0d37f5074d0d04387
+          ingressRule:
+          - description: Kubernetes API
+            fromPort: 6443
+            protocol: tcp
+            sourceSecurityGroupIds:
+            - sg-039e0ba978b176188
+            - sg-07bcae2a37e83c265
+            - sg-0d37f5074d0d04387
+            toPort: 6443
+          - description: etcd
+            fromPort: 2379
+            protocol: tcp
+            sourceSecurityGroupIds:
+            - sg-0d37f5074d0d04387
+            toPort: 2379
+          - description: etcd peer
+            fromPort: 2380
+            protocol: tcp
+            sourceSecurityGroupIds:
+            - sg-0d37f5074d0d04387
+            toPort: 2380
+          - description: bgp (calico)
+            fromPort: 179
+            protocol: tcp
+            sourceSecurityGroupIds:
+            - sg-039e0ba978b176188
+            - sg-0d37f5074d0d04387
+            toPort: 179
+          - description: IP-in-IP (calico)
+            fromPort: 0
+            protocol: "4"
+            sourceSecurityGroupIds:
+            - sg-039e0ba978b176188
+            - sg-0d37f5074d0d04387
+            toPort: 0
+          name: capi-quickstart-controlplane
+          tags:
+            Name: capi-quickstart-controlplane
+            sigs.k8s.io/cluster-api-provider-aws/v2/cluster/capi-quickstart: owned
+            sigs.k8s.io/cluster-api-provider-aws/v2/role: controlplane
+        lb:
+          id: sg-0a98591453bff1f8c
+          name: capi-quickstart-lb
+          tags:
+            Name: capi-quickstart-lb
+            kubernetes.io/cluster/capi-quickstart: owned
+            sigs.k8s.io/cluster-api-provider-aws/v2/cluster/capi-quickstart: owned
+            sigs.k8s.io/cluster-api-provider-aws/v2/role: lb
+        node:
+          id: sg-039e0ba978b176188
+          ingressRule:
+          - cidrBlocks:
+            - 0.0.0.0/0
+            description: Node Port Services
+            fromPort: 30000
+            protocol: tcp
+            toPort: 32767
+          - description: Kubelet API
+            fromPort: 10250
+            protocol: tcp
+            sourceSecurityGroupIds:
+            - sg-039e0ba978b176188
+            - sg-0d37f5074d0d04387
+            toPort: 10250
+          - description: bgp (calico)
+            fromPort: 179
+            protocol: tcp
+            sourceSecurityGroupIds:
+            - sg-039e0ba978b176188
+            - sg-0d37f5074d0d04387
+            toPort: 179
+          - description: IP-in-IP (calico)
+            fromPort: 0
+            protocol: "4"
+            sourceSecurityGroupIds:
+            - sg-039e0ba978b176188
+            - sg-0d37f5074d0d04387
+            toPort: 0
+          name: capi-quickstart-node
+          tags:
+            Name: capi-quickstart-node
+            sigs.k8s.io/cluster-api-provider-aws/v2/cluster/capi-quickstart: owned
+            sigs.k8s.io/cluster-api-provider-aws/v2/role: node
+    ready: true
+- apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
+  kind: AWSClusterControllerIdentity
+  metadata:
+    creationTimestamp: "2022-12-27T03:11:11Z"
+    generation: 1
+    labels:
+      clusterctl.cluster.x-k8s.io/move-hierarchy: ""
+    name: default
+    resourceVersion: "2023893"
+    uid: 905947fe-e19e-4d7c-87cc-cc36a7338fd9
+  spec:
+    allowedNamespaces:
+      list: null
+      selector: {}
+- apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
+  kind: AWSMachineTemplate
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"infrastructure.cluster.x-k8s.io/v1beta2","kind":"AWSMachineTemplate","metadata":{"annotations":{},"name":"capi-quickstart-control-plane","namespace":"default"},"spec":{"template":{"spec":{"iamInstanceProfile":"control-plane.cluster-api-provider-aws.sigs.k8s.io","instanceType":"t3.large","sshKeyName":"default"}}}}
+    creationTimestamp: "2022-12-27T03:11:11Z"
+    generation: 1
+    name: capi-quickstart-control-plane
+    namespace: default
+    ownerReferences:
+    - apiVersion: cluster.x-k8s.io/v1beta1
+      kind: Cluster
+      name: capi-quickstart
+      uid: 5a484c1e-d52f-46a4-a010-52232c2f25a3
+    resourceVersion: "2023890"
+    uid: e5df4e94-f2e8-42ac-8f72-20d374910c7f
+  spec:
+    template:
+      spec:
+        iamInstanceProfile: control-plane.cluster-api-provider-aws.sigs.k8s.io
+        instanceType: t3.large
+        sshKeyName: default
+- apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
+  kind: AWSMachineTemplate
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"infrastructure.cluster.x-k8s.io/v1beta2","kind":"AWSMachineTemplate","metadata":{"annotations":{},"name":"capi-quickstart-md-0","namespace":"default"},"spec":{"template":{"spec":{"iamInstanceProfile":"nodes.cluster-api-provider-aws.sigs.k8s.io","instanceType":"t3.large","sshKeyName":"default"}}}}
+    creationTimestamp: "2022-12-27T03:11:11Z"
+    generation: 1
+    name: capi-quickstart-md-0
+    namespace: default
+    ownerReferences:
+    - apiVersion: cluster.x-k8s.io/v1beta1
+      kind: Cluster
+      name: capi-quickstart
+      uid: 5a484c1e-d52f-46a4-a010-52232c2f25a3
+    resourceVersion: "2023889"
+    uid: 55d93128-65df-4c55-802d-9c46c6d55120
+  spec:
+    template:
+      spec:
+        iamInstanceProfile: nodes.cluster-api-provider-aws.sigs.k8s.io
+        instanceType: t3.large
+        sshKeyName: default
+- apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
+  kind: AWSMachine
+  metadata:
+    annotations:
+      cluster.x-k8s.io/cloned-from-groupkind: AWSMachineTemplate.infrastructure.cluster.x-k8s.io
+      cluster.x-k8s.io/cloned-from-name: capi-quickstart-control-plane
+      sigs.k8s.io/cluster-api-provider-last-applied-tags-on-volumes: '{"vol-08ba22ecd1300ac63":{}}'
+    creationTimestamp: "2022-12-27T03:14:48Z"
+    finalizers:
+    - awsmachine.infrastructure.cluster.x-k8s.io
+    generation: 4
+    labels:
+      cluster.x-k8s.io/cluster-name: capi-quickstart
+      cluster.x-k8s.io/control-plane: ""
+    name: capi-quickstart-control-plane-b2vrv
+    namespace: default
+    ownerReferences:
+    - apiVersion: controlplane.cluster.x-k8s.io/v1beta1
+      kind: KubeadmControlPlane
+      name: capi-quickstart-control-plane
+      uid: d0b49772-f957-4316-ba33-6462049222ef
+    - apiVersion: cluster.x-k8s.io/v1beta1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Machine
+      name: capi-quickstart-control-plane-j8ctn
+      uid: 94fd1ebf-bada-4725-911b-a0ee8b2f06bc
+    resourceVersion: "2025119"
+    uid: 86af9fd2-583c-4c1b-9c1b-50041590490e
+  spec:
+    ami: {}
+    cloudInit:
+      secureSecretsBackend: secrets-manager
+    iamInstanceProfile: control-plane.cluster-api-provider-aws.sigs.k8s.io
+    instanceID: i-0acd72fb52d034491
+    instanceType: t3.large
+    providerID: aws:///us-east-1a/i-0acd72fb52d034491
+    sshKeyName: default
+  status:
+    addresses:
+    - address: ip-10-0-88-169.ec2.internal
+      type: InternalDNS
+    - address: 10.0.88.169
+      type: InternalIP
+    conditions:
+    - lastTransitionTime: "2022-12-27T03:15:10Z"
+      status: "True"
+      type: Ready
+    - lastTransitionTime: "2022-12-27T03:15:09Z"
+      status: "True"
+      type: ELBAttached
+    - lastTransitionTime: "2022-12-27T03:15:10Z"
+      status: "True"
+      type: InstanceReady
+    - lastTransitionTime: "2022-12-27T03:15:09Z"
+      status: "True"
+      type: SecurityGroupsReady
+    instanceState: running
+    ready: true
+- apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
+  kind: AWSMachine
+  metadata:
+    annotations:
+      cluster.x-k8s.io/cloned-from-groupkind: AWSMachineTemplate.infrastructure.cluster.x-k8s.io
+      cluster.x-k8s.io/cloned-from-name: capi-quickstart-control-plane
+    creationTimestamp: "2022-12-27T03:19:58Z"
+    finalizers:
+    - awsmachine.infrastructure.cluster.x-k8s.io
+    generation: 1
+    labels:
+      cluster.x-k8s.io/cluster-name: capi-quickstart
+      cluster.x-k8s.io/control-plane: ""
+    name: capi-quickstart-control-plane-msz5m
+    namespace: default
+    ownerReferences:
+    - apiVersion: controlplane.cluster.x-k8s.io/v1beta1
+      kind: KubeadmControlPlane
+      name: capi-quickstart-control-plane
+      uid: d0b49772-f957-4316-ba33-6462049222ef
+    - apiVersion: cluster.x-k8s.io/v1beta1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Machine
+      name: capi-quickstart-control-plane-67sb7
+      uid: 191844ab-e3b3-4549-af7c-b79b792c9bde
+    resourceVersion: "2025152"
+    uid: aabfeab7-185c-4010-ae69-d3f2bdefc349
+  spec:
+    ami: {}
+    cloudInit:
+      secureSecretsBackend: secrets-manager
+    iamInstanceProfile: control-plane.cluster-api-provider-aws.sigs.k8s.io
+    instanceType: t3.large
+    sshKeyName: default
+  status:
+    conditions:
+    - lastTransitionTime: "2022-12-27T03:19:59Z"
+      message: 0 of 3 completed
+      reason: InstanceProvisionStarted
+      severity: Info
+      status: "False"
+      type: Ready
+    - lastTransitionTime: "2022-12-27T03:19:59Z"
+      reason: InstanceProvisionStarted
+      severity: Info
+      status: "False"
+      type: InstanceReady
+- apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
+  kind: AWSMachine
+  metadata:
+    annotations:
+      cluster.x-k8s.io/cloned-from-groupkind: AWSMachineTemplate.infrastructure.cluster.x-k8s.io
+      cluster.x-k8s.io/cloned-from-name: capi-quickstart-md-0
+      sigs.k8s.io/cluster-api-provider-last-applied-tags-on-volumes: '{"vol-050cdbabf2fba2ad8":{}}'
+    creationTimestamp: "2022-12-27T03:11:11Z"
+    finalizers:
+    - awsmachine.infrastructure.cluster.x-k8s.io
+    generation: 4
+    labels:
+      cluster.x-k8s.io/cluster-name: capi-quickstart
+      cluster.x-k8s.io/deployment-name: capi-quickstart-md-0
+      machine-template-hash: "3322807912"
+    name: capi-quickstart-md-0-6mr2w
+    namespace: default
+    ownerReferences:
+    - apiVersion: cluster.x-k8s.io/v1beta1
+      kind: MachineSet
+      name: capi-quickstart-md-0-7766d4cf56
+      uid: 9dc0e479-1db8-4240-827c-093532103149
+    - apiVersion: cluster.x-k8s.io/v1beta1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Machine
+      name: capi-quickstart-md-0-7766d4cf56-8m8f4
+      uid: 10313637-5355-4f73-ad9c-f2a097e596a2
+    resourceVersion: "2025116"
+    uid: 2b1c8714-76ae-4819-8de9-d76edb3b75bb
+  spec:
+    ami: {}
+    cloudInit:
+      secureSecretsBackend: secrets-manager
+    iamInstanceProfile: nodes.cluster-api-provider-aws.sigs.k8s.io
+    instanceID: i-07bed3d45cfd0a0a5
+    instanceType: t3.large
+    providerID: aws:///us-east-1a/i-07bed3d45cfd0a0a5
+    sshKeyName: default
+  status:
+    addresses:
+    - address: ip-10-0-94-168.ec2.internal
+      type: InternalDNS
+    - address: 10.0.94.168
+      type: InternalIP
+    conditions:
+    - lastTransitionTime: "2022-12-27T03:17:09Z"
+      status: "True"
+      type: Ready
+    - lastTransitionTime: "2022-12-27T03:17:09Z"
+      status: "True"
+      type: InstanceReady
+    - lastTransitionTime: "2022-12-27T03:17:08Z"
+      status: "True"
+      type: SecurityGroupsReady
+    instanceState: running
+    ready: true
+- apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
+  kind: AWSMachine
+  metadata:
+    annotations:
+      cluster.x-k8s.io/cloned-from-groupkind: AWSMachineTemplate.infrastructure.cluster.x-k8s.io
+      cluster.x-k8s.io/cloned-from-name: capi-quickstart-md-0
+      sigs.k8s.io/cluster-api-provider-last-applied-tags-on-volumes: '{"vol-0641aa145147942b6":{}}'
+    creationTimestamp: "2022-12-27T03:11:11Z"
+    finalizers:
+    - awsmachine.infrastructure.cluster.x-k8s.io
+    generation: 4
+    labels:
+      cluster.x-k8s.io/cluster-name: capi-quickstart
+      cluster.x-k8s.io/deployment-name: capi-quickstart-md-0
+      machine-template-hash: "3322807912"
+    name: capi-quickstart-md-0-lv9ms
+    namespace: default
+    ownerReferences:
+    - apiVersion: cluster.x-k8s.io/v1beta1
+      kind: MachineSet
+      name: capi-quickstart-md-0-7766d4cf56
+      uid: 9dc0e479-1db8-4240-827c-093532103149
+    - apiVersion: cluster.x-k8s.io/v1beta1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Machine
+      name: capi-quickstart-md-0-7766d4cf56-xqgqt
+      uid: 8ac21a99-3bb7-49a4-8518-a5d6f3a65974
+    resourceVersion: "2025117"
+    uid: 9b212c97-e370-4ea6-ade0-ce0d938e4bb9
+  spec:
+    ami: {}
+    cloudInit:
+      secureSecretsBackend: secrets-manager
+    iamInstanceProfile: nodes.cluster-api-provider-aws.sigs.k8s.io
+    instanceID: i-042e9596b90474e70
+    instanceType: t3.large
+    providerID: aws:///us-east-1a/i-042e9596b90474e70
+    sshKeyName: default
+  status:
+    addresses:
+    - address: ip-10-0-99-122.ec2.internal
+      type: InternalDNS
+    - address: 10.0.99.122
+      type: InternalIP
+    conditions:
+    - lastTransitionTime: "2022-12-27T03:17:10Z"
+      status: "True"
+      type: Ready
+    - lastTransitionTime: "2022-12-27T03:17:10Z"
+      status: "True"
+      type: InstanceReady
+    - lastTransitionTime: "2022-12-27T03:17:09Z"
+      status: "True"
+      type: SecurityGroupsReady
+    instanceState: running
+    ready: true
+- apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
+  kind: AWSMachine
+  metadata:
+    annotations:
+      cluster.x-k8s.io/cloned-from-groupkind: AWSMachineTemplate.infrastructure.cluster.x-k8s.io
+      cluster.x-k8s.io/cloned-from-name: capi-quickstart-md-0
+      sigs.k8s.io/cluster-api-provider-last-applied-tags-on-volumes: '{"vol-01a3a222b72a4312a":{}}'
+    creationTimestamp: "2022-12-27T03:11:11Z"
+    finalizers:
+    - awsmachine.infrastructure.cluster.x-k8s.io
+    generation: 4
+    labels:
+      cluster.x-k8s.io/cluster-name: capi-quickstart
+      cluster.x-k8s.io/deployment-name: capi-quickstart-md-0
+      machine-template-hash: "3322807912"
+    name: capi-quickstart-md-0-rkttc
+    namespace: default
+    ownerReferences:
+    - apiVersion: cluster.x-k8s.io/v1beta1
+      kind: MachineSet
+      name: capi-quickstart-md-0-7766d4cf56
+      uid: 9dc0e479-1db8-4240-827c-093532103149
+    - apiVersion: cluster.x-k8s.io/v1beta1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Machine
+      name: capi-quickstart-md-0-7766d4cf56-8mkp6
+      uid: 8f13739b-f79b-4ab0-8120-39ef0db69573
+    resourceVersion: "2025115"
+    uid: 5407467b-4172-46a2-89ee-9a931aee6648
+  spec:
+    ami: {}
+    cloudInit:
+      secureSecretsBackend: secrets-manager
+    iamInstanceProfile: nodes.cluster-api-provider-aws.sigs.k8s.io
+    instanceID: i-0ec1a9e9e2631455e
+    instanceType: t3.large
+    providerID: aws:///us-east-1a/i-0ec1a9e9e2631455e
+    sshKeyName: default
+  status:
+    addresses:
+    - address: ip-10-0-69-131.ec2.internal
+      type: InternalDNS
+    - address: 10.0.69.131
+      type: InternalIP
+    conditions:
+    - lastTransitionTime: "2022-12-27T03:17:08Z"
+      status: "True"
+      type: Ready
+    - lastTransitionTime: "2022-12-27T03:17:08Z"
+      status: "True"
+      type: InstanceReady
+    - lastTransitionTime: "2022-12-27T03:17:07Z"
+      status: "True"
+      type: SecurityGroupsReady
+    instanceState: running
+    ready: true
+- apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
+  kind: AWSClusterStaticIdentity
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"infrastructure.cluster.x-k8s.io/v1beta2","kind":"AWSClusterStaticIdentity","metadata":{"annotations":{},"name":"capi-multitenancy"},"spec":{"allowedNamespaces":{},"secretRef":"capi-multitenancy-account-creds"}}
+    creationTimestamp: "2022-12-20T11:31:50Z"
+    generation: 1
+    labels:
+      clusterctl.cluster.x-k8s.io/move-hierarchy: ""
+    name: capi-multitenancy
+    resourceVersion: "956494"
+    uid: 3eb16f3f-b5c0-48af-972b-49d5084e36f3
+  spec:
+    allowedNamespaces:
+      list: null
+      selector: {}
+    secretRef: capi-multitenancy-account-creds
+kind: List
+metadata:
+  resourceVersion: ""
