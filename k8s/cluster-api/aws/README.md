@@ -49,4 +49,7 @@ clusterctl generate cluster capi-quickstart \
 
 ```
 
-
+Verify kubelet log:
+```
+journalctl -xefu kubelet
+```
