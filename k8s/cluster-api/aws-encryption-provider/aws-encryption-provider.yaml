@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: aws-encryption-provider
+  namespace: kube-system
+spec:
+  containers:
+  - image: ghcr.io/zirain/aws-encryption-provider:0.0.1
+    name: aws-encryption-provider
+    command:
+    - /aws-encryption-provider
+    - --key=arn:aws:kms:us-east-1:017975021908:key/a32b783b-c527-497e-9777-4bc31aacab92
+    - --region=us-east-1
+    - --listen=/var/run/kmsplugin/socket.sock
+    ports:
+    - containerPort: 8080
+      protocol: TCP
+    livenessProbe:
+      httpGet:
+        path: /healthz
+        port: 8080
+    volumeMounts:
+    - mountPath: /var/run/kmsplugin
+      name: var-run-kmsplugin
+  hostNetwork: true
+  volumes:
+  - name: var-run-kmsplugin
+    hostPath:
+      path: /var/run/kmsplugin
+      type: DirectoryOrCreate
