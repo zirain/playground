@@ -18,10 +18,17 @@ Amazon EKS 为包含 ProjectedServiceAccountToken JSON Web 令牌的签名密钥
 
 - 可审核性 – 可通过 AWS CloudTrail 进行访问和事件日志记录以帮助确保可追溯性审核。
 
+## Anthos 的实现
+
+[Anthos上一代方案](https://cloud.google.com/anthos/clusters/docs/multi-cloud/aws/previous-generation/how-to/loadbalancer-alb)
+    直接在Deployment中注入 `AWS_ACCESS_KEY_ID` `AWS_SECRET_ACCESS_KEY`
+    
+[Anthos新方案](https://cloud.google.com/anthos/clusters/docs/multi-cloud/aws/how-to/use-workload-identity-aws)
+    采用IRSA，最小化权限
 
 ## 实现
 
-[IRSA](https://github.com/aws/amazon-eks-pod-identity-webhook/blob/master/SELF_HOSTED_SETUP.md)
+参考eks提供的[方案](https://github.com/aws/amazon-eks-pod-identity-webhook/blob/master/SELF_HOSTED_SETUP.md)
 
 1. 创建证书
 
