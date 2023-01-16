@@ -1,0 +1,16 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+spec:
+  meshConfig:
+    enableTracing: true
+    defaultConfig:
+      tracing: {}
+    extensionProviders:
+      - name: zipkin
+        zipkin:
+          service: zipkin.istio-system.svc.cluster.local
+          port: 9411
+      - name: otel-tracing
+        opentelemetry:
+          service: otel-collector.istio-system.svc.cluster.local
+          port: 4317
