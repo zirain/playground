@@ -5,8 +5,9 @@ apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 spec:
   meshConfig:
-    accessLogFile: /dev/stdout  
+    accessLogFile: /dev/stdout
     defaultConfig:
+      # proxyAdminPort: 19000
       proxyMetadata:
         # Enable Istio agent to handle DNS requests for known hosts
         # Unknown hosts will automatically be resolved using upstream dns servers in resolv.conf
