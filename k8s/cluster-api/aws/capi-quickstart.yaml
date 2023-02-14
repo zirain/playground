@@ -1,37 +1,36 @@
 apiVersion: cluster.x-k8s.io/v1beta1
 kind: Cluster
 metadata:
-  name: capi-quickstart
+  name: quickstart
   namespace: default
 spec:
   clusterNetwork:
     pods:
       cidrBlocks:
-      - 192.168.0.0/16
+        - 192.168.0.0/16
   controlPlaneRef:
     apiVersion: controlplane.cluster.x-k8s.io/v1beta1
     kind: KubeadmControlPlane
-    name: capi-quickstart-control-plane
+    name: quickstart-control-plane
   infrastructureRef:
     apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
     kind: AWSCluster
-    name: capi-quickstart
+    name: quickstart
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
 kind: AWSCluster
 metadata:
-  name: capi-quickstart
+  name: quickstart
   namespace: default
 spec:
   region: us-east-1
-  sshKeyName: default
   network:
     cni:
       cniIngressRules:
-      - protocol: "-1"
-        fromPort: -1
-        toPort: 65535
-        description: "Amazon VPC CNI"
+        - protocol: "-1"
+          fromPort: -1
+          toPort: 65535
+          description: "Amazon VPC CNI"
   identityRef:
     kind: AWSClusterStaticIdentity
     name: capi-multitenancy
@@ -42,12 +41,12 @@ metadata:
   name: capi-multitenancy
 spec:
   allowedNamespaces: {}
-  secretRef: capi-multitenancy-account-creds
+  secretRef: capi-multitenancy
 ---
 apiVersion: controlplane.cluster.x-k8s.io/v1beta1
 kind: KubeadmControlPlane
 metadata:
-  name: capi-quickstart-control-plane
+  name: quickstart-control-plane
   namespace: default
 spec:
   kubeadmConfigSpec:
@@ -66,44 +65,44 @@ spec:
       nodeRegistration:
         kubeletExtraArgs:
           cloud-provider: aws
-        name: '{{ ds.meta_data.local_hostname }}'
+        name: "{{ ds.meta_data.local_hostname }}"
     joinConfiguration:
       nodeRegistration:
         kubeletExtraArgs:
           cloud-provider: aws
-        name: '{{ ds.meta_data.local_hostname }}'
+        name: "{{ ds.meta_data.local_hostname }}"
     preKubeadmCommands:
-    - /sbin/iptables -P FORWARD ACCEPT -w 5
-    - aws s3 cp s3://kurator-operator-test/sa-signer-pkcs8.pub /etc/kubernetes/pki/sa-signer-pkcs8.pub # 与L51一致
-    - aws s3 cp s3://kurator-operator-test/sa-signer.key /etc/kubernetes/pki/sa-signer.key && chmod 0600 /etc/kubernetes/pki/sa-signer.key # 与L53一致
+      - /sbin/iptables -P FORWARD ACCEPT -w 5
+      - aws s3 cp s3://kurator-operator-test/sa-signer-pkcs8.pub /etc/kubernetes/pki/sa-signer-pkcs8.pub # 与L51一致
+      - aws s3 cp s3://kurator-operator-test/sa-signer.key /etc/kubernetes/pki/sa-signer.key && chmod 0600 /etc/kubernetes/pki/sa-signer.key # 与L53一致
   machineTemplate:
     infrastructureRef:
       apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
       kind: AWSMachineTemplate
-      name: capi-quickstart-control-plane
+      name: quickstart-control-plane
   replicas: 1
   version: v1.23.0
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
 kind: AWSMachineTemplate
 metadata:
-  name: capi-quickstart-control-plane
+  name: quickstart-control-plane
   namespace: default
 spec:
   template:
     spec:
       iamInstanceProfile: control-plane.cluster-api-provider-aws.sigs.k8s.io
       instanceType: t3.large
-      sshKeyName: default
+      sshKeyName: ""
 ---
 apiVersion: cluster.x-k8s.io/v1beta1
 kind: MachineDeployment
 metadata:
-  name: capi-quickstart-md-0
+  name: quickstart-md-0
   namespace: default
 spec:
-  clusterName: capi-quickstart
-  replicas: 2
+  clusterName: quickstart
+  replicas: 1
   selector:
     matchLabels: null
   template:
@@ -112,18 +111,18 @@ spec:
         configRef:
           apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
           kind: KubeadmConfigTemplate
-          name: capi-quickstart-md-0
-      clusterName: capi-quickstart
+          name: quickstart-md-0
+      clusterName: quickstart
       infrastructureRef:
         apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
         kind: AWSMachineTemplate
-        name: capi-quickstart-md-0
+        name: quickstart-md-0
       version: v1.23.0
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
 kind: AWSMachineTemplate
 metadata:
-  name: capi-quickstart-md-0
+  name: quickstart-md-0
   namespace: default
 spec:
   template:
@@ -131,14 +130,14 @@ spec:
       #imageLookupBaseOS: ubuntu-18.04
       iamInstanceProfile: nodes.cluster-api-provider-aws.sigs.k8s.io
       instanceType: t3.large
-      sshKeyName: default
+      sshKeyName: ""
       rootVolume:
         size: 10
 ---
 apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
 kind: KubeadmConfigTemplate
 metadata:
-  name: capi-quickstart-md-0
+  name: quickstart-md-0
   namespace: default
 spec:
   template:
@@ -146,7 +145,7 @@ spec:
       joinConfiguration:
         nodeRegistration:
           kubeletExtraArgs:
-            cloud-provider: aws   
-          name: '{{ ds.meta_data.local_hostname }}'
+            cloud-provider: aws
+          name: "{{ ds.meta_data.local_hostname }}"
       preKubeadmCommands:
-      - /sbin/iptables -P FORWARD ACCEPT -w 5
+        - /sbin/iptables -P FORWARD ACCEPT -w 5

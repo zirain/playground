@@ -53,3 +53,4 @@
 
    clusterctl get kubeconfig capi-quickstart > /root/.kube/capi-quickstart.kubeconfig
    kubectl --kubeconfig=/root/.kube/capi-quickstart.kubeconfig apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.24.1/manifests/calico.yaml
+   kubectl --kubeconfig=/root/.kube/capi-quickstart.kubeconfig get nodes

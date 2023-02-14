@@ -87,22 +87,22 @@ self-hosted-keys -key sa-signer-pkcs8.pub  | jq '.keys += [.keys[0]] | .keys[1].
 ```
 
 ```console
-aws s3 cp --acl public-read ./discovery.json s3://kurator-operator-test/.well-known/openid-configuration
-aws s3 cp --acl public-read ./keys.json s3://kurator-operator-test/keys.json
+aws s3 cp --acl public-read /root/go/src/github.com/zirain/playground/k8s/cluster-api/aws/IRSA/discovery.json s3://kurator-operator-test/.well-known/openid-configuration
+aws s3 cp --acl public-read /root/go/src/github.com/zirain/playground/k8s/cluster-api/aws/IRSA//keys.json s3://kurator-operator-test/keys.json
 
-aws s3 cp ./sa-signer.key s3://kurator-operator-test/sa-signer.key
-aws s3 cp ./sa-signer.key.pub s3://kurator-operator-test/sa-signer.key.pub
-aws s3 cp ./sa-signer-pkcs8.pub s3://kurator-operator-test/sa-signer-pkcs8.pub
+aws s3 cp /root/go/src/github.com/zirain/playground/k8s/cluster-api/aws/IRSA//sa-signer.key s3://kurator-operator-test/sa-signer.key
+aws s3 cp /root/go/src/github.com/zirain/playground/k8s/cluster-api/aws/IRSA//sa-signer-pkcs8.pub s3://kurator-operator-test/sa-signer-pkcs8.pub
 ```
 
 创建OIDC
 
 CA_THUMBPRINT=$(openssl s_client -connect kurator-operator-test.s3.amazonaws.com:443 -servername kurator-operator-test.s3.amazonaws.com -showcerts < /dev/null 2>/dev/null  |  openssl x509 -in /dev/stdin -sha1 -noout -fingerprint | cut -d '=' -f 2 | tr -d ':')
 
-
-openssl s_client -connect kurator-4d4869e1-b642-4abf-9be0-991a336b4e43.s3.amazonaws.com:443 -servername kurator-4d4869e1-b642-4abf-9be0-991a336b4e43.s3.amazonaws.com -showcerts < /dev/null 2>/dev/null  |  openssl x509 -in /dev/stdin -sha1 -noout -fingerprint | cut -d '=' -f 2 | tr -d ':'
-
 aws iam create-open-id-connect-provider \
      --url https://kurator-operator-test.s3.amazonaws.com \
-     --thumbprint-list $CA_THUMBPRINT \
+     --thumbprint-list ECB2CB265649752A47EF84495ACAB7A5B348782B \
      --client-id-list sts.amazonaws.com
+
+部署pod-inddentity-webhook
+
+k apply -f /root/go/src/github.com/zirain/playground/k8s/cluster-api/aws/pod-identity-webhook.yaml

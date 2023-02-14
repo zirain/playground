@@ -732,7 +732,7 @@ spec:
     spec:
       containers:
       - args:
-        - --cluster-name=capi-quickstart
+        - --cluster-name=quickstart
         - --ingress-class=alb
         image: amazon/aws-alb-ingress-controller:v2.4.5
         livenessProbe:

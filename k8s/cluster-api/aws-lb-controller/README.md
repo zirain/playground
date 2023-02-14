@@ -20,15 +20,12 @@ kubectl apply -f /root/go/src/github.com/zirain/playground/k8s/cluster-api/aws-l
 kubectl apply -f /root/go/src/github.com/zirain/playground/k8s/cluster-api/aws-lb-controller/v2_4_5_ingclass.yaml
 ```
 
+kubectl logs -l app.kubernetes.io/name=aws-load-balancer-controller -nkube-system --tail=-1
 
 ## Echo Demo
 
-kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.4.5/docs/examples/echoservice/echoserver-namespace.yaml
-kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.4.5/docs/examples/echoservice/echoserver-service.yaml 
-kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.4.5/docs/examples/echoservice/echoserver-deployment.yaml
-
-
-kubectl apply -f echoserver-ingress.yaml
+kubectl apply -f /root/go/src/github.com/zirain/playground/k8s/cluster-api/aws-lb-controller/echoserver.yaml
+kubectl apply -f /root/go/src/github.com/zirain/playground/k8s/cluster-api/aws-lb-controller/echoserver-ingress.yaml
 
 kubectl describe ing -n echoserver echoserver
 
@@ -38,9 +35,6 @@ curl  aa4d97e085c3e4a0c8ffb97ed54aae8e-732356473.us-east-1.elb.amazonaws.com --h
 curl -v echoserver.example.com --resolve "echoserver.example.com:80:34.236.229.225"
 
 
-helm repo add eks https://aws.github.io/eks-charts
-
-helm upgrade --install aws-load-balancer-controller eks/aws-load-balancer-controller -n kube-system --set clusterName=capi-quickstart --set serviceAccount.create=true --set serviceAccount.name=aws-load-balancer-controller
-
-
 helm delete aws-load-balancer-controller -n kube-system
+
+

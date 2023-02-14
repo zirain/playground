@@ -53,3 +53,20 @@ Verify kubelet log:
 ```
 journalctl -xefu kubelet
 ```
+
+clusterctl get kubeconfig quickstart > /root/.kube/capi-quickstart.kubeconfig
+kubectl --kubeconfig=/root/.kube/capi-quickstart.kubeconfig apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.24.1/manifests/calico.yaml
+kubectl --kubeconfig=/root/.kube/capi-quickstart.kubeconfig get nodes
+
+
+kubectl --kubeconfig=/root/.kube/capi-quickstart.kubeconfig apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v1.5.4/cert-manager.yaml
+kubectl --kubeconfig=/root/.kube/capi-quickstart.kubeconfig apply -f /root/go/src/github.com/zirain/playground/k8s/cluster-api/aws/pod-identity-webhook.yaml
+
+kubectl --kubeconfig=/root/.kube/capi-quickstart.kubeconfig apply -f /root/go/src/github.com/zirain/playground/k8s/cluster-api/aws-lb-controller/v2_4_5_full.yaml
+kubectl --kubeconfig=/root/.kube/capi-quickstart.kubeconfig apply -f /root/go/src/github.com/zirain/playground/k8s/cluster-api/aws-lb-controller/v2_4_5_ingclass.yaml
+
+kubectl --kubeconfig=/root/.kube/capi-quickstart.kubeconfig apply -f /root/go/src/github.com/zirain/playground/k8s/cluster-api/aws-lb-controller/echoserver.yaml
+
+kubectl --kubeconfig=/root/.kube/capi-quickstart.kubeconfig apply -f /root/go/src/github.com/zirain/playground/k8s/cluster-api/aws-lb-controller/echoserver-ingress.yaml
+
+kubectl --kubeconfig=/root/.kube/capi-quickstart.kubeconfig  describe ing echoserver
