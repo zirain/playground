@@ -99,6 +99,9 @@ aws s3 cp ./sa-signer-pkcs8.pub s3://kurator-operator-test/sa-signer-pkcs8.pub
 
 CA_THUMBPRINT=$(openssl s_client -connect kurator-operator-test.s3.amazonaws.com:443 -servername kurator-operator-test.s3.amazonaws.com -showcerts < /dev/null 2>/dev/null  |  openssl x509 -in /dev/stdin -sha1 -noout -fingerprint | cut -d '=' -f 2 | tr -d ':')
 
+
+openssl s_client -connect kurator-4d4869e1-b642-4abf-9be0-991a336b4e43.s3.amazonaws.com:443 -servername kurator-4d4869e1-b642-4abf-9be0-991a336b4e43.s3.amazonaws.com -showcerts < /dev/null 2>/dev/null  |  openssl x509 -in /dev/stdin -sha1 -noout -fingerprint | cut -d '=' -f 2 | tr -d ':'
+
 aws iam create-open-id-connect-provider \
      --url https://kurator-operator-test.s3.amazonaws.com \
      --thumbprint-list $CA_THUMBPRINT \

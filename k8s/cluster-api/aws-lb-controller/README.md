@@ -16,8 +16,8 @@ aws load balancer controller严重依赖于资源的标签, cluster-api-provider
 ```
 kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v1.5.4/cert-manager.yaml
 
-kubectl apply -f v2_4_5_full.yaml
-kubectl apply -f v2_4_5_ingclass.yaml
+kubectl apply -f /root/go/src/github.com/zirain/playground/k8s/cluster-api/aws-lb-controller/v2_4_5_full.yaml
+kubectl apply -f /root/go/src/github.com/zirain/playground/k8s/cluster-api/aws-lb-controller/v2_4_5_ingclass.yaml
 ```
 
 
