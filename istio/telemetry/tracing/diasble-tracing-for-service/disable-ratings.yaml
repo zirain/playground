@@ -1,0 +1,24 @@
+apiVersion: telemetry.istio.io/v1alpha1
+kind: Telemetry
+metadata:
+  name: mesh-default
+  namespace: istio-system
+spec:
+  tracing:
+    - providers:
+        - name: "zipkin"
+      randomSamplingPercentage: 100.00
+---
+apiVersion: telemetry.istio.io/v1alpha1
+kind: Telemetry
+metadata:
+  name: disable-details
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: details
+  tracing:
+    - providers:
+        - name: "zipkin"
+      disableSpanReporting: true
