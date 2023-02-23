@@ -1,0 +1,81 @@
+apiVersion: telemetry.istio.io/v1alpha1
+kind: Telemetry
+metadata:
+  name: disable-metrics
+  namespace: istio-system
+spec:
+  metrics:
+    - providers:
+        - name: prometheus
+      overrides:
+        - disabled: true
+          match:
+            metric: ALL_METRICS
+            mode: SERVER
+        - match:
+            mode: CLIENT
+          tagOverrides:
+            destination_canonical_service:
+              operation: REMOVE
+            source_canonical_service:
+              operation: REMOVE
+            destination_principal:
+              operation: REMOVE
+            source_principal:
+              operation: REMOVE
+            connection_security_policy:
+              operation: REMOVE
+            grpc_response_status:
+              operation: REMOVE
+            source_version:
+              operation: REMOVE
+            destination_version:
+              operation: REMOVE
+            request_protocol:
+              operation: REMOVE
+            source_canonical_revision:
+              operation: REMOVE
+            destination_canonical_revision:
+              operation: REMOVE
+            source_cluster:
+              operation: REMOVE
+            destination_cluster:
+              operation: REMOVE
+            destination_app:
+              operation: REMOVE
+        - match:
+            mode: CLIENT
+            metric: REQUEST_DURATION
+          tagOverrides:
+            response_code:
+              operation: REMOVE
+            response_flags:
+              operation: REMOVE
+            source_cluster:
+              operation: REMOVE
+            destination_cluster:
+              operation: REMOVE
+        - match:
+            mode: CLIENT
+            metric: REQUEST_SIZE
+          tagOverrides:
+            response_code:
+              operation: REMOVE
+            response_flags:
+              operation: REMOVE
+            source_cluster:
+              operation: REMOVE
+            destination_cluster:
+              operation: REMOVE
+        - match:
+            mode: CLIENT
+            metric: RESPONSE_SIZE
+          tagOverrides:
+            response_code:
+              operation: REMOVE
+            response_flags:
+              operation: REMOVE
+            source_cluster:
+              operation: REMOVE
+            destination_cluster:
+              operation: REMOVE
