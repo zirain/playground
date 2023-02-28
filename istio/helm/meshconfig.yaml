@@ -5,3 +5,12 @@ meshConfig:
       ISTIO_META_DNS_CAPTURE: "true"
       # Enable automatic address allocation, optional
       ISTIO_META_DNS_AUTO_ALLOCATE: "true"
+
+global:
+  istioNamespace: istio-system
+  variant: "distroless"
+  proxy:
+    image: proxyv2
+    autoInject: enabled
+  proxy_init:
+    image: proxyv2
