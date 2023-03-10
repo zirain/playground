@@ -5,6 +5,8 @@ apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 spec:
   meshConfig:
+    # proxyListenPort: 16001
+    # proxyInboundListenPort: 16006
     accessLogFile: /dev/stdout
     defaultConfig:
       # proxyAdminPort: 19000
