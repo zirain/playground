@@ -5,7 +5,7 @@ metadata:
   annotations:
     alb.ingress.kubernetes.io/scheme: internet-facing
     # 使用internet-facing时，务必使用public类型的子网
-    alb.ingress.kubernetes.io/subnets: quickstart-subnet-public-us-east-1a,quickstart-subnet-public-us-east-1b, quickstart-subnet-public-us-east-1c
+    alb.ingress.kubernetes.io/subnets: pod-identity-subnet-public-us-east-1a,pod-identity-subnet-public-us-east-1b, pod-identity-subnet-public-us-east-1c
     alb.ingress.kubernetes.io/tags: Environment=dev,Team=test
 spec:
   ingressClassName: alb
