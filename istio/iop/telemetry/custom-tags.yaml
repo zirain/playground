@@ -1,0 +1,32 @@
+# export mesh_id cluster_id in metrics
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  name: custom-tags
+  namespace: istio-system
+spec:
+  meshConfig:
+    accessLogFile: /dev/stdout
+    defaultConfig:
+      extraStatTags:
+        - src_app
+        - dest_app
+  values:
+    global:
+      meshID: mesh1
+    telemetry:
+      enabled: true
+      v2:
+        enabled: true
+        prometheus:
+          configOverride:
+            outboundSidecar:
+              metrics:
+                - name: requests_total
+                  dimensions:
+                    dest_app: upstream_peer.workload_name
+            inboundSidecar:
+              metrics:
+                - name: requests_total
+                  dimensions:
+                    src_app: downstream_peer.workload_name
