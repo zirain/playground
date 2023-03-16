@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: greeter-client
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: greeter-client
+  template:
+    metadata:
+      labels:
+        app: greeter-client
+    spec:
+      containers:
+        - args:
+            - --address=greeter:8080
+            - --insecure
+          image: ghcr.io/zirain/grpc-greeter-go-client
+          imagePullPolicy: IfNotPresent
+          name: greeter

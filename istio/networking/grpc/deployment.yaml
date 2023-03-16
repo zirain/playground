@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: greeter-v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: greeter
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: greeter
+        version: v1
+    spec:
+      containers:
+        - args:
+            - --address=:8080
+          image: ghcr.io/zirain/grpc-greeter-go-server
+          imagePullPolicy: IfNotPresent
+          name: greeter
+          ports:
+            - containerPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: greeter-v2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: greeter
+      version: v2
+  template:
+    metadata:
+      labels:
+        app: greeter
+        version: v2
+    spec:
+      containers:
+        - args:
+            - --address=:8080
+          image: ghcr.io/zirain/grpc-greeter-go-server
+          imagePullPolicy: IfNotPresent
+          name: greeter
+          ports:
+            - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: greeter
+spec:
+  ports:
+    - name: grpc
+      port: 8080
+      protocol: TCP
+  selector:
+    app: greeter
+  type: ClusterIP

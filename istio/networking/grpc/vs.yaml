@@ -1,0 +1,18 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: greeter
+spec:
+  gateways:
+    - greeter
+  hosts:
+    - "*"
+  http:
+    - match:
+        - uri:
+            prefix: /
+      route:
+        - destination:
+            host: greeter
+            port:
+              number: 8080

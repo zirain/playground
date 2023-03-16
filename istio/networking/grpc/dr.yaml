@@ -1,0 +1,11 @@
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: greeter
+spec:
+  host: greeter
+  trafficPolicy:
+    loadBalancer:
+      simple: ROUND_ROBIN
+    tls:
+      mode: ISTIO_MUTUAL
