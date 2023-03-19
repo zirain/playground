@@ -15,3 +15,8 @@ cd /root/go/src/istio.io/proxy
 BAZEL_BUILD_ARGS=--override_repository=envoy=/root/go/src/istio.io/envoy make build_envoy
 
 ```
+
+
+```console
+sudo apt install llvm-14 clang-14 libc++-14-dev
+```
