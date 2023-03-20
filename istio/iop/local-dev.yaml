@@ -9,6 +9,9 @@ spec:
     # proxyInboundListenPort: 16006
     accessLogFile: /dev/stdout
     defaultConfig:
+      # extraStatTags:
+      #   - source_x
+      #   - destination_x
       # proxyAdminPort: 19000
       proxyMetadata:
         # Enable Istio agent to handle DNS requests for known hosts
@@ -19,3 +22,7 @@ spec:
     global:
       logging:
         level: "default:debug,xdsproxy:debug,wasm:debug"
+    telemetry:
+      enabled: true
+      v2:
+        enabled: false
