@@ -5,7 +5,7 @@ export HTTPBIN_POD=`kubectl get po | grep httpbin | awk '{print $1}'`
 export FORTIO_POD=`kubectl get po | grep fortio | awk '{print $1}'`
 export SLEEP_POD=`kubectl get po | grep sleep | awk '{print $1}'`
 
-kubectl exec -it $SLEEP_POD -c sleep -- curl httpbin:8000/ip
+kubectl exec -it deploy/sleep -c sleep -- curl httpbin:8000/get
 ```
 
 
