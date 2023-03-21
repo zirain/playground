@@ -1,0 +1,22 @@
+apiVersion: telemetry.istio.io/v1alpha1
+kind: Telemetry
+metadata:
+  name: mesh-default
+  namespace: istio-system
+spec:
+  tracing:
+    - providers:
+        - name: "zipkin"
+      randomSamplingPercentage: 100.00
+      customTags:
+        "provider":
+          literal:
+            value: "otel"
+        "cluster_id":
+          environment:
+            name: ISTIO_META_CLUSTER_ID
+            defaultValue: Kubernetes # optional
+        "my_tag_header":
+          header:
+            name: <CLIENT-HEADER>
+            defaultValue: <VALUE> # optional
