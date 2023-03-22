@@ -22,7 +22,7 @@ spec:
               "protocol": "%PROTOCOL%"
               "reponseCode": "%RESPONSE_CODE%"
               "reponseFlags": "%RESPONSE_FLAGS%"
-              "failureRease": "%UPSTREAM_TRANSPORT_FAILURE_REASON%"
+              "failureReason": "%UPSTREAM_TRANSPORT_FAILURE_REASON%"
               "bytesReceived": "%BYTES_RECEIVED% %BYTES_SENT%"
               "duration": "%DURATION%"
               "envoyUpstreamServiceTime": "%RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)%"
