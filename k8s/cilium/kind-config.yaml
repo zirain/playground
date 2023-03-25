@@ -5,4 +5,4 @@ nodes:
   - role: worker
 networking:
   disableDefaultCNI: true # do not install kindnet
-  #kubeProxyMode: none # do not run kube-proxy
+  kubeProxyMode: none # do not run kube-proxy
