@@ -17,7 +17,7 @@ helm repo add cilium https://helm.cilium.io/
 helm repo update
 
 helm install cilium cilium/cilium -f /root/go/src/github.com/zirain/playground/k8s/cilium/cilum-strict.yaml -nkube-system
-helm upgrade cilium cilium/cilium -f cilium.yaml -nkube-system
+helm upgrade --install cilium cilium/cilium -f /root/go/src/github.com/zirain/playground/k8s/cilium/cilium.yaml -nkube-system
 
 cilium status
 ```
@@ -32,7 +32,7 @@ kubectl create -f https://raw.githubusercontent.com/cilium/cilium/v1.12/examples
 ## Clean
 
 ```
-helm uninstall cilium
+helm uninstall cilium -nkube-system
 ```
 
 

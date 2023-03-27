@@ -1,5 +1,6 @@
-version: 1.12.0
 kubeProxyReplacement: partial
+k8sServiceHost: cilium-control-plane # use master node in kind network
+k8sServicePort: 6443 # use api server port
 operator:
   replicas: 1
 externalIPs:
