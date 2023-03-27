@@ -13,6 +13,9 @@ clean:
 build: clean
 	tinygo build -o $(WASM_PLUGIN_NAME) -scheduler=none -target=wasi main.go
 
+build-dev:
+	tinygo-dev build -o $(WASM_PLUGIN_NAME) -scheduler=none -target=wasi main.go
+
 docker.build: build
 	docker build -t $(DOCKER_IMAGE) .
 
