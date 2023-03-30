@@ -8,6 +8,9 @@ spec:
     # proxyListenPort: 16001
     # proxyInboundListenPort: 16006
     accessLogFile: /dev/stdout
+    defaultProviders:
+      metrics:
+      - prometheus # use Telemetry API
     defaultConfig:
       # extraStatTags:
       #   - source_x
