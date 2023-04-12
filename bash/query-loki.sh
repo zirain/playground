@@ -12,5 +12,18 @@ function count_by_pod() {
   curl -G -s 'http://localhost:3100/loki/api/v1/query_range' --data-urlencode "query={namespace=\"$namespace\", pod=\"$name\"}" | jq '.data.result[0].values | length'
 }
 
-count_by_pod "default" "sleep-78ff5975c6-bj745"
-count_by_pod "default" "helloworld-v1-78b9f5c87f-kn5vd"
+SLEEP_POD=$(kubectl get pod -l app=sleep -o jsonpath={.items..metadata.name})
+HTTPBIN_POD=$(kubectl get pod -l app=httpbin -o jsonpath={.items..metadata.name})
+
+C1=$(count_by_pod "default" "$SLEEP_POD")
+count_by_pod "default" "$HTTPBIN_POD"
+
+verify_same() {
+  local actual="$1"
+  local expected="$2"
+  if  [[ "$actual" != "$expected" ]]; then
+    exit 1
+  fi
+}
+verify_same 1 0
+verify_same 1 1
