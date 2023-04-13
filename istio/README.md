@@ -34,6 +34,8 @@ prow/integ-suite-kind.sh doc.test.profile_none
 # MACOS
 HUB=istio TAG=1.17.0 TEST_ENV=kind ADDITIONAL_CONTAINER_OPTIONS="--network host"  make doc.test TEST=tasks/observability/metrics/telemetry-api
 
+rm -rf out/linux_amd64/tests-setup-* && TEST_ENV=kind ADDITIONAL_CONTAINER_OPTIONS='--network host' make doc.test.profile_default TEST=tasks/observability/logs/telemetry-api
+
 export KUBECONFIG=/root/.kube/member1.config:/root/.kube/member2.config:/root/.kube/member3.config
 export KUBECONFIG_FILES=(/root/.kube/member1.config /root/.kube/members.config /root/.kube/member3.config)
 export KUBE_CONTEXTS=(member1 member2 member3)
