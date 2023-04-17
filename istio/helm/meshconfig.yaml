@@ -6,7 +6,12 @@ meshConfig:
       # Enable automatic address allocation, optional
       ISTIO_META_DNS_AUTO_ALLOCATE: "true"
 
+pilot:
+  autoscaleEnabled: false
+
 global:
+  defaultPodDisruptionBudget:
+    enabled: false
   istioNamespace: istio-system
   variant: "distroless"
   proxy:
