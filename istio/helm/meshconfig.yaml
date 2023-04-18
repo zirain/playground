@@ -1,5 +1,7 @@
 meshConfig:
   defaultConfig:
+    tracing:
+      sampling: 100.0
     proxyMetadata:
       # Enable basic DNS proxying
       ISTIO_META_DNS_CAPTURE: "true"
