@@ -8,9 +8,14 @@ spec:
     # proxyListenPort: 16001
     # proxyInboundListenPort: 16006
     accessLogFile: /dev/stdout
+    extensionProviders:
+      - name: zipkin
+        zipkin:
+          service: zipkin.istio-system.svc.cluster.local
+          port: 9411
     defaultProviders:
       metrics:
-      - prometheus # use Telemetry API
+        - prometheus # use Telemetry API
     defaultConfig:
       # extraStatTags:
       #   - source_x
@@ -24,7 +29,7 @@ spec:
   values:
     global:
       logging:
-        level: "default:debug,xdsproxy:debug,wasm:debug"
+        level: "default:info,xdsproxy:debug,wasm:debug"
     telemetry:
       enabled: true
       v2:
