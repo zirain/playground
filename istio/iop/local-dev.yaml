@@ -22,14 +22,14 @@ spec:
       #   - destination_x
       # proxyAdminPort: 19000
       proxyMetadata:
-        # Enable Istio agent to handle DNS requests for known hosts
-        # Unknown hosts will automatically be resolved using upstream dns servers in resolv.conf
+        ISTIO_META_METRIC_ROTATION_INTERVAL: 1m
+        ISTIO_META_METRIC_GRACEFUL_DELETION_INTERVAL: 10s
         WASM_MODULE_EXPIRY: 10m
         WASM_PURGE_INTERVAL: 1m
   values:
     global:
       logging:
-        level: "default:info,xdsproxy:debug,wasm:debug"
+        # level: "default:info,xdsproxy:debug,wasm:debug"
     telemetry:
       enabled: true
       v2:
