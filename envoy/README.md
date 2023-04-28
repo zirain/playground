@@ -32,7 +32,7 @@ cp bazel-bin/source/exe/envoy-static /usr/local/bin/envoy-dev
 
 ```
 cd /root/go/src/istio.io/envoy
-#bazel/setup_clang.sh /usr/lib/llvm-10/
+#bazel/setup_clang.sh /usr/lib/llvm-14/
 sha256sum /usr/local/bin/envoy-dev
 bazel build -c opt envoy && cp bazel-bin/source/exe/envoy-static /usr/local/bin/envoy-dev
 sha256sum /usr/local/bin/envoy-dev
