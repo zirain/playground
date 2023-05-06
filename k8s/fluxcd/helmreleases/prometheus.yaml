@@ -1,0 +1,42 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: prometheus
+  namespace: monitoring
+spec:
+  chart:
+    spec:
+      chart: kube-prometheus
+      version: 8.9.1
+      sourceRef:
+        kind: HelmRepository
+        name: bitnami
+  interval: 1m0s
+  values:
+    alertmanager:
+      enabled: false
+    exporters:
+      enabled: false
+      node-exporter:
+        enabled: false
+      kube-state-metrics:
+        enabled: false
+    blackboxExporter:
+      enabled: false
+    operator:
+      enabled: false
+      service:
+        type: ClusterIP
+    prometheus:
+      disableCompaction: true
+      thanos:
+        create: true
+        service:
+          type: LoadBalancer
+        objectStorageConfig:
+          secretKey: objstore.yml
+          secretName: thanos-objstore-secret
+      service:
+        type: ClusterIP
+      externalLabels:
+        cluster: data-producer-0 # same as cluster name
