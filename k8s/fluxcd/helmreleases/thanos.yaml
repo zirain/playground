@@ -2,7 +2,7 @@ apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
   name: thanos
-  namespace: monitoring
+  namespace: default # same as SecretRef's namespace
 spec:
   chart:
     spec:
@@ -11,7 +11,9 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: bitnami
+        namespace: monitoring
   interval: 1m0s
+  targetNamespace: monitoring
   values:
     objstoreConfig: |-
       type: s3
@@ -23,7 +25,7 @@ spec:
         insecure: true
     query:
       dnsDiscovery:
-        sidecarsService: prometheus-operator-kube-p-prometheus-thanos
+        sidecarsService: prometheus-thanos
         sidecarsNamespace: monitoring
     queryFrontend:
       enabled: false
