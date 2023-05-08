@@ -13,6 +13,7 @@ spec:
         name: bitnami
   interval: 1m0s
   values:
+    fullnameOverride: prometheus
     alertmanager:
       enabled: false
     exporters:
@@ -24,7 +25,6 @@ spec:
     blackboxExporter:
       enabled: false
     operator:
-      enabled: false
       service:
         type: ClusterIP
     prometheus:
