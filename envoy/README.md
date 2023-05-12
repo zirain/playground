@@ -64,6 +64,14 @@ bazel test //test/common/common:matchers_test
 bazel test //test/extensions/tracers/datadog:datadog_tracer_impl_test
 ```
 
+## coverage test
+
+```console
+# find result in /tmp/envoy-docker-build/envoy/x64/generated/coverage.tar.zst
+rm -rf /tmp/envoy-docker-build/envoy/x64/testlogs.tar.zst /tmp/envoy-docker-build/envoy/x64/generated/coverage.tar.zst
+./ci/run_envoy_docker.sh './ci/do_ci.sh bazel.coverage //test/extensions/formatter/cel:cel_test'
+```
+
 ## make doc
 
 ***please commit your changes before run following command***
