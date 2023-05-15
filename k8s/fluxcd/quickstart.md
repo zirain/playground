@@ -10,7 +10,7 @@ helm search repo fluxcd-community
 helm show values fluxcd-community/flux2
 
 helm install fluxcd fluxcd-community/flux2 -n fluxcd-system --create-namespace \
-    -f /root/go/src/github.com/zirain/playground/k8s/fluxcd/values.yaml
+    -f /root/go/src/github.com/zirain/playground/k8s/fluxcd/values/fluxcd.values.yaml
 ```
 
 ```
