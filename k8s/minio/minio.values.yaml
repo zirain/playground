@@ -1,0 +1,8 @@
+auth:
+  rootPassword: minio123
+  rootUser: minio
+defaultBuckets: thanos
+accessKey:
+  password: minio
+secretKey:
+  password: minio123

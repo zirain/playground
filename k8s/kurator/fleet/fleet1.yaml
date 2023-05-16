@@ -6,7 +6,7 @@ metadata:
 spec:
   kubeconfig:
     name: kurator-member1
-    key: kubrator-member1.config
+    key: kurator-member1.config
 ---
 apiVersion: cluster.kurator.dev/v1alpha1
 kind: AttachedCluster
@@ -16,7 +16,7 @@ metadata:
 spec:
   kubeconfig:
     name: kurator-member2
-    key: kubrator-member2.config
+    key: kurator-member2.config
 ---
 apiVersion: fleet.kurator.dev/v1alpha1
 kind: Fleet
@@ -32,4 +32,4 @@ spec:
   plugin:
     metric:
       thanos:
-        mode: sidecar
+        objstoreSecretRef: thanos-objstore
