@@ -27,4 +27,7 @@ kubectl delete cpp thanos --kubeconfig /etc/karmada/karmada-apiserver.config
 
 kubectl delete -f manifests/profiles/thanos/ --ignore-not-found --kubeconfig $HOME/.kube/kurator-host.config
 kubectl delete ns thanos --ignore-not-found --kubeconfig $HOME/.kube/kurator-host.config
+
+
+kubectl port-forward svc/default-thanos-query 9090:9090 --address 0.0.0.0
 ```
