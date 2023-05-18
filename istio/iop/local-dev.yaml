@@ -22,14 +22,16 @@ spec:
       #   - destination_x
       # proxyAdminPort: 19000
       proxyMetadata:
-        ISTIO_META_METRIC_ROTATION_INTERVAL: 1m
-        ISTIO_META_METRIC_GRACEFUL_DELETION_INTERVAL: 10s
         WASM_MODULE_EXPIRY: 10m
         WASM_PURGE_INTERVAL: 1m
   values:
     global:
       logging:
         # level: "default:info,xdsproxy:debug,wasm:debug"
+    pilot:
+      env:
+        METRIC_ROTATION_INTERVAL: 1m
+        METRIC_GRACEFUL_DELETION_INTERVAL: 1m
     telemetry:
       enabled: true
       v2:
