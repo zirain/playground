@@ -32,4 +32,5 @@ spec:
   plugin:
     metric:
       thanos:
-        objstoreSecretRef: thanos-objstore
+        objectStoreConfig:
+          secretName: thanos-objstore
