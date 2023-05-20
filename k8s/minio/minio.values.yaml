@@ -6,3 +6,5 @@ accessKey:
   password: minio
 secretKey:
   password: minio123
+service:
+  type: LoadBalancer
