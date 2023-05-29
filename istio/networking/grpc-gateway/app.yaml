@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: yages
+    example: grpc-routing
+  name: yages
+spec:
+  selector:
+    matchLabels:
+      app: yages
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: yages
+    spec:
+      containers:
+        - name: grpcsrv
+          image: quay.io/mhausenblas/yages:0.1.0
+          ports:
+            - containerPort: 9000
+              protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: yages
+  name: yages
+spec:
+  type: ClusterIP
+  ports:
+    - name: grpc
+      port: 9000
+      protocol: TCP
+      targetPort: 9000
+  selector:
+    app: yages
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: yages
+spec:
+  gateways:
+    - yages
+  hosts:
+    - "*"
+  http:
+    - match:
+        - uri:
+            prefix: /
+      route:
+        - destination:
+            host: yages
+            port:
+              number: 9000
+---
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: yages
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    - hosts:
+        - "*"
+      port:
+        name: grpc
+        number: 80
+        protocol: GRPC
