@@ -1,7 +1,7 @@
 # istio network policy
 
 
-## install kind with cilium
+## install kind with calico
 
 ```console
 kind create cluster --image=kindest/node:v1.23.4 --config=kind-calico.yaml
