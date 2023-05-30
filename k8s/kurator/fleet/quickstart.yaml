@@ -30,8 +30,9 @@ spec:
     # - name: kurator-member2
     #   kind: AttachedCluster
   plugin:
-    metric:
-      thanos:
-        objectStoreConfig:
-          secretName: thanos-objstore
-    grafana: {}
+    # metric:
+    #   thanos:
+    #     objectStoreConfig:
+    #       secretName: thanos-objstore
+    # grafana: {}
+    kyverno: {}
