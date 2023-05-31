@@ -35,4 +35,5 @@ spec:
     #     objectStoreConfig:
     #       secretName: thanos-objstore
     # grafana: {}
-    kyverno: {}
+    kyverno:
+      policy: {}
