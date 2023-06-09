@@ -8,11 +8,17 @@ for more information.
 ## Start the server
 
 ```
+envoy -c go/grpc/metadata/envoy.yaml -l info
+```
+
+```
+cd go/grpc/metadata
 go run server/main.go
 ```
 
 ## Run the client
 
 ```
-go run client/main.go
+cd go/grpc/metadata
+go run client/main.go --addr 127.0.0.1:18000
 ```
