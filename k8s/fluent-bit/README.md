@@ -7,6 +7,10 @@ helm repo add fluent https://fluent.github.io/helm-charts
 ```
 
 ```console
+helm template fluent-bit fluent/fluent-bit -f k8s/fluent-bit/values.yaml -n monitoring > k8s/fluent-bit/fluent-bit.yaml
+```
+
+```console
 helm upgrade --install fluent-bit fluent/fluent-bit -f k8s/fluent-bit/values.yaml -n monitoring --create-namespace
 ```
 ## Setup Loki

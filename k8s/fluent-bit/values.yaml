@@ -1,3 +1,5 @@
+testFramework:
+  enabled: false
 podAnnotations:
   prometheus.io/scrape: "true"
   prometheus.io/port: "2020"
