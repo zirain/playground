@@ -94,11 +94,10 @@ CLANG_FORMAT=clang-format ./tools/code_format/check_format.py fix
 ```
 
 ```console
-./ci/run_envoy_docker.sh './ci/do_ci.sh fix_format'
-
-ci/run_envoy_docker.sh 'ci/do_ci.sh format_pre'
-
-./ci/run_envoy_docker.sh './ci/do_ci.sh fix_proto_format' && ./ci/run_envoy_docker.sh './ci/do_ci.sh format' && ./ci/run_envoy_docker.sh 'ci/check_and_fix_format.sh'
+# format proto
+./ci/run_envoy_docker.sh './ci/do_ci.sh fix_proto_format'
+# format
+./ci/run_envoy_docker.sh './ci/do_ci.sh format'
 ```
 
 # envoy-handbook
