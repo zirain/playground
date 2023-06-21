@@ -1,0 +1,104 @@
+stats_sinks:
+  - name: "envoy.stat_sinks.open_telemetry"
+    typed_config:
+      "@type": type.googleapis.com/envoy.extensions.stat_sinks.open_telemetry.v3.SinkConfig
+      grpc_service:
+        envoy_grpc:
+          cluster_name: otel-collector
+admin:
+  access_log_path: /tmp/admin_access.log
+  address:
+    socket_address:
+      protocol: TCP
+      # address: 127.0.0.1
+      address: 0.0.0.0
+      port_value: 19000
+static_resources:
+  listeners:
+    - name: listener_0
+      address:
+        socket_address:
+          protocol: TCP
+          address: 0.0.0.0
+          port_value: 10000
+      filter_chains:
+        - filters:
+            - name: envoy.filters.network.http_connection_manager
+              typed_config:
+                "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+                stat_prefix: ingress_http
+                codec_type: auto
+                route_config:
+                  name: local_route
+                  virtual_hosts:
+                    - name: local_service
+                      domains:
+                        - "*"
+                      routes:
+                        - match:
+                            prefix: "/"
+                          route:
+                            cluster: default_service
+                http_filters:
+                  - name: envoy.filters.http.router
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+
+    - name: staticreply-10080
+      address:
+        socket_address:
+          address: 127.0.0.1
+          port_value: 10080
+      filter_chains:
+        - filters:
+            - name: envoy.http_connection_manager
+              typed_config:
+                "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+                stat_prefix: ingress_http
+                codec_type: auto
+                route_config:
+                  name: local_route
+                  virtual_hosts:
+                    - name: local_service
+                      domains:
+                        - "*"
+                      routes:
+                        - match:
+                            prefix: "/"
+                          direct_response:
+                            status: 200
+                            body:
+                              inline_string: "example body\n"
+                http_filters:
+                  - name: envoy.filters.http.router
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+
+  clusters:
+    - name: default_service
+      load_assignment:
+        cluster_name: default_service
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: 127.0.0.1
+                      port_value: 10080
+
+    - name: otel-collector
+      type: STRICT_DNS
+      typed_extension_protocol_options:
+        envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+          "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+          explicit_http_config:
+            http2_protocol_options: {}
+      load_assignment:
+        cluster_name: otel-collector
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: otel-collector
+                      port_value: 4317

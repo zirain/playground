@@ -1,0 +1,26 @@
+version: "3"
+services:
+  # Envoy
+  envoy:
+    image: envoyproxy/envoy:dev-7801df6af9000ae31bdd89b080e0d797501cbd18
+    command: ["envoy", "-c", "/etc/envoy/envoy.yaml", "--log-level", "debug"]
+    ports:
+      - "10000:10000"
+      - "19000:19000" # admin interface
+    volumes:
+      - ./envoy.yaml:/etc/envoy/envoy.yaml
+
+  # Collector
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib
+    restart: always
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - "1888:1888" # pprof extension
+      - "8888:8888" # Prometheus metrics exposed by the collector
+      - "8889:8889" # Prometheus exporter metrics
+      - "13133:13133" # health_check extension
+      - "4317:4317" # OTLP gRPC receiver
+      - "55679:55679" # zpages extension
