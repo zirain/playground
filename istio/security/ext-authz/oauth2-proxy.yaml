@@ -3,7 +3,7 @@ config:
   # OAuth client ID
   clientID: "oidc-istio"
   # OAuth client secret
-  clientSecret: "wB5faI6fCvee9tn81HQwaThOLnGOVpyt"
+  clientSecret: "wiMU33D3nyUtntC35Dl5uRJjt2B0aiZo"
   # Create a new secret with the following command
   # openssl rand -base64 32 | head -c 32 | base64
   # Use an existing secret for OAuth2 credentials (see secret.yaml for required fields)
@@ -15,8 +15,8 @@ config:
     http_address="0.0.0.0:4180"
     email_domains=["*"]
     cookie_secret="88K2sc_CAM6LNo2pE3x4-m1V618UFi3B_MQfiixXxN0="
-    cookie_secure="false"
-    upstreams="https://httpbin.zirain.info"
+    cookie_secure="true"
+    upstreams="static://200"
     cookie_domains=[".zirain.info"] # Required so cookie can be read on all subdomains.
     whitelist_domains=[".zirain.info"] # Required to allow redirection back to original requested target.
 
@@ -31,6 +31,11 @@ config:
     provider="oidc"
     provider_display_name="Keycloak"
     ssl_insecure_skip_verify="true"
+    set_authorization_header="true"
+    pass_authorization_header="true"
+    pass_access_token="true"
+    pass_host_header="true"
+    set_xauthrequest="true"
 
 ## PodDisruptionBudget settings
 ## ref: https://kubernetes.io/docs/concepts/workloads/pods/disruptions/
