@@ -1,0 +1,59 @@
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: zirain-info
+  namespace: istio-system
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    - port:
+        number: 443
+        name: https
+        protocol: HTTPS
+      tls:
+        credentialName: zirain-info-credential
+        mode: SIMPLE
+      hosts:
+        - "*.zirain.info"
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: my-virtual-service
+spec:
+  hosts:
+    - "*.zirain.info"
+  gateways:
+    - istio-system/zirain-info
+  http:
+    - match:
+        - uri:
+            prefix: /
+          authority:
+            exact: keycloak.zirain.info
+      route:
+        - destination:
+            host: keycloak.istio-system.svc.cluster.local
+            port:
+              number: 8080
+    - match:
+        - uri:
+            prefix: /oauth2
+          authority:
+            exact: oauth2-proxy.zirain.info
+      route:
+        - destination:
+            host: oauth2-proxy.istio-system.svc.cluster.local
+            port:
+              number: 80
+    - match:
+        - uri:
+            prefix: /
+          authority:
+            exact: httpbin.zirain.info
+      route:
+        - destination:
+            port:
+              number: 8000
+            host: httpbin.default.svc.cluster.local

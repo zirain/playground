@@ -1,0 +1,25 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  namespace: istio-system
+  name: ext-authz-demo
+spec:
+  meshConfig:
+    accessLogFile: /dev/stdout
+    extensionProviders:
+      - name: "oauth2-proxy"
+        envoyExtAuthzHttp:
+          service: "oauth2-proxy.istio-system.svc.cluster.local"
+          port: 80
+          includeHeadersInCheck:
+            - authorization
+            - cookie
+          headersToUpstreamOnAllow:
+            - authorization
+            - cookie
+            - path
+            - x-forwarded-access-token
+            - x-auth-request-access-token
+          headersToDownstreamOnDeny:
+            - content-type
+            - set-cookie
