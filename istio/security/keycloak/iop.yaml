@@ -11,6 +11,8 @@ spec:
         envoyExtAuthzHttp:
           service: "oauth2-proxy.istio-system.svc.cluster.local"
           port: 80
+          includeAdditionalHeadersInCheck:
+            X-Auth-Request-Redirect: '%REQ(x-forwarded-proto)%://%REQ(:authority)%%REQ(:path)%'
           includeHeadersInCheck:
             - authorization
             - cookie
