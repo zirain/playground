@@ -3,7 +3,7 @@ config:
   # OAuth client ID
   clientID: "oidc-istio"
   # OAuth client secret
-  clientSecret: "wiMU33D3nyUtntC35Dl5uRJjt2B0aiZo"
+  clientSecret: "Z2FUS7WVirLKNXERUKX02tzL06HDjB5z"
   # Create a new secret with the following command
   # openssl rand -base64 32 | head -c 32 | base64
   # Use an existing secret for OAuth2 credentials (see secret.yaml for required fields)
@@ -26,7 +26,7 @@ config:
     redirect_url="https://oauth2-proxy.zirain.info/oauth2/callback"
 
     # in this case oauth2-proxy is going to visit
-    # https://keycloak.zirain.info/realms/master/.well-known/openid-configuration for configuration
+    # https://keycloak.zirain.info/realms/istio-oauth/.well-known/openid-configuration for configuration
     oidc_issuer_url="https://keycloak.zirain.info/realms/istio-oauth"
     provider="oidc"
     provider_display_name="Keycloak"

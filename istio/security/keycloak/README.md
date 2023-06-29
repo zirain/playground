@@ -14,7 +14,7 @@ kubectl create -n istio-system secret tls zirain-info-credential --key=zirain.in
 ## Keycloak
 
 ```
-kubectl create -f https://raw.githubusercontent.com/keycloak/keycloak-quickstarts/latest/kubernetes-examples/keycloak.yaml -n istio-system
+kubectl apply -f https://raw.githubusercontent.com/keycloak/keycloak-quickstarts/latest/kubernetes-examples/keycloak.yaml -n istio-system
 ```
 
 ## Oath2-proxy
@@ -29,8 +29,6 @@ helm repo update
 ### Install
 
 ```console
-helm upgrade --install \
-  --namespace istio-system --create-namespace \
-  --values istio/security/ext-authz/oauth2-proxy.yaml \
-  oauth2-proxy oauth2-proxy/oauth2-proxy
+helm upgrade --install --namespace istio-system --create-namespace \
+  --values istio/security/ext-authz/oauth2-proxy.yaml oauth2-proxy oauth2-proxy/oauth2-proxy
 ```
