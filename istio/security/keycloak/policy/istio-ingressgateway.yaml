@@ -1,0 +1,17 @@
+kind: AuthorizationPolicy
+apiVersion: security.istio.io/v1beta1
+metadata:
+  name: istio-ingressgateway
+  namespace: istio-system
+spec:
+  selector:
+    matchLabels:
+      istio: ingressgateway
+  action: CUSTOM
+  provider:
+    name: oauth2-proxy
+  rules:
+    - to:
+        - operation:
+            hosts: ["httpbin.zirain.info"]
+            notHosts: ["keycloak.zirain.info", "oauth2-proxy.zirain.info"]

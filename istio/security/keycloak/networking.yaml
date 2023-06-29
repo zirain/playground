@@ -20,7 +20,7 @@ spec:
 apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
 metadata:
-  name: my-virtual-service
+  name: zirain-info
 spec:
   hosts:
     - "*.zirain.info"

@@ -1,0 +1,26 @@
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: httpbin-audience
+spec:
+  selector:
+    matchLabels:
+      app: httpbin
+  rules:
+    - when:
+        - key: request.auth.audiences
+          values:
+            - istio-authz
+---
+apiVersion: security.istio.io/v1beta1
+kind: RequestAuthentication
+metadata:
+  name: httpbin
+spec:
+  selector:
+    matchLabels:
+      app: httpbin
+  jwtRules:
+    - issuer: https://keycloak.zirain.info/realms/istio-authz
+      # https cert must be valid
+      jwksUri: https://keycloak.zirain.info/realms/istio-authz/protocol/openid-connect/certs

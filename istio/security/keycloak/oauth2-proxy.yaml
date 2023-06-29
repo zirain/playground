@@ -1,47 +1,84 @@
-# Oauth client configuration specifics
-config:
-  # OAuth client ID
-  clientID: "oidc-istio"
-  # OAuth client secret
-  clientSecret: "Z2FUS7WVirLKNXERUKX02tzL06HDjB5z"
-  # Create a new secret with the following command
-  # openssl rand -base64 32 | head -c 32 | base64
-  # Use an existing secret for OAuth2 credentials (see secret.yaml for required fields)
-  # Example:
-  # existingSecret: secret
-  cookieSecret: "88K2sc_CAM6LNo2pE3x4-m1V618UFi3B_MQfiixXxN0="
-  # Default configuration, to be overridden
-  configFile: |-
-    http_address="0.0.0.0:4180"
-    email_domains=["*"]
-    cookie_secret="88K2sc_CAM6LNo2pE3x4-m1V618UFi3B_MQfiixXxN0="
-    cookie_secure="true"
-    upstreams="static://200"
-    cookie_domains=[".zirain.info"] # Required so cookie can be read on all subdomains.
-    whitelist_domains=[".zirain.info"] # Required to allow redirection back to original requested target.
-
-    # keycloak provider
-    client_secret="wB5faI6fCvee9tn81HQwaThOLnGOVpyt"
-    client_id="oidc-istio"
-    redirect_url="https://oauth2-proxy.zirain.info/oauth2/callback"
-
-    # in this case oauth2-proxy is going to visit
-    # https://keycloak.zirain.info/realms/istio-oauth/.well-known/openid-configuration for configuration
-    oidc_issuer_url="https://keycloak.zirain.info/realms/istio-oauth"
-    provider="oidc"
-    provider_display_name="Keycloak"
-    ssl_insecure_skip_verify="true"
-    set_authorization_header="true"
-    pass_authorization_header="true"
-    pass_access_token="true"
-    pass_host_header="true"
-    set_xauthrequest="true"
-
-## PodDisruptionBudget settings
-## ref: https://kubernetes.io/docs/concepts/workloads/pods/disruptions/
-podDisruptionBudget:
-  enabled: false
-  minAvailable: 1
-
-# whether to use http or https
-httpScheme: http
+apiVersion: v1
+kind: Secret
+metadata:
+  name: oauth2-proxy
+  namespace: istio-system
+stringData:
+  OAUTH2_PROXY_CLIENT_ID: istio-authz
+  OAUTH2_PROXY_CLIENT_SECRET: "meep1NDduothPoTdf1T9bkTCd9f10dd4"
+  OAUTH2_PROXY_COOKIE_SECRET: "88K2sc_CAM6LNo2pE3x4-m1V618UFi3B_MQfiixXxN0="
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: oauth2-proxy
+  namespace: istio-system
+spec:
+  selector:
+    app: oauth2-proxy
+  ports:
+    - name: http
+      port: 4180
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oauth2-proxy
+  namespace: istio-system
+spec:
+  selector:
+    matchLabels:
+      app: oauth2-proxy
+  template:
+    metadata:
+      labels:
+        app: oauth2-proxy
+    spec:
+      containers:
+        - name: oauth2-proxy
+          image: quay.io/oauth2-proxy/oauth2-proxy:v7.2.0
+          args:
+            - --provider=oidc
+            - --cookie-secure=true
+            - --cookie-samesite=lax
+            - --cookie-refresh=1h
+            - --cookie-expire=4h
+            - --cookie-name=_oauth2_proxy_istio
+            - --cookie-domain=.zirain.info
+            - --set-authorization-header=true
+            - --email-domain=*
+            - --http-address=0.0.0.0:4180
+            - --upstream=static://200
+            - --skip-provider-button=true
+            - --whitelist-domain=.zirain.info # without this, will cause csrf error
+            - --oidc-issuer-url=https://keycloak.zirain.info/realms/istio-authz
+            - --redirect-url=https://oauth2-proxy.zirain.info/oauth2/callback
+            - --ssl-insecure-skip-verify=true
+          env:
+            - name: OAUTH2_PROXY_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: oauth2-proxy
+                  key: OAUTH2_PROXY_CLIENT_ID
+            - name: OAUTH2_PROXY_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: oauth2-proxy
+                  key: OAUTH2_PROXY_CLIENT_SECRET
+            - name: OAUTH2_PROXY_COOKIE_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: oauth2-proxy
+                  key: OAUTH2_PROXY_COOKIE_SECRET
+          resources:
+            requests:
+              cpu: 10m
+              memory: 100Mi
+          ports:
+            - containerPort: 4180
+              protocol: TCP
+          # readinessProbe:
+          #   periodSeconds: 3
+          #   httpGet:
+          #     path: /ping
+          #     port: 4180
