@@ -1,4 +1,4 @@
-# [WIP] API Authentication using Istio Ingress Gateway, OAuth2-Proxy and Keycloak
+# API Authentication using Istio Ingress Gateway, OAuth2-Proxy and Keycloak
 
 Orignal post: https://medium.com/@senthilrch/api-authentication-using-istio-ingress-gateway-oauth2-proxy-and-keycloak-a980c996c259
 
@@ -14,21 +14,23 @@ kubectl create -n istio-system secret tls zirain-info-credential --key=zirain.in
 ## Keycloak
 
 ```
-kubectl apply -f https://raw.githubusercontent.com/keycloak/keycloak-quickstarts/latest/kubernetes-examples/keycloak.yaml -n istio-system
+kubectl apply -f istio/security/keycloak/keycloak.yaml -n istio-system
 ```
 
 ## Oath2-proxy
 
-### Helm repo
-
 ```console
-helm repo add oauth2-proxy https://oauth2-proxy.github.io/manifests
-helm repo update
+kubectl apply -f istio/security/keycloak/oauth2-proxy.yaml -n istio-system
 ```
 
-### Install
 
-```console
-helm upgrade --install --namespace istio-system --create-namespace \
-  --values istio/security/ext-authz/oauth2-proxy.yaml oauth2-proxy oauth2-proxy/oauth2-proxy
+## Cleanup
+
+```
+kubectl delete -f istio/security/keycloak/keycloak.yaml -n istio-system
+kubectl delete -f istio/security/keycloak/oauth2-proxy.yaml -n istio-system
+kubectl delete -f istio/security/keycloak/policy/httpbin.yaml
+kubectl delete -f istio/security/keycloak/policy/istio-ingressgateway.yaml
+kubectl delete -f istio/security/keycloak/networking.yaml
+istioctl uninstall --purge -y 
 ```
