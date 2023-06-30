@@ -10,9 +10,10 @@ spec:
       - name: "oauth2-proxy"
         envoyExtAuthzHttp:
           service: "oauth2-proxy.istio-system.svc.cluster.local"
-          port: 80
+          port: 4180
           includeAdditionalHeadersInCheck:
-            X-Auth-Request-Redirect: '%REQ(x-forwarded-proto)%://%REQ(:authority)%%REQ(:path)%'
+            # make sure oauth2-proxy redirect to correct url
+            X-Auth-Request-Redirect: "%REQ(x-forwarded-proto)%://%REQ(:authority)%%REQ(:path)%"
           includeHeadersInCheck:
             - authorization
             - cookie
