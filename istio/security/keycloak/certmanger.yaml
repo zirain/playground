@@ -1,0 +1,20 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: zirain-info
+  namespace: istio-system
+spec:
+  dnsNames:
+    - "*.zirain.info"
+  issuerRef:
+    kind: Issuer
+    name: zirain-info
+  secretName: zirain-info-credential
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: zirain-info
+  namespace: istio-system
+spec:
+  selfSigned: {}
