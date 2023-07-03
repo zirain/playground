@@ -5,7 +5,7 @@ metadata:
   namespace: istio-system
 stringData:
   OAUTH2_PROXY_CLIENT_ID: istio-authz
-  OAUTH2_PROXY_CLIENT_SECRET: "meep1NDduothPoTdf1T9bkTCd9f10dd4"
+  OAUTH2_PROXY_CLIENT_SECRET: "GR7SdNYth2bx3MTMLjGCL84naFLbphMR"
   OAUTH2_PROXY_COOKIE_SECRET: "88K2sc_CAM6LNo2pE3x4-m1V618UFi3B_MQfiixXxN0="
 ---
 apiVersion: v1

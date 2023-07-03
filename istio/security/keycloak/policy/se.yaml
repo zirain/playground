@@ -1,0 +1,24 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: zirain-info
+spec:
+  hosts:
+    - "keycloak.zirain.info"
+  location: MESH_EXTERNAL
+  ports:
+    - number: 443
+      name: https
+      protocol: TLS
+  resolution: DNS
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: zirain-info
+spec:
+  host: keycloak.zirain.info
+  trafficPolicy:
+    tls:
+      mode: SIMPLE
+      sni: keycloak.zirain.info

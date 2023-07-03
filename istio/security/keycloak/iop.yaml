@@ -4,6 +4,7 @@ metadata:
   namespace: istio-system
   name: ext-authz-demo
 spec:
+  # tag: zirain-dev
   meshConfig:
     accessLogFile: /dev/stdout
     extensionProviders:
@@ -26,3 +27,7 @@ spec:
           headersToDownstreamOnDeny:
             - content-type
             - set-cookie
+  values:
+    pilot:
+      env:
+        PILOT_JWT_ENABLE_REMOTE_JWKS: "envoy" # use envoy to fetch remote jwks

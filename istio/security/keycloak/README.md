@@ -39,6 +39,13 @@ kubectl apply -f istio/security/keycloak/keycloak.yaml -n istio-system
 kubectl apply -f istio/security/keycloak/oauth2-proxy.yaml -n istio-system
 ```
 
+## Istio
+
+```console
+istioctl install -f istio/security/keycloak/iop.yaml -y
+
+kubectl apply -f istio/security/keycloak/networking.yaml
+```
 
 ## Cleanup
 
