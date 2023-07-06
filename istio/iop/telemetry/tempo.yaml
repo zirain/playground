@@ -1,0 +1,14 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+spec:
+  meshConfig:
+    enableTracing: true
+    defaultProviders:
+      tracing:
+        # DO NOT FORGET TO CHANGE SAMPLE RATE TO 100% WITH TELEMETRY API
+        - tempo-otel
+    extensionProviders:
+      - name: tempo-otel
+        opentelemetry:
+          service: tempo.monitoring.svc.cluster.local
+          port: 4317
