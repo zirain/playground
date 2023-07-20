@@ -1,0 +1,21 @@
+apiVersion: networking.istio.io/v1beta1
+kind: ProxyConfig
+metadata:
+  name: concurrency
+  namespace: istio-system
+spec:
+  selector:
+    matchLabels:
+      app: istio-ingressgateway
+  concurrency: 4
+---
+apiVersion: networking.istio.io/v1beta1
+kind: ProxyConfig
+metadata:
+  name: httpbin
+  namespace: istio-system
+spec:
+  selector:
+    matchLabels:
+      app: httpbin
+  concurrency: 4
