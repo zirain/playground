@@ -1,0 +1,21 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: pilot-total-xds-rejects
+  namespace: default
+spec:
+  configPatches:
+    - applyTo: NETWORK_FILTER
+      match:
+        context: ANY
+        listener:
+          filterChain:
+            filter:
+              name: "envoy.filters.network.http_connection_manager"
+      patch:
+        operation: ADD
+        value:
+          typed_config:
+            "@type": "type.googleapis.com/envoy.extensions.filters.http.cache.v3.CacheConfig"
+            "allowed_vary_headers":
+              - exact: "cache-key"

@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inject-fail
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: inject-fail
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/interceptionMode: "REDIRECT1" # this will cause injection to fail
+      labels:
+        app: inject-fail
+    spec:
+      terminationGracePeriodSeconds: 0
+      containers:
+      - name: sleep
+        image: curlimages/curl
+        command: ["/bin/sleep", "infinity"]
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+        - mountPath: /etc/sleep/tls
+          name: secret-volume
+      volumes:
+      - name: secret-volume
+        secret:
+          secretName: sleep-secret
+          optional: true
+---
