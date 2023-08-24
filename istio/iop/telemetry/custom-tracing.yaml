@@ -3,6 +3,12 @@ kind: IstioOperator
 spec:
   meshConfig:
     accessLogFile: /dev/stdout
+    defaultConfig:
+      tracing:
+        sampling: 100.0
+    defaultProviders:
+      tracing:
+      - zipkin
     extensionProviders:
     - name: zipkin
       zipkin:
