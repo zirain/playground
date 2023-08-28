@@ -16,7 +16,11 @@ spec:
     defaultProviders:
       metrics:
         - prometheus # use Telemetry API
+      # tracing:
+      #   - zipkin
     defaultConfig:
+      tracing:
+        sampling: 100.0
       # extraStatTags:
       #   - source_x
       #   - destination_x
