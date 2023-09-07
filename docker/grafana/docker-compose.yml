@@ -1,0 +1,7 @@
+services:
+  grafana:
+    image: grafana/grafana:10.0.2
+    volumes:
+      - ./grafana.ini:/etc/grafana/grafana.ini
+    ports:
+    - "3000:3000"
