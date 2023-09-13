@@ -34,8 +34,8 @@ spec:
         # level: "default:info,xdsproxy:debug,wasm:debug"
     pilot:
       env:
-        METRIC_ROTATION_INTERVAL: 1m
-        METRIC_GRACEFUL_DELETION_INTERVAL: 1m
+        # METRIC_ROTATION_INTERVAL: 1m
+        # METRIC_GRACEFUL_DELETION_INTERVAL: 1m
     telemetry:
       enabled: true
       v2:
