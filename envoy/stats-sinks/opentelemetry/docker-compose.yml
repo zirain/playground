@@ -2,7 +2,7 @@ version: "3"
 services:
   # Envoy
   envoy:
-    image: envoyproxy/envoy:dev-7801df6af9000ae31bdd89b080e0d797501cbd18
+    image: envoyproxy/envoy:v1.27.0
     command: ["envoy", "-c", "/etc/envoy/envoy.yaml", "--log-level", "debug"]
     ports:
       - "10000:10000"
