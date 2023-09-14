@@ -1,0 +1,35 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: httpbin-org
+  namespace: istio-system
+spec:
+  endpoints:
+    - address: 10.108.251.133
+      ports:
+        http: 80
+    - address: 10.96.144.80
+      ports:
+        http: 80
+  exportTo:
+    - "*"
+  hosts:
+    - httpbin.org
+  location: MESH_EXTERNAL
+  ports:
+    - name: http
+      number: 80
+      protocol: HTTP
+  resolution: DNS
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: httpbin-org
+  namespace: istio-system
+spec:
+  host: httpbin.org
+  subsets:
+    - name: static-test1
+      labels:
+        app: none
