@@ -10,6 +10,10 @@ spec:
       version: v1
   template:
     metadata:
+      annotations:
+        # sidecar.istio.io/statsInclusionPrefixes: envoy,cluster
+        # sidecar.istio.io/statsInclusionSuffixes: message_count
+        sidecar.istio.io/statsInclusionRegexps: cluster.*message_count
       labels:
         app: greeter
         version: v1

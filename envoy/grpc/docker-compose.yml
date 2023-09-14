@@ -1,0 +1,35 @@
+version: "3"
+services:
+  # Envoy
+  envoy:
+    depends_on:
+      - greeter
+    image: envoyproxy/envoy:v1.27.0
+    command: [
+        "envoy",
+        "-c",
+        "/etc/envoy/envoy.yaml",
+         "--log-level", "info"
+      ]
+    ports:
+      - "10000:10000"
+      - "19000:19000" # admin interface
+    volumes:
+      - ./envoy.yaml:/etc/envoy/envoy.yaml
+
+  greeter:
+    image: ghcr.io/zirain/grpc-greeter-go-server
+    command:
+      - "--address=:8080"
+
+  client:
+    depends_on:
+      - envoy
+      - greeter
+    image: ghcr.io/zirain/grpc-greeter-go-client
+    environment:
+      - no_proxy=envoy
+      - NO_PROXY=envoy
+    command:
+      - --address=envoy:10000
+      - --insecure

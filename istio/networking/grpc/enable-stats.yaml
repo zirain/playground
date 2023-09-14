@@ -1,0 +1,24 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: grpc-stats
+  namespace: istio-system
+spec:
+  configPatches:
+    - applyTo: HTTP_FILTER
+      match:
+        context: ANY
+        listener:
+          filterChain:
+            filter:
+              name: envoy.filters.network.http_connection_manager
+              subFilter:
+                name: envoy.filters.http.grpc_stats
+      patch:
+        operation: MERGE
+        value:
+          name: envoy.filters.http.grpc_stats
+          typed_config:
+            "@type": type.googleapis.com/envoy.extensions.filters.http.grpc_stats.v3.FilterConfig
+            stats_for_all_methods: true
+            enable_upstream_stats: true
