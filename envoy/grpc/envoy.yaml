@@ -6,10 +6,20 @@ admin:
       address: 0.0.0.0
       port_value: 19000
 stats_config:
-  # use_all_default_tags: true
-  # stats_tags:
-  #   - tag_name: grpc_service_method
-  #     regex: ""
+  use_all_default_tags: false
+  stats_tags:
+    # cluster.greeter_service.grpc.helloworld.Greeter.SayHello.upstream_rq_time
+    # cluster.greeter_service.grpc.helloworld.Greeter.SayHello.0: 9
+    # cluster.greeter_service.grpc.helloworld.Greeter.SayHello.request_message_count: 9
+    # cluster.greeter_service.grpc.helloworld.Greeter.SayHello.response_message_count: 9
+    # cluster.greeter_service.grpc.helloworld.Greeter.SayHello.success: 9
+    # cluster.greeter_service.grpc.helloworld.Greeter.SayHello.total: 9
+    - tag_name: envoy.cluster_name
+      regex: "^cluster\\.((.+?)\\.).+"
+    - tag_name: envoy.grpc_bridge_service
+      regex: "grpc\\.((.+)\\.).+?\\..+$"
+    - tag_name: envoy.grpc_bridge_method
+      regex: "grpc\\..*\\.((.+?)\\.).+$"
 
 static_resources:
   listeners:

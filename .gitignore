@@ -114,3 +114,6 @@ clang/bazel-*
 IRSA
 
 vendor
+
+# ignore prometheus metrics output
+*.prom
