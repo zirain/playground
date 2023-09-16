@@ -5,12 +5,7 @@ services:
     depends_on:
       - greeter
     image: envoyproxy/envoy:v1.27.0
-    command: [
-        "envoy",
-        "-c",
-        "/etc/envoy/envoy.yaml",
-         "--log-level", "info"
-      ]
+    command: ["envoy", "-c", "/etc/envoy/envoy.yaml", "--log-level", "info"]
     ports:
       - "10000:10000"
       - "19000:19000" # admin interface
@@ -18,6 +13,7 @@ services:
       - ./envoy.yaml:/etc/envoy/envoy.yaml
 
   greeter:
+    # image build from https://github.com/GoogleCloudPlatform/istio-samples/tree/master/sample-apps/grpc-greeter-go/server
     image: ghcr.io/zirain/grpc-greeter-go-server
     command:
       - "--address=:8080"
@@ -26,6 +22,7 @@ services:
     depends_on:
       - envoy
       - greeter
+    # image build from https://github.com/GoogleCloudPlatform/istio-samples/tree/master/sample-apps/grpc-greeter-go/client
     image: ghcr.io/zirain/grpc-greeter-go-client
     environment:
       - no_proxy=envoy
