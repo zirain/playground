@@ -62,6 +62,8 @@ bazel test //test/common/router:router_ratelimit_test
 bazel test //test/common/common:matchers_test
 
 bazel test //test/extensions/tracers/datadog:datadog_tracer_impl_test
+
+bazel test //test/common/stats:tag_extractor_impl_test
 ```
 
 ## coverage test
