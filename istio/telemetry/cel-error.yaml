@@ -1,0 +1,14 @@
+# see more details: https://github.com/istio/istio/issues/47533
+apiVersion: telemetry.istio.io/v1alpha1
+kind: Telemetry
+metadata:
+  name: mesh-defaults
+  namespace: istio-system
+spec:
+  accessLogging:
+    - filter:
+        expression: '!(request.useragent.startsWith("Amazon-Route53-Health-Check-Service"))'
+      match:
+        mode: CLIENT
+      providers:
+        - name: envoy
