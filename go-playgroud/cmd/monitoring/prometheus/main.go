@@ -14,7 +14,7 @@ import (
 func main() {
 	mux := http.NewServeMux()
 	if err := addMonitor(mux); err != nil {
-		fmt.Println("could not establish self-monitoring: %v", err)
+		fmt.Printf("could not establish self-monitoring: %v\n", err)
 	}
 
 	s := &http.Server{
