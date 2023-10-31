@@ -39,5 +39,4 @@ func TestHashing(t *testing.T) {
 			t.Errorf("Asking for %s, should have yielded %s", k, v)
 		}
 	}
-
 }
