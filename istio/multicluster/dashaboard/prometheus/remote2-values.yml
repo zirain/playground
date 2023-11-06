@@ -1,0 +1,39 @@
+# To simplify the deployment, disable non-essential components
+alertmanager:
+  enabled: false
+prometheus-pushgateway:
+  enabled: false
+kube-state-metrics:
+  enabled: false
+prometheus-node-exporter:
+  enabled: false
+server:
+  podLabels:
+    sidecar.istio.io/inject: "false"
+  persistentVolume:
+    enabled: false
+  # Use port 9090 to match Istio documentation
+  service:
+    servicePort: 9090
+  readinessProbeInitialDelay: 0
+  # Speed up scraping a bit from the default
+  global:
+    scrape_interval: 15s
+    external_labels:
+      mesh_id: mesh2
+      cluster_id: cluster1
+
+  # Match legacy addon deployment
+  fullnameOverride: prometheus
+  # When running prometheus in Agent mode, remote-write is required.
+  remoteWrite:
+    # Agent is able to run with a invalid remote-write URL, but, of course, will fail to push timeseries.
+    - url: "http://192.168.3.65:9009/api/v1/push"
+      headers:
+        X-Scope-OrgID: demo
+
+  # use dockerhub
+  image:
+    repository: prom/prometheus
+
+  securityContext: null
