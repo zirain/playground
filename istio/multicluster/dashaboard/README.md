@@ -1,12 +1,18 @@
 ## Setup multi mesh with KinD
 
-1. Create cluster
+**This demo built on top of [play-with-grafana-mimir](https://grafana.com/tutorials/play-with-grafana-mimir/?pg=oss-mimir&plcmt=hero-btn-1)**
+
+
+![image](./multi-mesh.svg)
+
+
+1. Create cluster with [KinD](https://kind.sigs.k8s.io/)
 
     ```shell
     CLUSTER_NAME=mesh1 ./create-cluster.sh
     CLUSTER_NAME=mesh2 ./create-cluster.sh
     ```
-1. Install mesh 
+1. Install mesh with [Istioctl](https://istio.io/latest/docs/setup/install/istioctl/)
 
     ```shell
     istioctl install -f iop/mesh1.yaml -y --kubeconfig ~/.kube/kind-config-mesh1
@@ -23,7 +29,7 @@
     kubectl apply -f samples/ --kubeconfig ~/.kube/kind-config-mesh2
     ```
 
-1. Install grafana and prometheus
+1. Install [Grafana](https://grafana.com/oss/grafana/) and [Minir](https://grafana.com/oss/mimir/)
 
     ```shell
     docker-compose up -d

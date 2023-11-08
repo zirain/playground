@@ -28,7 +28,7 @@ server:
   # When running prometheus in Agent mode, remote-write is required.
   remoteWrite:
     # Agent is able to run with a invalid remote-write URL, but, of course, will fail to push timeseries.
-    - url: "http://192.168.3.65:9009/api/v1/push"
+    - url: "http://192.168.3.65:9009/api/v1/push" # change the ip to your host ip
       headers:
         X-Scope-OrgID: demo
 
