@@ -42,9 +42,12 @@ services:
   
   # A simple NGINX-based load balancer that exposes Grafana Mimir endpoints on the host
   load-balancer:
-    image: nginx:latest
+    # image: nginx:latest
+    # volumes:
+    #   - ./config/nginx.conf:/etc/nginx/nginx.conf:ro
+    image: envoyproxy/envoy:v1.28.0
     volumes:
-      - ./config/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./config/envoy.yml:/etc/envoy/envoy.yaml
     depends_on:
       - "mimir-1"
       - "mimir-2"
