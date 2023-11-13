@@ -1,0 +1,15 @@
+version: '3'
+services:
+  remote-cache:
+    image: buchgr/bazel-remote-cache:latest
+    command: --max_size=50
+    ports:
+      - "9092:9092"
+      - "9090:8080"
+    environment:
+      - BAZEL_REMOTE_CACHE_MAX_SIZE=50
+      - HTTPS_PROXY=http://192.168.3.65:7890
+      - NO_PROXY="localhost,127.0.0.1,10.0.0.0/8,192.168.0.0/16,172.0.0.0/8"
+      - no_proxy="localhost,127.0.0.1,10.0.0.0/8,192.168.0.0/16,172.0.0.0/8"
+    volumes:
+      - /root/bazel-cache:/data
