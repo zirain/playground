@@ -1,0 +1,23 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+spec:
+  profile: ambient
+  values:
+    global:
+      variant: ""
+    ztunnel:
+      variant: ""
+      meshConfig:
+        defaultConfig:
+          proxyMetadata:
+            PROXY_CONFIG_XDS_AGENT: "true"
+    pilot:
+      env:
+        ISTIO_MULTIROOT_MESH: "true"
+        # METRIC_ROTATION_INTERVAL: 1m
+        # METRIC_GRACEFUL_DELETION_INTERVAL: 1m
+  meshConfig:
+    accessLogFile: /dev/stdout
+    defaultConfig:
+      proxyMetadata:
+        PROXY_CONFIG_XDS_AGENT: "true"
