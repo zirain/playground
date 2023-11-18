@@ -1,0 +1,8 @@
+build --remote_cache=grpc://192.168.3.73:9092
+build --remote_timeout=3600
+build --repo_env=https_proxy=http://192.168.3.65:7890
+build --repo_env=http_proxy=http://192.168.3.65:7890
+
+# build --build_tag_filters=-skip_on_windows
+
+# build --override_repository=envoy=/Users/zirain/Codes/istio.io/envoy

@@ -1,0 +1,12 @@
+# build --config=clang
+build --remote_cache=grpc://192.168.3.73:9092
+build --remote_timeout=3600
+build --verbose_failures
+build --repo_env=https_proxy=http://192.168.3.65:7890
+build --repo_env=http_proxy=http://192.168.3.65:7890
+
+# get from https://github.com/Homebrew/homebrew-core/blob/master/Formula/e/envoy.rb
+build --cxxopt=-Wno-range-loop-analysis
+build --host_cxxopt=-Wno-range-loop-analysis
+build --cxxopt=-Wno-deprecated-declarations
+build --host_cxxopt=-Wno-deprecated-declarations
