@@ -1,0 +1,10 @@
+apiVersion: extensions.istio.io/v1alpha1
+kind: WasmPlugin
+metadata:
+  name: header-injector
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: httpbin
+  url: oci://ghcr.io/zirain/header-injector:0.0.1
