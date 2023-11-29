@@ -1,4 +1,4 @@
-.PHONY : clean build docker.build docker.push
+.PHONY : all clean build docker.build docker.push
 
 RM := rm -rf
 WASM_PLUGIN_NAME := header-injector
@@ -14,7 +14,7 @@ clean:
 	docker rmi $(DOCKER_IMAGE) || $(RM) *.wasm
 	
 build: clean
-	$(foreach VERSION, $(VERSION_LIST), tinygo build -ldflags '-X $(GO_MODULE)/main.gitVersion=$(VERSION)' -o $(WASM_PLUGIN_NAME)-$(VERSION).wasm -scheduler=none -target=wasi plugin.go;)
+	$(foreach VERSION, $(VERSION_LIST), tinygo build -ldflags '-X $(GO_MODULE)/main.injectionVersion=$(VERSION)' -o $(WASM_PLUGIN_NAME)-$(VERSION).wasm -scheduler=none -target=wasi plugin.go;)
 
 docker.build: build
 	$(foreach VERSION, $(VERSION_LIST), docker buildx build . -t $(DOCKER_IMAGE):$(VERSION) --build-arg WASM_BINARY=$(WASM_PLUGIN_NAME)-$(VERSION).wasm;)
