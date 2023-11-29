@@ -1,5 +1,4 @@
-FROM gcr.io/istio-testing/build-tools:master-62f8b507af660ecccb613e643daf5ea546222ac7
+FROM gcr.io/istio-testing/build-tools:master-bec02d1500de2bedfda86c3093d3be4ce8be2656
 
-ENV GOLANGCI_LINT_VERSION=v1.53.2
-
-RUN go install -ldflags="-s -w" github.com/golangci/golangci-lint/cmd/golangci-lint@${GOLANGCI_LINT_VERSION}
+RUN wget https://github.com/tinygo-org/tinygo/releases/download/v0.30.0/tinygo_0.30.0_amd64.deb && \
+    sudo dpkg -i tinygo_0.30.0_amd64.deb
