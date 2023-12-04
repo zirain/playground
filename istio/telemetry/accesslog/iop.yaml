@@ -46,6 +46,7 @@ spec:
               # "upstream_peer_id": "%FILTER_STATE(wasm.upstream_peer_id)%"
               # "downstream_peer": "%FILTER_STATE(wasm.downstream_peer)%"
               # "upstream_peer": "%FILTER_STATE(wasm.upstream_peer)%"
+              "upstream_cluster_id": "%CEL(filter_state['wasm.upstream_peer'].cluster_id)%"
               "cluster_metadata": "%CLUSTER_METADATA(istio)%"
               "upstream_metadata": "%UPSTREAM_METADATA(istio)%"
               # "route_metadata": "%METADATA(ROUTE:istio)%" # need enable envoy.formatter.metadata
