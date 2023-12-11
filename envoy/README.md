@@ -88,16 +88,5 @@ docs/build.sh
 ## lint
 
 ```shell
-# check api
-tools/proto_format/proto_format.sh
-
-# check clang format
-CLANG_FORMAT=clang-format ./tools/code_format/check_format.py fix
-```
-
-```console
-# format proto
-./ci/run_envoy_docker.sh './ci/do_ci.sh fix_proto_format'
-# format
-./ci/run_envoy_docker.sh './ci/do_ci.sh format'
+tools/local_fix_format.sh -all
 ```
