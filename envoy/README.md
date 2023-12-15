@@ -88,5 +88,7 @@ docs/build.sh
 ## lint
 
 ```shell
+tools/local_fix_format.sh $(git diff --name-only | grep -E '\.(h|c|cc|proto)$')
+
 tools/local_fix_format.sh -all
 ```
