@@ -1,0 +1,1032 @@
+apiVersion: v1
+items:
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/restartedAt: "2023-12-18T17:39:42+08:00"
+    creationTimestamp: "2023-12-18T09:45:16Z"
+    generateName: blue-5f59c7cdf7-
+    labels:
+      app: color
+      pod-template-hash: 5f59c7cdf7
+      version: blue
+    name: blue-5f59c7cdf7-b6zz8
+    namespace: howto-k8s-http2
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: ReplicaSet
+      name: blue-5f59c7cdf7
+      uid: 42b2f484-1bbd-4388-b580-83f32ed3f81f
+    resourceVersion: "23146"
+    uid: e6e2d054-2f0b-4a7d-8317-4c2779008201
+  spec:
+    containers:
+    - env:
+      - name: COLOR
+        value: blue
+      - name: PORT
+        value: "8080"
+      image: 354280132276.dkr.ecr.us-east-2.amazonaws.com/howto-k8s-http2/color_server
+      imagePullPolicy: Always
+      name: app
+      ports:
+      - containerPort: 8080
+        protocol: TCP
+      resources: {}
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kube-api-access-64bmz
+        readOnly: true
+    - env:
+      - name: APPNET_AGENT_ADMIN_UDS_PATH
+        value: /tmp/agent.sock
+      - name: APPMESH_VIRTUAL_NODE_NAME
+        value: mesh/howto-k8s-http2/virtualNode/blue_howto-k8s-http2
+      - name: APPMESH_PREVIEW
+        value: "0"
+      - name: ENVOY_ADMIN_ACCESS_LOG_FILE
+        value: /tmp/envoy_admin_access.log
+      - name: ENVOY_ADMIN_ACCESS_ENABLE_IPV6
+        value: "false"
+      - name: APPNET_AGENT_ADMIN_MODE
+        value: uds
+      - name: APPMESH_RESOURCE_ARN
+        value: mesh/howto-k8s-http2/virtualNode/blue_howto-k8s-http2
+      - name: APPMESH_PLATFORM_APP_MESH_CONTROLLER_VERSION
+        value: v1.12.7-dirty
+      - name: ENVOY_LOG_LEVEL
+        value: info
+      - name: ENVOY_ADMIN_ACCESS_PORT
+        value: "9901"
+      - name: APPMESH_PLATFORM_K8S_VERSION
+        value: v1.27.8-eks-8cb36c9
+      - name: AWS_REGION
+        value: us-east-2
+      - name: APPMESH_DUALSTACK_ENDPOINT
+        value: "0"
+      - name: APPMESH_FIPS_ENDPOINT
+        value: "0"
+      - name: APPMESH_PLATFORM_K8S_POD_UID
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.uid
+      image: 840364872350.dkr.ecr.us-west-2.amazonaws.com/aws-appmesh-envoy:v1.27.2.0-prod
+      imagePullPolicy: IfNotPresent
+      lifecycle:
+        preStop:
+          exec:
+            command:
+            - sh
+            - -c
+            - sleep 20
+      name: envoy
+      ports:
+      - containerPort: 9901
+        name: stats
+        protocol: TCP
+      readinessProbe:
+        exec:
+          command:
+          - sh
+          - -c
+          - curl -s http://localhost:9901/server_info | grep state | grep -q LIVE
+        failureThreshold: 3
+        initialDelaySeconds: 1
+        periodSeconds: 10
+        successThreshold: 1
+        timeoutSeconds: 1
+      resources:
+        requests:
+          cpu: 10m
+          memory: 32Mi
+      securityContext:
+        runAsUser: 1337
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kube-api-access-64bmz
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    enableServiceLinks: true
+    initContainers:
+    - env:
+      - name: APPMESH_START_ENABLED
+        value: "1"
+      - name: APPMESH_IGNORE_UID
+        value: "1337"
+      - name: APPMESH_ENVOY_INGRESS_PORT
+        value: "15000"
+      - name: APPMESH_ENVOY_EGRESS_PORT
+        value: "15001"
+      - name: APPMESH_APP_PORTS
+        value: "8080"
+      - name: APPMESH_EGRESS_IGNORED_IP
+        value: 169.254.169.254
+      - name: APPMESH_EGRESS_IGNORED_PORTS
+        value: "22"
+      - name: APPMESH_ENABLE_IPV6
+        value: "1"
+      image: 840364872350.dkr.ecr.us-west-2.amazonaws.com/aws-appmesh-proxy-route-manager:v7-prod
+      imagePullPolicy: IfNotPresent
+      name: proxyinit
+      resources:
+        requests:
+          cpu: 10m
+          memory: 32Mi
+      securityContext:
+        capabilities:
+          add:
+          - NET_ADMIN
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kube-api-access-64bmz
+        readOnly: true
+    nodeName: ip-192-168-81-3.us-east-2.compute.internal
+    preemptionPolicy: PreemptLowerPriority
+    priority: 0
+    readinessGates:
+    - conditionType: conditions.appmesh.k8s.aws/aws-cloudmap-healthy
+    restartPolicy: Always
+    schedulerName: default-scheduler
+    securityContext:
+      fsGroup: 1337
+    serviceAccount: default
+    serviceAccountName: default
+    terminationGracePeriodSeconds: 30
+    tolerations:
+    - effect: NoExecute
+      key: node.kubernetes.io/not-ready
+      operator: Exists
+      tolerationSeconds: 300
+    - effect: NoExecute
+      key: node.kubernetes.io/unreachable
+      operator: Exists
+      tolerationSeconds: 300
+    volumes:
+    - name: kube-api-access-64bmz
+      projected:
+        defaultMode: 420
+        sources:
+        - serviceAccountToken:
+            expirationSeconds: 3607
+            path: token
+        - configMap:
+            items:
+            - key: ca.crt
+              path: ca.crt
+            name: kube-root-ca.crt
+        - downwardAPI:
+            items:
+            - fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+              path: namespace
+  status:
+    conditions:
+    - lastProbeTime: "2023-12-18T10:49:58Z"
+      lastTransitionTime: "2023-12-18T10:49:58Z"
+      status: "True"
+      type: conditions.appmesh.k8s.aws/aws-cloudmap-healthy
+    - lastProbeTime: null
+      lastTransitionTime: "2023-12-18T09:45:18Z"
+      status: "True"
+      type: Initialized
+    - lastProbeTime: null
+      lastTransitionTime: "2023-12-18T10:49:58Z"
+      status: "True"
+      type: Ready
+    - lastProbeTime: null
+      lastTransitionTime: "2023-12-18T10:49:26Z"
+      status: "True"
+      type: ContainersReady
+    - lastProbeTime: null
+      lastTransitionTime: "2023-12-18T09:45:16Z"
+      status: "True"
+      type: PodScheduled
+    containerStatuses:
+    - containerID: containerd://7c9be382da531fc23b0a1cc725cff5703c6cbba7bd4a1b9aa37bf85d5242d18c
+      image: 354280132276.dkr.ecr.us-east-2.amazonaws.com/howto-k8s-http2/color_server:latest
+      imageID: 354280132276.dkr.ecr.us-east-2.amazonaws.com/howto-k8s-http2/color_server@sha256:539d08d4a88df78b42a7e22d30f348ae49f0762d3c7d0b163c0c07783553b5cc
+      lastState: {}
+      name: app
+      ready: true
+      restartCount: 0
+      started: true
+      state:
+        running:
+          startedAt: "2023-12-18T09:45:19Z"
+    - containerID: containerd://ee93cf1b7e6ee4242b4f519fd15ba1d896b2ba41caa0cf6136a9dc86b1e4b73b
+      image: 840364872350.dkr.ecr.us-west-2.amazonaws.com/aws-appmesh-envoy:v1.27.2.0-prod
+      imageID: 840364872350.dkr.ecr.us-west-2.amazonaws.com/aws-appmesh-envoy@sha256:54560493ee400ecbf0a342bca172798e8c65062aa0bc11c6c4aa722b74899e96
+      lastState: {}
+      name: envoy
+      ready: true
+      restartCount: 0
+      started: true
+      state:
+        running:
+          startedAt: "2023-12-18T09:45:19Z"
+    hostIP: 192.168.81.3
+    initContainerStatuses:
+    - containerID: containerd://c162715ca7d22fe619041867754995d918389f33a492a6fe2fe7d232888d96e1
+      image: 840364872350.dkr.ecr.us-west-2.amazonaws.com/aws-appmesh-proxy-route-manager:v7-prod
+      imageID: 840364872350.dkr.ecr.us-west-2.amazonaws.com/aws-appmesh-proxy-route-manager@sha256:36d444b57dc253ea9e76cd6a6c5525416c4f9012c5d3a836ea2da91ab2bb28ff
+      lastState: {}
+      name: proxyinit
+      ready: true
+      restartCount: 0
+      state:
+        terminated:
+          containerID: containerd://c162715ca7d22fe619041867754995d918389f33a492a6fe2fe7d232888d96e1
+          exitCode: 0
+          finishedAt: "2023-12-18T09:45:17Z"
+          reason: Completed
+          startedAt: "2023-12-18T09:45:17Z"
+    phase: Running
+    podIP: 192.168.86.24
+    podIPs:
+    - ip: 192.168.86.24
+    qosClass: Burstable
+    startTime: "2023-12-18T09:45:16Z"
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/restartedAt: "2023-12-18T17:39:56+08:00"
+    creationTimestamp: "2023-12-18T09:45:16Z"
+    generateName: client-6f95b78cd6-
+    labels:
+      app: client
+      pod-template-hash: 6f95b78cd6
+    name: client-6f95b78cd6-44nwn
+    namespace: howto-k8s-http2
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: ReplicaSet
+      name: client-6f95b78cd6
+      uid: f46d5109-1268-41c6-8338-9fde995d1afa
+    resourceVersion: "23237"
+    uid: e73e856d-1715-41ef-bd5a-eea3af09eb03
+  spec:
+    containers:
+    - env:
+      - name: COLOR_HOST
+        value: color.howto-k8s-http2.svc.cluster.local:8080
+      - name: PORT
+        value: "8080"
+      image: 354280132276.dkr.ecr.us-east-2.amazonaws.com/howto-k8s-http2/color_client
+      imagePullPolicy: Always
+      name: app
+      ports:
+      - containerPort: 8080
+        protocol: TCP
+      resources: {}
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kube-api-access-6m7jg
+        readOnly: true
+    - env:
+      - name: ENVOY_ADMIN_ACCESS_LOG_FILE
+        value: /tmp/envoy_admin_access.log
+      - name: APPNET_AGENT_ADMIN_UDS_PATH
+        value: /tmp/agent.sock
+      - name: AWS_REGION
+        value: us-east-2
+      - name: APPMESH_FIPS_ENDPOINT
+        value: "0"
+      - name: ENVOY_ADMIN_ACCESS_ENABLE_IPV6
+        value: "false"
+      - name: ENVOY_ADMIN_ACCESS_PORT
+        value: "9901"
+      - name: APPMESH_PLATFORM_APP_MESH_CONTROLLER_VERSION
+        value: v1.12.7-dirty
+      - name: APPNET_AGENT_ADMIN_MODE
+        value: uds
+      - name: APPMESH_RESOURCE_ARN
+        value: mesh/howto-k8s-http2/virtualNode/client_howto-k8s-http2
+      - name: APPMESH_PLATFORM_K8S_VERSION
+        value: v1.27.8-eks-8cb36c9
+      - name: APPMESH_PREVIEW
+        value: "0"
+      - name: ENVOY_LOG_LEVEL
+        value: info
+      - name: APPMESH_VIRTUAL_NODE_NAME
+        value: mesh/howto-k8s-http2/virtualNode/client_howto-k8s-http2
+      - name: APPMESH_DUALSTACK_ENDPOINT
+        value: "0"
+      - name: APPMESH_PLATFORM_K8S_POD_UID
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.uid
+      image: 840364872350.dkr.ecr.us-west-2.amazonaws.com/aws-appmesh-envoy:v1.27.2.0-prod
+      imagePullPolicy: IfNotPresent
+      lifecycle:
+        preStop:
+          exec:
+            command:
+            - sh
+            - -c
+            - sleep 20
+      name: envoy
+      ports:
+      - containerPort: 9901
+        name: stats
+        protocol: TCP
+      readinessProbe:
+        exec:
+          command:
+          - sh
+          - -c
+          - curl -s http://localhost:9901/server_info | grep state | grep -q LIVE
+        failureThreshold: 3
+        initialDelaySeconds: 1
+        periodSeconds: 10
+        successThreshold: 1
+        timeoutSeconds: 1
+      resources:
+        requests:
+          cpu: 10m
+          memory: 32Mi
+      securityContext:
+        runAsUser: 1337
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kube-api-access-6m7jg
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    enableServiceLinks: true
+    initContainers:
+    - env:
+      - name: APPMESH_START_ENABLED
+        value: "1"
+      - name: APPMESH_IGNORE_UID
+        value: "1337"
+      - name: APPMESH_ENVOY_INGRESS_PORT
+        value: "15000"
+      - name: APPMESH_ENVOY_EGRESS_PORT
+        value: "15001"
+      - name: APPMESH_APP_PORTS
+        value: "8080"
+      - name: APPMESH_EGRESS_IGNORED_IP
+        value: 169.254.169.254
+      - name: APPMESH_EGRESS_IGNORED_PORTS
+        value: "22"
+      - name: APPMESH_ENABLE_IPV6
+        value: "1"
+      image: 840364872350.dkr.ecr.us-west-2.amazonaws.com/aws-appmesh-proxy-route-manager:v7-prod
+      imagePullPolicy: IfNotPresent
+      name: proxyinit
+      resources:
+        requests:
+          cpu: 10m
+          memory: 32Mi
+      securityContext:
+        capabilities:
+          add:
+          - NET_ADMIN
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kube-api-access-6m7jg
+        readOnly: true
+    nodeName: ip-192-168-2-25.us-east-2.compute.internal
+    preemptionPolicy: PreemptLowerPriority
+    priority: 0
+    readinessGates:
+    - conditionType: conditions.appmesh.k8s.aws/aws-cloudmap-healthy
+    restartPolicy: Always
+    schedulerName: default-scheduler
+    securityContext:
+      fsGroup: 1337
+    serviceAccount: default
+    serviceAccountName: default
+    terminationGracePeriodSeconds: 30
+    tolerations:
+    - effect: NoExecute
+      key: node.kubernetes.io/not-ready
+      operator: Exists
+      tolerationSeconds: 300
+    - effect: NoExecute
+      key: node.kubernetes.io/unreachable
+      operator: Exists
+      tolerationSeconds: 300
+    volumes:
+    - name: kube-api-access-6m7jg
+      projected:
+        defaultMode: 420
+        sources:
+        - serviceAccountToken:
+            expirationSeconds: 3607
+            path: token
+        - configMap:
+            items:
+            - key: ca.crt
+              path: ca.crt
+            name: kube-root-ca.crt
+        - downwardAPI:
+            items:
+            - fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+              path: namespace
+  status:
+    conditions:
+    - lastProbeTime: "2023-12-18T10:50:18Z"
+      lastTransitionTime: "2023-12-18T10:50:18Z"
+      status: "True"
+      type: conditions.appmesh.k8s.aws/aws-cloudmap-healthy
+    - lastProbeTime: null
+      lastTransitionTime: "2023-12-18T09:45:18Z"
+      status: "True"
+      type: Initialized
+    - lastProbeTime: null
+      lastTransitionTime: "2023-12-18T10:50:18Z"
+      status: "True"
+      type: Ready
+    - lastProbeTime: null
+      lastTransitionTime: "2023-12-18T10:49:27Z"
+      status: "True"
+      type: ContainersReady
+    - lastProbeTime: null
+      lastTransitionTime: "2023-12-18T09:45:16Z"
+      status: "True"
+      type: PodScheduled
+    containerStatuses:
+    - containerID: containerd://330957f7969d6987db20f3cf085913045f87fc474880b81c3e2674c881e36e09
+      image: 354280132276.dkr.ecr.us-east-2.amazonaws.com/howto-k8s-http2/color_client:latest
+      imageID: 354280132276.dkr.ecr.us-east-2.amazonaws.com/howto-k8s-http2/color_client@sha256:37c137b137f3a7f38f022a45cc08912a41b1458c8d72a5c91590fa3867e624a9
+      lastState: {}
+      name: app
+      ready: true
+      restartCount: 0
+      started: true
+      state:
+        running:
+          startedAt: "2023-12-18T09:45:18Z"
+    - containerID: containerd://4959e65cc008404365bed737fc1eb5aed390863325a98d5f321f14196d4901e0
+      image: 840364872350.dkr.ecr.us-west-2.amazonaws.com/aws-appmesh-envoy:v1.27.2.0-prod
+      imageID: 840364872350.dkr.ecr.us-west-2.amazonaws.com/aws-appmesh-envoy@sha256:54560493ee400ecbf0a342bca172798e8c65062aa0bc11c6c4aa722b74899e96
+      lastState: {}
+      name: envoy
+      ready: true
+      restartCount: 0
+      started: true
+      state:
+        running:
+          startedAt: "2023-12-18T09:45:18Z"
+    hostIP: 192.168.2.25
+    initContainerStatuses:
+    - containerID: containerd://770e977a90817094359dbb3ec110e695bc5f8c4bb07f80b32a1d4629a5c8d56e
+      image: 840364872350.dkr.ecr.us-west-2.amazonaws.com/aws-appmesh-proxy-route-manager:v7-prod
+      imageID: 840364872350.dkr.ecr.us-west-2.amazonaws.com/aws-appmesh-proxy-route-manager@sha256:36d444b57dc253ea9e76cd6a6c5525416c4f9012c5d3a836ea2da91ab2bb28ff
+      lastState: {}
+      name: proxyinit
+      ready: true
+      restartCount: 0
+      state:
+        terminated:
+          containerID: containerd://770e977a90817094359dbb3ec110e695bc5f8c4bb07f80b32a1d4629a5c8d56e
+          exitCode: 0
+          finishedAt: "2023-12-18T09:45:17Z"
+          reason: Completed
+          startedAt: "2023-12-18T09:45:17Z"
+    phase: Running
+    podIP: 192.168.15.193
+    podIPs:
+    - ip: 192.168.15.193
+    qosClass: Burstable
+    startTime: "2023-12-18T09:45:16Z"
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/restartedAt: "2023-12-18T17:39:56+08:00"
+    creationTimestamp: "2023-12-18T09:45:17Z"
+    generateName: green-75458674b-
+    labels:
+      app: color
+      pod-template-hash: 75458674b
+      version: green
+    name: green-75458674b-l4nc8
+    namespace: howto-k8s-http2
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: ReplicaSet
+      name: green-75458674b
+      uid: f363e504-6abe-4f45-af0e-7d90aaa971ec
+    resourceVersion: "23113"
+    uid: 9bfa0968-0005-4334-b90f-325325179385
+  spec:
+    containers:
+    - env:
+      - name: COLOR
+        value: green
+      - name: PORT
+        value: "8080"
+      image: 354280132276.dkr.ecr.us-east-2.amazonaws.com/howto-k8s-http2/color_server
+      imagePullPolicy: Always
+      name: app
+      ports:
+      - containerPort: 8080
+        protocol: TCP
+      resources: {}
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kube-api-access-vz6jz
+        readOnly: true
+    - env:
+      - name: APPMESH_PLATFORM_APP_MESH_CONTROLLER_VERSION
+        value: v1.12.7-dirty
+      - name: APPNET_AGENT_ADMIN_UDS_PATH
+        value: /tmp/agent.sock
+      - name: APPMESH_FIPS_ENDPOINT
+        value: "0"
+      - name: AWS_REGION
+        value: us-east-2
+      - name: APPMESH_PREVIEW
+        value: "0"
+      - name: ENVOY_ADMIN_ACCESS_LOG_FILE
+        value: /tmp/envoy_admin_access.log
+      - name: APPMESH_VIRTUAL_NODE_NAME
+        value: mesh/howto-k8s-http2/virtualNode/green_howto-k8s-http2
+      - name: ENVOY_ADMIN_ACCESS_ENABLE_IPV6
+        value: "false"
+      - name: APPMESH_DUALSTACK_ENDPOINT
+        value: "0"
+      - name: ENVOY_LOG_LEVEL
+        value: info
+      - name: ENVOY_ADMIN_ACCESS_PORT
+        value: "9901"
+      - name: APPMESH_PLATFORM_K8S_VERSION
+        value: v1.27.8-eks-8cb36c9
+      - name: APPMESH_RESOURCE_ARN
+        value: mesh/howto-k8s-http2/virtualNode/green_howto-k8s-http2
+      - name: APPNET_AGENT_ADMIN_MODE
+        value: uds
+      - name: APPMESH_PLATFORM_K8S_POD_UID
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.uid
+      image: 840364872350.dkr.ecr.us-west-2.amazonaws.com/aws-appmesh-envoy:v1.27.2.0-prod
+      imagePullPolicy: IfNotPresent
+      lifecycle:
+        preStop:
+          exec:
+            command:
+            - sh
+            - -c
+            - sleep 20
+      name: envoy
+      ports:
+      - containerPort: 9901
+        name: stats
+        protocol: TCP
+      readinessProbe:
+        exec:
+          command:
+          - sh
+          - -c
+          - curl -s http://localhost:9901/server_info | grep state | grep -q LIVE
+        failureThreshold: 3
+        initialDelaySeconds: 1
+        periodSeconds: 10
+        successThreshold: 1
+        timeoutSeconds: 1
+      resources:
+        requests:
+          cpu: 10m
+          memory: 32Mi
+      securityContext:
+        runAsUser: 1337
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kube-api-access-vz6jz
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    enableServiceLinks: true
+    initContainers:
+    - env:
+      - name: APPMESH_START_ENABLED
+        value: "1"
+      - name: APPMESH_IGNORE_UID
+        value: "1337"
+      - name: APPMESH_ENVOY_INGRESS_PORT
+        value: "15000"
+      - name: APPMESH_ENVOY_EGRESS_PORT
+        value: "15001"
+      - name: APPMESH_APP_PORTS
+        value: "8080"
+      - name: APPMESH_EGRESS_IGNORED_IP
+        value: 169.254.169.254
+      - name: APPMESH_EGRESS_IGNORED_PORTS
+        value: "22"
+      - name: APPMESH_ENABLE_IPV6
+        value: "1"
+      image: 840364872350.dkr.ecr.us-west-2.amazonaws.com/aws-appmesh-proxy-route-manager:v7-prod
+      imagePullPolicy: IfNotPresent
+      name: proxyinit
+      resources:
+        requests:
+          cpu: 10m
+          memory: 32Mi
+      securityContext:
+        capabilities:
+          add:
+          - NET_ADMIN
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kube-api-access-vz6jz
+        readOnly: true
+    nodeName: ip-192-168-2-25.us-east-2.compute.internal
+    preemptionPolicy: PreemptLowerPriority
+    priority: 0
+    readinessGates:
+    - conditionType: conditions.appmesh.k8s.aws/aws-cloudmap-healthy
+    restartPolicy: Always
+    schedulerName: default-scheduler
+    securityContext:
+      fsGroup: 1337
+    serviceAccount: default
+    serviceAccountName: default
+    terminationGracePeriodSeconds: 30
+    tolerations:
+    - effect: NoExecute
+      key: node.kubernetes.io/not-ready
+      operator: Exists
+      tolerationSeconds: 300
+    - effect: NoExecute
+      key: node.kubernetes.io/unreachable
+      operator: Exists
+      tolerationSeconds: 300
+    volumes:
+    - name: kube-api-access-vz6jz
+      projected:
+        defaultMode: 420
+        sources:
+        - serviceAccountToken:
+            expirationSeconds: 3607
+            path: token
+        - configMap:
+            items:
+            - key: ca.crt
+              path: ca.crt
+            name: kube-root-ca.crt
+        - downwardAPI:
+            items:
+            - fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+              path: namespace
+  status:
+    conditions:
+    - lastProbeTime: "2023-12-18T10:49:58Z"
+      lastTransitionTime: "2023-12-18T10:49:58Z"
+      status: "True"
+      type: conditions.appmesh.k8s.aws/aws-cloudmap-healthy
+    - lastProbeTime: null
+      lastTransitionTime: "2023-12-18T09:45:19Z"
+      status: "True"
+      type: Initialized
+    - lastProbeTime: null
+      lastTransitionTime: "2023-12-18T10:49:58Z"
+      status: "True"
+      type: Ready
+    - lastProbeTime: null
+      lastTransitionTime: "2023-12-18T10:49:31Z"
+      status: "True"
+      type: ContainersReady
+    - lastProbeTime: null
+      lastTransitionTime: "2023-12-18T09:45:17Z"
+      status: "True"
+      type: PodScheduled
+    containerStatuses:
+    - containerID: containerd://bbbb030975d422cffddebf0691a9a5bfa31b61a8ffa1e0a2ed1fce6f5a907d02
+      image: 354280132276.dkr.ecr.us-east-2.amazonaws.com/howto-k8s-http2/color_server:latest
+      imageID: 354280132276.dkr.ecr.us-east-2.amazonaws.com/howto-k8s-http2/color_server@sha256:539d08d4a88df78b42a7e22d30f348ae49f0762d3c7d0b163c0c07783553b5cc
+      lastState: {}
+      name: app
+      ready: true
+      restartCount: 0
+      started: true
+      state:
+        running:
+          startedAt: "2023-12-18T09:45:19Z"
+    - containerID: containerd://8e6691cc8d7b0c98e49c8bff5f7b4fbb22317c535a1c5e25bbb6ac95f4ccc298
+      image: 840364872350.dkr.ecr.us-west-2.amazonaws.com/aws-appmesh-envoy:v1.27.2.0-prod
+      imageID: 840364872350.dkr.ecr.us-west-2.amazonaws.com/aws-appmesh-envoy@sha256:54560493ee400ecbf0a342bca172798e8c65062aa0bc11c6c4aa722b74899e96
+      lastState: {}
+      name: envoy
+      ready: true
+      restartCount: 0
+      started: true
+      state:
+        running:
+          startedAt: "2023-12-18T09:45:19Z"
+    hostIP: 192.168.2.25
+    initContainerStatuses:
+    - containerID: containerd://c8b6cbab11a10d296b6bd375ca1cc2f1f277ba7232008d71938fd769ee84711a
+      image: 840364872350.dkr.ecr.us-west-2.amazonaws.com/aws-appmesh-proxy-route-manager:v7-prod
+      imageID: 840364872350.dkr.ecr.us-west-2.amazonaws.com/aws-appmesh-proxy-route-manager@sha256:36d444b57dc253ea9e76cd6a6c5525416c4f9012c5d3a836ea2da91ab2bb28ff
+      lastState: {}
+      name: proxyinit
+      ready: true
+      restartCount: 0
+      state:
+        terminated:
+          containerID: containerd://c8b6cbab11a10d296b6bd375ca1cc2f1f277ba7232008d71938fd769ee84711a
+          exitCode: 0
+          finishedAt: "2023-12-18T09:45:18Z"
+          reason: Completed
+          startedAt: "2023-12-18T09:45:18Z"
+    phase: Running
+    podIP: 192.168.5.5
+    podIPs:
+    - ip: 192.168.5.5
+    qosClass: Burstable
+    startTime: "2023-12-18T09:45:17Z"
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/restartedAt: "2023-12-18T17:39:56+08:00"
+    creationTimestamp: "2023-12-18T09:45:18Z"
+    generateName: red-7df758f594-
+    labels:
+      app: color
+      pod-template-hash: 7df758f594
+      version: red
+    name: red-7df758f594-64fgz
+    namespace: howto-k8s-http2
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: ReplicaSet
+      name: red-7df758f594
+      uid: e416f873-4f5e-4102-ae35-d92254e17084
+    resourceVersion: "23129"
+    uid: 698127cb-4b44-4084-821a-af6f4be2ef2b
+  spec:
+    containers:
+    - env:
+      - name: COLOR
+        value: red
+      - name: PORT
+        value: "8080"
+      image: 354280132276.dkr.ecr.us-east-2.amazonaws.com/howto-k8s-http2/color_server
+      imagePullPolicy: Always
+      name: app
+      ports:
+      - containerPort: 8080
+        protocol: TCP
+      resources: {}
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kube-api-access-2j8s9
+        readOnly: true
+    - env:
+      - name: ENVOY_ADMIN_ACCESS_ENABLE_IPV6
+        value: "false"
+      - name: APPNET_AGENT_ADMIN_MODE
+        value: uds
+      - name: APPNET_AGENT_ADMIN_UDS_PATH
+        value: /tmp/agent.sock
+      - name: APPMESH_RESOURCE_ARN
+        value: mesh/howto-k8s-http2/virtualNode/red_howto-k8s-http2
+      - name: AWS_REGION
+        value: us-east-2
+      - name: APPMESH_PLATFORM_K8S_VERSION
+        value: v1.27.8-eks-8cb36c9
+      - name: APPMESH_VIRTUAL_NODE_NAME
+        value: mesh/howto-k8s-http2/virtualNode/red_howto-k8s-http2
+      - name: APPMESH_DUALSTACK_ENDPOINT
+        value: "0"
+      - name: APPMESH_PREVIEW
+        value: "0"
+      - name: ENVOY_LOG_LEVEL
+        value: info
+      - name: ENVOY_ADMIN_ACCESS_LOG_FILE
+        value: /tmp/envoy_admin_access.log
+      - name: APPMESH_PLATFORM_APP_MESH_CONTROLLER_VERSION
+        value: v1.12.7-dirty
+      - name: APPMESH_FIPS_ENDPOINT
+        value: "0"
+      - name: ENVOY_ADMIN_ACCESS_PORT
+        value: "9901"
+      - name: APPMESH_PLATFORM_K8S_POD_UID
+        valueFrom:
+          fieldRef:
+            apiVersion: v1
+            fieldPath: metadata.uid
+      image: 840364872350.dkr.ecr.us-west-2.amazonaws.com/aws-appmesh-envoy:v1.27.2.0-prod
+      imagePullPolicy: IfNotPresent
+      lifecycle:
+        preStop:
+          exec:
+            command:
+            - sh
+            - -c
+            - sleep 20
+      name: envoy
+      ports:
+      - containerPort: 9901
+        name: stats
+        protocol: TCP
+      readinessProbe:
+        exec:
+          command:
+          - sh
+          - -c
+          - curl -s http://localhost:9901/server_info | grep state | grep -q LIVE
+        failureThreshold: 3
+        initialDelaySeconds: 1
+        periodSeconds: 10
+        successThreshold: 1
+        timeoutSeconds: 1
+      resources:
+        requests:
+          cpu: 10m
+          memory: 32Mi
+      securityContext:
+        runAsUser: 1337
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kube-api-access-2j8s9
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    enableServiceLinks: true
+    initContainers:
+    - env:
+      - name: APPMESH_START_ENABLED
+        value: "1"
+      - name: APPMESH_IGNORE_UID
+        value: "1337"
+      - name: APPMESH_ENVOY_INGRESS_PORT
+        value: "15000"
+      - name: APPMESH_ENVOY_EGRESS_PORT
+        value: "15001"
+      - name: APPMESH_APP_PORTS
+        value: "8080"
+      - name: APPMESH_EGRESS_IGNORED_IP
+        value: 169.254.169.254
+      - name: APPMESH_EGRESS_IGNORED_PORTS
+        value: "22"
+      - name: APPMESH_ENABLE_IPV6
+        value: "1"
+      image: 840364872350.dkr.ecr.us-west-2.amazonaws.com/aws-appmesh-proxy-route-manager:v7-prod
+      imagePullPolicy: IfNotPresent
+      name: proxyinit
+      resources:
+        requests:
+          cpu: 10m
+          memory: 32Mi
+      securityContext:
+        capabilities:
+          add:
+          - NET_ADMIN
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kube-api-access-2j8s9
+        readOnly: true
+    nodeName: ip-192-168-81-3.us-east-2.compute.internal
+    preemptionPolicy: PreemptLowerPriority
+    priority: 0
+    readinessGates:
+    - conditionType: conditions.appmesh.k8s.aws/aws-cloudmap-healthy
+    restartPolicy: Always
+    schedulerName: default-scheduler
+    securityContext:
+      fsGroup: 1337
+    serviceAccount: default
+    serviceAccountName: default
+    terminationGracePeriodSeconds: 30
+    tolerations:
+    - effect: NoExecute
+      key: node.kubernetes.io/not-ready
+      operator: Exists
+      tolerationSeconds: 300
+    - effect: NoExecute
+      key: node.kubernetes.io/unreachable
+      operator: Exists
+      tolerationSeconds: 300
+    volumes:
+    - name: kube-api-access-2j8s9
+      projected:
+        defaultMode: 420
+        sources:
+        - serviceAccountToken:
+            expirationSeconds: 3607
+            path: token
+        - configMap:
+            items:
+            - key: ca.crt
+              path: ca.crt
+            name: kube-root-ca.crt
+        - downwardAPI:
+            items:
+            - fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+              path: namespace
+  status:
+    conditions:
+    - lastProbeTime: "2023-12-18T10:49:58Z"
+      lastTransitionTime: "2023-12-18T10:49:58Z"
+      status: "True"
+      type: conditions.appmesh.k8s.aws/aws-cloudmap-healthy
+    - lastProbeTime: null
+      lastTransitionTime: "2023-12-18T09:45:20Z"
+      status: "True"
+      type: Initialized
+    - lastProbeTime: null
+      lastTransitionTime: "2023-12-18T10:49:58Z"
+      status: "True"
+      type: Ready
+    - lastProbeTime: null
+      lastTransitionTime: "2023-12-18T10:49:28Z"
+      status: "True"
+      type: ContainersReady
+    - lastProbeTime: null
+      lastTransitionTime: "2023-12-18T09:45:18Z"
+      status: "True"
+      type: PodScheduled
+    containerStatuses:
+    - containerID: containerd://c1b29c5a3210848b79aca18b9050a4d56a8039b08d4542830063723f35e7e0dd
+      image: 354280132276.dkr.ecr.us-east-2.amazonaws.com/howto-k8s-http2/color_server:latest
+      imageID: 354280132276.dkr.ecr.us-east-2.amazonaws.com/howto-k8s-http2/color_server@sha256:539d08d4a88df78b42a7e22d30f348ae49f0762d3c7d0b163c0c07783553b5cc
+      lastState: {}
+      name: app
+      ready: true
+      restartCount: 0
+      started: true
+      state:
+        running:
+          startedAt: "2023-12-18T09:45:20Z"
+    - containerID: containerd://726838b42e961a1c03413fe58ba5ce414c8066017dc86862134c1ccc86100a2c
+      image: 840364872350.dkr.ecr.us-west-2.amazonaws.com/aws-appmesh-envoy:v1.27.2.0-prod
+      imageID: 840364872350.dkr.ecr.us-west-2.amazonaws.com/aws-appmesh-envoy@sha256:54560493ee400ecbf0a342bca172798e8c65062aa0bc11c6c4aa722b74899e96
+      lastState: {}
+      name: envoy
+      ready: true
+      restartCount: 0
+      started: true
+      state:
+        running:
+          startedAt: "2023-12-18T09:45:20Z"
+    hostIP: 192.168.81.3
+    initContainerStatuses:
+    - containerID: containerd://9a2f06ee676c7225b0f4fd1ef3eb0a18b19536953df5edb8cfe3dcceedcb554e
+      image: 840364872350.dkr.ecr.us-west-2.amazonaws.com/aws-appmesh-proxy-route-manager:v7-prod
+      imageID: 840364872350.dkr.ecr.us-west-2.amazonaws.com/aws-appmesh-proxy-route-manager@sha256:36d444b57dc253ea9e76cd6a6c5525416c4f9012c5d3a836ea2da91ab2bb28ff
+      lastState: {}
+      name: proxyinit
+      ready: true
+      restartCount: 0
+      state:
+        terminated:
+          containerID: containerd://9a2f06ee676c7225b0f4fd1ef3eb0a18b19536953df5edb8cfe3dcceedcb554e
+          exitCode: 0
+          finishedAt: "2023-12-18T09:45:19Z"
+          reason: Completed
+          startedAt: "2023-12-18T09:45:18Z"
+    phase: Running
+    podIP: 192.168.73.48
+    podIPs:
+    - ip: 192.168.73.48
+    qosClass: Burstable
+    startTime: "2023-12-18T09:45:18Z"
+kind: List
+metadata:
+  resourceVersion: ""

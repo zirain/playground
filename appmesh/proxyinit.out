@@ -1,0 +1,10 @@
++ enable_ingress_redirect_routing
++ iptables -t nat -A APPMESH_INGRESS -p tcp -m multiport --dports 8080 -j REDIRECT --to-port 15000
++ iptables -t nat -A PREROUTING -p tcp -m addrtype '!' --src-type LOCAL -j APPMESH_INGRESS
++ '[' 1 == 1 ']'
++ ip6tables -t nat -A APPMESH_INGRESS -p tcp -m multiport --dports 8080 -j REDIRECT --to-port 15000
++ ip6tables -t nat -A PREROUTING -p tcp -m addrtype '!' --src-type LOCAL -j APPMESH_INGRESS
++ main_loop
++ echo '=== Entering main loop ==='
+=== Entering main loop ===
++ read -p '> ' cmd
