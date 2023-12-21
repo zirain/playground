@@ -1,0 +1,97 @@
+ResourceSpans #0
+Resource SchemaURL: https://opentelemetry.io/schemas/1.16.0
+Resource attributes:
+     -> telemetry.sdk.version: Str(Datadog-v1.2.1)
+     -> telemetry.sdk.name: Str(Datadog)
+     -> telemetry.sdk.language: Str(cpp)
+     -> process.runtime.version: Str(201402)
+     -> service.name: Str(httpbin.default)
+ScopeSpans #0
+ScopeSpans SchemaURL: 
+InstrumentationScope Datadog v1.2.1
+Span #0
+    Trace ID       : 00000000000000006a1c7230314e671c
+    Parent ID      : 6a1c7230314e671c
+    ID             : 45327b1444b95ae1
+    Name           : envoy.proxy
+    Kind           : Server
+    Start time     : 2023-12-21 12:53:02.881403 +0000 UTC
+    End time       : 2023-12-21 12:53:02.8842125 +0000 UTC
+    Status code    : Ok
+    Status message : 
+Attributes:
+     -> dd.span.Resource: Str(httpbin.default.svc.cluster.local:8000/*)
+     -> datadog.span.id: Str(4986183064435120865)
+     -> datadog.trace.id: Str(7646111818679478044)
+     -> http.url: Str(http://httpbin:8000/get)
+     -> peer.address: Str(10.244.0.40)
+     -> node_id: Str(sidecar~10.244.0.39~httpbin-86b8ffc5ff-b97kc.default~default.svc.cluster.local)
+     -> istio.canonical_revision: Str(v1)
+     -> http.method: Str(GET)
+     -> response_size: Str(573)
+     -> component: Str(proxy)
+     -> istio.namespace: Str(default)
+     -> istio.mesh_id: Str(cluster.local)
+     -> operation: Str(httpbin.default.svc.cluster.local:8000/*)
+     -> downstream_cluster: Str(-)
+     -> istio.canonical_service: Str(httpbin)
+     -> zone: Str()
+     -> service.version: Str(envoy f558e66e0f092e60899f5a0493b95b32a8df1a84/1.26.5/Clean/RELEASE/BoringSSL)
+     -> span.kind: Str(server)
+     -> response_flags: Str(-)
+     -> http.status_code: Str(200)
+     -> upstream_cluster.name: Str(inbound|8080||)
+     -> user_agent: Str(curl/8.5.0)
+     -> guid.x-request-id: Str(1dabe964-d4b1-9483-b618-5b1097ec2be4)
+     -> request_size: Str(0)
+     -> http.protocol: Str(HTTP/1.1)
+     -> upstream_cluster: Str(inbound|8080||)
+ResourceSpans #1
+Resource SchemaURL: https://opentelemetry.io/schemas/1.16.0
+Resource attributes:
+     -> telemetry.sdk.version: Str(Datadog-v1.2.1)
+     -> telemetry.sdk.name: Str(Datadog)
+     -> telemetry.sdk.language: Str(cpp)
+     -> process.runtime.version: Str(201402)
+     -> service.name: Str(sleep.default)
+ScopeSpans #0
+ScopeSpans SchemaURL: 
+InstrumentationScope Datadog v1.2.1
+Span #0
+    Trace ID       : 00000000000000006a1c7230314e671c
+    Parent ID      : 
+    ID             : 6a1c7230314e671c
+    Name           : envoy.proxy
+    Kind           : Client
+    Start time     : 2023-12-21 12:53:02.872474 +0000 UTC
+    End time       : 2023-12-21 12:53:02.886308625 +0000 UTC
+    Status code    : Ok
+    Status message : 
+Attributes:
+     -> dd.span.Resource: Str(httpbin.default.svc.cluster.local:8000/*)
+     -> datadog.span.id: Str(7646111818679478044)
+     -> datadog.trace.id: Str(7646111818679478044)
+     -> istio.mesh_id: Str(cluster.local)
+     -> http.protocol: Str(HTTP/1.1)
+     -> response_size: Str(573)
+     -> component: Str(proxy)
+     -> istio.namespace: Str(default)
+     -> http.url: Str(http://httpbin:8000/get)
+     -> istio.canonical_revision: Str(latest)
+     -> span.kind: Str(client)
+     -> peer.address: Str(10.244.0.40)
+     -> node_id: Str(sidecar~10.244.0.40~sleep-7656cf8794-nc82j.default~default.svc.cluster.local)
+     -> user_agent: Str(curl/8.5.0)
+     -> http.method: Str(GET)
+     -> downstream_cluster: Str(-)
+     -> guid.x-request-id: Str(1dabe964-d4b1-9483-b618-5b1097ec2be4)
+     -> upstream_cluster: Str(outbound|8000||httpbin.default.svc.cluster.local)
+     -> service.version: Str(envoy f558e66e0f092e60899f5a0493b95b32a8df1a84/1.26.5/Clean/RELEASE/BoringSSL)
+     -> zone: Str()
+     -> response_flags: Str(-)
+     -> http.status_code: Str(200)
+     -> upstream_cluster.name: Str(outbound|8000||httpbin.default.svc.cluster.local)
+     -> request_size: Str(0)
+     -> operation: Str(httpbin.default.svc.cluster.local:8000/*)
+     -> istio.canonical_service: Str(sleep)
+        {"kind": "exporter", "data_type": "traces", "name": "logging"}

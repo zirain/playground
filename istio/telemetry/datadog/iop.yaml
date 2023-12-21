@@ -1,0 +1,10 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+spec:
+  meshConfig:
+    enableTracing: true
+    extensionProviders:
+      - name: datadog
+        datadog:
+          service: otel-collector.istio-system.svc.cluster.local
+          port: 8126

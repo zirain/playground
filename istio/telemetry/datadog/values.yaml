@@ -1,0 +1,37 @@
+fullnameOverride: otel-collector
+mode: deployment
+ports:
+  datadog:
+    enabled: true
+    containerPort: 8126
+    servicePort: 8126
+    protocol: TCP
+    # appProtocol: grpc
+config:
+  exporters:
+    logging:
+      verbosity: detailed
+  extensions:
+    # The health_check extension is mandatory for this chart.
+    # Without the health_check extension the collector will fail the readiness and liveliness probes.
+    # The health_check extension can be modified, but should never be removed.
+    health_check: {}
+  receivers:
+    datadog:
+      endpoint: 0.0.0.0:8126
+      read_timeout: 60s
+    otlp:
+      protocols:
+        grpc:
+          endpoint: ${env:MY_POD_IP}:4317
+        http:
+          endpoint: ${env:MY_POD_IP}:4318
+  service:
+    extensions:
+      - health_check
+    pipelines:
+      traces:
+        exporters:
+          - logging
+        receivers:
+          - datadog

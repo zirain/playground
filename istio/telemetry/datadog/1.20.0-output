@@ -1,0 +1,99 @@
+ResourceSpans #0
+Resource SchemaURL: https://opentelemetry.io/schemas/1.16.0
+Resource attributes:
+     -> telemetry.sdk.name: Str(Datadog)
+     -> telemetry.sdk.language: Str(cpp)
+     -> process.runtime.version: Str(201703)
+     -> telemetry.sdk.version: Str(Datadog-v0.1.8)
+     -> service.name: Str(httpbin.default)
+ScopeSpans #0
+ScopeSpans SchemaURL: 
+InstrumentationScope Datadog v0.1.8
+Span #0
+    Trace ID       : 00000000000000003aeb56341efdcf01
+    Parent ID      : 3aeb56341efdcf01
+    ID             : 513fab333a4abbd0
+    Name           : httpbin.default.svc.cluster.local:8000/*
+    Kind           : Server
+    Start time     : 2023-12-21 12:55:58.371954 +0000 UTC
+    End time       : 2023-12-21 12:55:58.374857208 +0000 UTC
+    Status code    : Ok
+    Status message : 
+Attributes:
+     -> dd.span.Resource: Str(ingress)
+     -> datadog.span.id: Str(5854586277114592208)
+     -> datadog.trace.id: Str(4245581855585062657)
+     -> _dd.p.dm: Str(-0)
+     -> request_size: Str(0)
+     -> upstream_cluster.name: Str(inbound|8080||)
+     -> guid:x-request-id: Str(98bfcb95-512d-9754-9dd7-7b6fd0319913)
+     -> response_size: Str(727)
+     -> language: Str(cpp)
+     -> peer.address: Str(10.244.0.45)
+     -> runtime-id: Str(72967411-fc98-47fc-aefb-4949cb8c223a)
+     -> istio.canonical_service: Str(httpbin)
+     -> istio.mesh_id: Str(cluster.local)
+     -> http.status_code: Str(200)
+     -> zone: Str()
+     -> downstream_cluster: Str(-)
+     -> http.url: Str(http://httpbin:8000/get)
+     -> service.version: Str(envoy 580bf9cc561a012d4eb14af48d496d6748307e59/1.28.1-dev/Clean/RELEASE/BoringSSL)
+     -> response_flags: Str(-)
+     -> node_id: Str(sidecar~10.244.0.44~httpbin-86b8ffc5ff-8tdmt.default~default.svc.cluster.local)
+     -> http.protocol: Str(HTTP/1.1)
+     -> user_agent: Str(curl/8.5.0)
+     -> istio.namespace: Str(default)
+     -> istio.canonical_revision: Str(v1)
+     -> http.method: Str(GET)
+     -> component: Str(proxy)
+     -> upstream_cluster: Str(inbound|8080||)
+ResourceSpans #1
+Resource SchemaURL: https://opentelemetry.io/schemas/1.16.0
+Resource attributes:
+     -> telemetry.sdk.version: Str(Datadog-v0.1.8)
+     -> telemetry.sdk.name: Str(Datadog)
+     -> telemetry.sdk.language: Str(cpp)
+     -> process.runtime.version: Str(201703)
+     -> service.name: Str(sleep.default)
+ScopeSpans #0
+ScopeSpans SchemaURL: 
+InstrumentationScope Datadog v0.1.8
+Span #0
+    Trace ID       : 00000000000000003aeb56341efdcf01
+    Parent ID      : 
+    ID             : 3aeb56341efdcf01
+    Name           : httpbin.default.svc.cluster.local:8000/*
+    Kind           : Server
+    Start time     : 2023-12-21 12:55:58.362227 +0000 UTC
+    End time       : 2023-12-21 12:55:58.376679167 +0000 UTC
+    Status code    : Ok
+    Status message : 
+Attributes:
+     -> dd.span.Resource: Str(egress httpbin:8000)
+     -> datadog.span.id: Str(4245581855585062657)
+     -> datadog.trace.id: Str(4245581855585062657)
+     -> upstream_cluster: Str(outbound|8000||httpbin.default.svc.cluster.local)
+     -> service.version: Str(envoy 580bf9cc561a012d4eb14af48d496d6748307e59/1.28.1-dev/Clean/RELEASE/BoringSSL)
+     -> http.status_code: Str(200)
+     -> http.protocol: Str(HTTP/1.1)
+     -> user_agent: Str(curl/8.5.0)
+     -> downstream_cluster: Str(-)
+     -> component: Str(proxy)
+     -> http.url: Str(http://httpbin:8000/get)
+     -> istio.canonical_revision: Str(latest)
+     -> http.method: Str(GET)
+     -> request_size: Str(0)
+     -> response_flags: Str(-)
+     -> response_size: Str(727)
+     -> zone: Str()
+     -> peer.address: Str(10.244.0.45)
+     -> istio.canonical_service: Str(sleep)
+     -> upstream_cluster.name: Str(outbound|8000||httpbin.default.svc.cluster.local)
+     -> runtime-id: Str(b09edeba-06e9-4ec9-90ba-1a54f016d229)
+     -> guid:x-request-id: Str(98bfcb95-512d-9754-9dd7-7b6fd0319913)
+     -> _dd.p.dm: Str(-0)
+     -> istio.mesh_id: Str(cluster.local)
+     -> node_id: Str(sidecar~10.244.0.45~sleep-7656cf8794-2mpg6.default~default.svc.cluster.local)
+     -> language: Str(cpp)
+     -> istio.namespace: Str(default)
+        {"kind": "exporter", "data_type": "traces", "name": "logging"}
