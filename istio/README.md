@@ -69,7 +69,7 @@ go test -benchmem -run=^$ -bench ^BenchmarkListenerGeneration$ istio.io/istio/pi
 ```shell
 export WORKLOAD_ID=ztunnel-gj74n
 kubectl exec -it `kubectl get po -nistio-system| grep istiod | grep Running | awk '{print $1}'` -nistio-system -- pilot-discovery request get "/debug/ecdsz?proxyID=${WORKLOAD_ID}"
-istioctl x internal-debug "config_dump?types=ecdsz=proxyID=${WORKLOAD_ID}"
+istioctl x internal-debug "config_dump?types=ecds&proxyID=${WORKLOAD_ID}"
 ```
 
 ```shell
