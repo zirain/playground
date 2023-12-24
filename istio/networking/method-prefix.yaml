@@ -1,0 +1,14 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: method-prefix
+spec:
+  hosts:
+    - "httpbin"
+  http:
+    - match:
+        - method:
+            prefix: ""
+      route:
+        - destination:
+            host: httpbin.default.svc.cluster.local
