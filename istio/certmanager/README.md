@@ -1,6 +1,8 @@
 # cert-manager CA 集成
 
-# install
+## install
+ 
+### Install cert-manager
 
 ```console
 helm repo add jetstack https://charts.jetstack.io
@@ -9,8 +11,10 @@ kubectl create namespace cert-manager
 helm install -n cert-manager cert-manager jetstack/cert-manager --set installCRDs=true
 ```
 
+### Create Self-Signed Issuer
+
 ```console
-kubectl apply -f istio/certmanager/certmanger.yaml -nistio-system
+kubectl apply -f istio/certmanager/selfsigned.yaml -nistio-system
 
 # verify
 kubectl get issuers -n istio-system
@@ -28,7 +32,8 @@ openssl x509 -in ca.pem -noout -text
 kubectl create secret generic -n cert-manager istio-root-ca --from-file=ca.pem=ca.pem
 ```
 
-install istio-csr
+### install istio-csr
+
 ```console
 helm install -n cert-manager cert-manager-istio-csr jetstack/cert-manager-istio-csr \
 	--set "app.tls.rootCAFile=/var/run/secrets/istio-csr/ca.pem" \
@@ -51,7 +56,7 @@ istioctl proxy-config secret $(kubectl get pods -o jsonpath='{.items..metadata.n
 ## cleanup
 
 ```
-istioctl x uninstall --purge -y
+istioctl uninstall --purge -y
 
 helm uninstall -n cert-manager cert-manager-istio-csr
 
