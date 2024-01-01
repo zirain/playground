@@ -1,7 +1,7 @@
 # Blogs
 
 
-## Pratices
+## Practices
 
 - [Some best practices for running Istio in production](https://gokhan-karadas1992.medium.com/some-best-practices-for-running-istio-in-production-61a5442ce900)
 
