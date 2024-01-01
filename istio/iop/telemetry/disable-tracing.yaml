@@ -1,7 +1,11 @@
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 spec:
+  meshConfig:
+    # disable tracing in listener config
+    enableTracing: false
   values:
     global:
       proxy:
+        # disable tracing in bootstrap config
         tracer: none
