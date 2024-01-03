@@ -1,0 +1,35 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: httpbin-gateway
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    - port:
+        number: 443
+        name: https
+        protocol: HTTPS
+      hosts:
+        - "httpbin.example.com"
+      tls:
+        mode: SIMPLE
+        credentialName: pca-issuer-ec-cert-tls
+      
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: httpbin
+spec:
+  hosts:
+    - "httpbin.example.com"
+  gateways:
+    - httpbin-gateway
+  http:
+    - route:
+        - destination:
+            host: httpbin
+            port:
+              number: 8000
+# curl -ik -v -HHost:httpbin.example.com --resolve "httpbin.example.com:443:172.18.255.200" https://httpbin.example.com:443/headers

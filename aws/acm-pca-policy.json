@@ -1,0 +1,15 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "AWSAcmPcaIssuer",
+            "Action": [
+                "acm-pca:DescribeCertificateAuthority",
+                "acm-pca:GetCertificate",
+                "acm-pca:IssueCertificate"
+            ],
+            "Effect": "Allow",
+            "Resource": "*"
+        }
+    ]
+}

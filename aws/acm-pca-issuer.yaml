@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: pca-secret
+  namespace: cert-manager
+data:
+  AWS_ACCESS_KEY_ID: "" # base64 encoded
+  AWS_SECRET_ACCESS_KEY: "" # base64 encoded
+---
+apiVersion: awspca.cert-manager.io/v1beta1
+kind: AWSPCAIssuer
+metadata:
+  name: pca-issuer-ec
+  namespace: istio-system
+spec:
+  arn: "arn:aws:acm-pca:us-east-2:354280132276:certificate-authority/6ff0d5b7-cf69-4e4d-b484-7abab91c7d21"
+  region: "us-east-2"
+  secretRef:
+    name: pca-secret
+    namespace: cert-manager
+    accessKeyIDSelector:
+      key: AWS_ACCESS_KEY_ID
+    secretAccessKeySelector:
+      key: AWS_SECRET_ACCESS_KEY
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: pca-issuer-ec-cert
+  namespace: istio-system
+spec:
+  subject:
+    organizations:
+      - aws
+  dnsNames:
+    - example.com
+  privateKey:
+    algorithm: "RSA"
+    size: 2048
+  secretName: pca-issuer-ec-cert-tls
+  issuerRef:
+    kind: AWSPCAIssuer
+    name: pca-issuer-ec
+    group: awspca.cert-manager.io
