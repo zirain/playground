@@ -1,0 +1,16 @@
+global:
+  proxy:
+    tracer: none
+
+meshConfig:
+  enableTracing: true
+  defaultConfig:
+    tracing: {}
+  defaultProviders:
+    tracing:
+      - "opentelemetry"
+  extensionProviders:
+    - name: "opentelemetry"
+      opentelemetry:
+        service: otel-node-collector.kube-system.svc.cluster.local
+        port: 4317
