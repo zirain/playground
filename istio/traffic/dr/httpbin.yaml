@@ -1,0 +1,28 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: httpbin
+spec:
+  host: httpbin
+  trafficPolicy:
+    portLevelSettings:
+      - port:
+          number: 8000
+        connectionPool:
+          http:
+            idleTimeout: 60s
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: httpbin
+spec:
+    hosts:
+    - httpbin
+    http:
+    - route:
+      - destination:
+          host: httpbin
+          port:
+            number: 8000
+      timeout: 5s

@@ -1,0 +1,27 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  name: stackdriver
+  namespace: istio-system
+spec:
+  meshConfig:
+    defaultConfig:
+      proxyMetadata:
+        GCE_METADATA_HOST: "172.18.255.200:8080" # get gce-metadata-server svc ip
+    enableTracing: true
+    accessLogFile: "/dev/stdout"
+  values:
+    pilot:
+      traceSampling: 100
+      env:
+        STACKDRIVER_AUDIT_LOG: "true"
+    global:
+      meshID: mesh1
+      proxy:
+        tracer: stackdriver
+        componentLogLevel: "misc:warning,rbac:debug,wasm:debug"
+    telemetry:
+      enabled: true
+      v2:
+        stackdriver:
+          enabled: true

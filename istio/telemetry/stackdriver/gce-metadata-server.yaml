@@ -1,0 +1,38 @@
+# copy from https://github.com/istio/istio/blob/adbe0e41b5ecdf741ac52a0cd72b73dab6a04228/pkg/test/framework/components/gcemetadata/gce_metadata_server.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: gce-metadata-server
+  labels:
+    app: gce-metadata
+spec:
+  # Use LB service so it can be reached cross cluster
+  type: LoadBalancer
+  ports:
+    - name: http
+      port: 8080
+    - name: http-vm
+      port: 8081
+  selector:
+    app: gce-metadata
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gce-metadata-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gce-metadata
+  template:
+    metadata:
+      labels:
+        app: gce-metadata
+    spec:
+      containers:
+        - image: gcr.io/istio-testing/fake-gce-metadata:1.2
+          imagePullPolicy: Always
+          name: gce-metadata
+          ports:
+            - containerPort: 8080
