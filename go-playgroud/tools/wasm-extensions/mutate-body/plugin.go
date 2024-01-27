@@ -1,6 +1,11 @@
 package main
 
 import (
+	"encoding/binary"
+	"encoding/json"
+	"fmt"
+	"net/http"
+
 	"github.com/tetratelabs/proxy-wasm-go-sdk/proxywasm"
 	"github.com/tetratelabs/proxy-wasm-go-sdk/proxywasm/types"
 )
@@ -23,6 +28,7 @@ type pluginContext struct {
 	// Embed the default plugin context here,
 	// so that we don't need to reimplement all the methods.
 	types.DefaultPluginContext
+	customMessage map[string]string
 }
 
 func (ctx *pluginContext) NewHttpContext(contextID uint32) types.HttpContext {
@@ -38,25 +44,35 @@ type httpContext struct {
 }
 
 func (ctx *pluginContext) OnPluginStart(_ int) types.OnPluginStartStatus {
-	_, err := proxywasm.GetPluginConfiguration()
+	data, err := proxywasm.GetPluginConfiguration()
 	if err != nil && err != types.ErrorStatusNotFound {
 		proxywasm.LogCriticalf("error reading plugin configuration: %v", err)
 		return types.OnPluginStartStatusFailed
+	}
+
+	var message map[string]string
+	if err := json.Unmarshal(data, &message); err == nil {
+		ctx.customMessage = message
+	} else {
+		proxywasm.LogCriticalf("error unmarshal configuration: %v", err)
 	}
 
 	return types.OnPluginStartStatusOK
 }
 
 func (ctx *httpContext) OnHttpResponseBody(_ int, _ bool) types.Action {
-	responseCode, err := proxywasm.GetProperty([]string{"response", "code"})
+	bs, err := proxywasm.GetProperty([]string{"response", "code"})
 	if err != nil {
 		proxywasm.LogCriticalf("error getting response code: %v", err)
 		return types.ActionContinue
 	}
-
-	switch string(responseCode) {
-	case "403":
-		if err := proxywasm.ReplaceHttpResponseBody([]byte("")); err != nil {
+	code := binary.LittleEndian.Uint64(bs)
+	codeStr := fmt.Sprintf("%d", code)
+	switch code {
+	case http.StatusForbidden:
+		msg := ctx.pluginContext.customMessage[codeStr]
+		proxywasm.LogCriticalf("replace response body to: %s", msg)
+		if err := proxywasm.ReplaceHttpResponseBody([]byte(msg + "\n")); err != nil {
 			proxywasm.LogCriticalf("error replacing response body: %v", err)
 			return types.ActionContinue
 		}

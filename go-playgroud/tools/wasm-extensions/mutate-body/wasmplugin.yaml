@@ -7,4 +7,7 @@ spec:
   selector:
     matchLabels:
       app: httpbin
+  phase: AUTHZ
   url: oci://ghcr.io/zirain/mutate-body:latest
+  pluginConfig:
+    "403": "access denied"
