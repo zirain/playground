@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"github.com/tetratelabs/proxy-wasm-go-sdk/proxywasm"
 	"github.com/tetratelabs/proxy-wasm-go-sdk/proxywasm/types"
 )
@@ -40,7 +39,7 @@ type httpContext struct {
 
 func (ctx *pluginContext) OnPluginStart(_ int) types.OnPluginStartStatus {
 	_, err := proxywasm.GetPluginConfiguration()
-	if err != nil && !errors.Is(err, types.ErrorStatusNotFound) {
+	if err != nil && err != types.ErrorStatusNotFound {
 		proxywasm.LogCriticalf("error reading plugin configuration: %v", err)
 		return types.OnPluginStartStatusFailed
 	}

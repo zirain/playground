@@ -7,4 +7,4 @@ spec:
   selector:
     matchLabels:
       app: httpbin
-  url: oci://ghcr.io/zirain/mutate-body:0.0.1
+  url: oci://ghcr.io/zirain/mutate-body:latest
