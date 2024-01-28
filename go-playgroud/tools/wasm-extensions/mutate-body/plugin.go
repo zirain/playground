@@ -60,16 +60,33 @@ func (ctx *pluginContext) OnPluginStart(_ int) types.OnPluginStartStatus {
 	return types.OnPluginStartStatusOK
 }
 
-func (ctx *httpContext) OnHttpResponseBody(_ int, _ bool) types.Action {
+func (ctx *httpContext) OnHttpResponseBody(bodySize int, endOfStream bool) types.Action {
+	if !endOfStream {
+		// Wait until we see the entire body to replace.
+		return types.ActionPause
+	}
+
 	bs, err := proxywasm.GetProperty([]string{"response", "code"})
 	if err != nil {
 		proxywasm.LogCriticalf("error getting response code: %v", err)
 		return types.ActionContinue
 	}
+
+	originalBody, err := proxywasm.GetHttpResponseBody(0, bodySize)
+	if err != nil {
+		proxywasm.LogCriticalf("failed to get response body: %v", err)
+		return types.ActionContinue
+	}
+
 	code := binary.LittleEndian.Uint64(bs)
 	codeStr := fmt.Sprintf("%d", code)
 	switch code {
 	case http.StatusForbidden:
+		if string(originalBody) != "RBAC: access denied" {
+			proxywasm.LogCriticalf("unexpected response body: %s", string(originalBody))
+			return types.ActionContinue
+		}
+
 		msg := ctx.pluginContext.customMessage[codeStr]
 		proxywasm.LogCriticalf("replace response body to: %s", msg)
 		if err := proxywasm.ReplaceHttpResponseBody([]byte(msg + "\n")); err != nil {
