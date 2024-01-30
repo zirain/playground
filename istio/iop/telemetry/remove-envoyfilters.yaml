@@ -1,0 +1,26 @@
+# should not generate stats envoyfilter with this IOP
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  name: controlplane
+  namespace: istio-system
+spec:
+  meshConfig:
+    defaultConfig:
+      tracing:
+        sampling: 0
+        zipkin:
+          address: zipkin.monitoring.svc.cluster.local:9411
+    defaultProviders:
+      metrics:
+        - prometheus
+      tracing:
+        - zipkin
+    enablePrometheusMerge: false
+    enableTracing: true
+    extensionProviders:
+      - name: zipkin
+        zipkin:
+          port: 9411
+          service: zipkin.monitoring.svc.cluster.local
+  profile: default
