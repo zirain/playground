@@ -20,7 +20,7 @@ static_resources:
                   "@type": type.googleapis.com/envoy.extensions.formatter.cel.v3.Cel
             text_format_source:
               inline_string: |
-                [%START_TIME%] %TRAFFIC_DIRECTION%
+                [%START_TIME%] [%CEL(xds.listener_direction)%]
           path: /dev/stdout
       address:
         socket_address:
@@ -43,7 +43,7 @@ static_resources:
                               "@type": type.googleapis.com/envoy.extensions.formatter.cel.v3.Cel
                         text_format_source:
                           inline_string: |
-                            [%START_TIME%] %CEL(request.path)% %CEL(response.code)% %TRAFFIC_DIRECTION%
+                            [%START_TIME%] [%CEL(xds.listener_direction)%] %CEL(request.path)% %CEL(response.code)%
                       path: /dev/stdout
                 stat_prefix: ingress_http
                 codec_type: auto
