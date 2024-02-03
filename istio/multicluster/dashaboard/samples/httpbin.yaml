@@ -47,6 +47,8 @@ spec:
       version: v1
   template:
     metadata:
+#      annotations:
+#        "sidecar.istio.io/proxyImage": docker.io/istio/proxyv2:1.20.0
       labels:
         app: httpbin
         version: v1
