@@ -1,0 +1,11 @@
+apiVersion: extensions.istio.io/v1alpha1
+kind: WasmPlugin
+metadata:
+  name: mutate-body
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: httpbin
+  phase: AUTHZ
+  url: oci://ghcr.io/zirain/tracing-sampled:latest
