@@ -4,6 +4,7 @@ metadata:
   name: x-ray
   namespace: observability
 spec:
+  # image: ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib:0.93.0
   config: |
     receivers:
       otlp:
@@ -17,6 +18,7 @@ spec:
       logging:
         loglevel: debug
       awsxray:
+        # region: us-west-2
 
     processors:
       memory_limiter:
