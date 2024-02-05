@@ -1,10 +1,9 @@
 # EKS with X-Ray
 
-This will not working, see more details [here](https://github.com/istio/istio/issues/36599#issuecomment-1744600462).
-
 ## Create Cluster
 
 ```shell
+# don't forgot attach xray:PutTraceSegments to node
 eksctl create cluster \
     --region=us-east-2 \
     --name appmeshtest-zirain \
