@@ -1,0 +1,18 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+spec:
+  meshConfig:
+    enableTracing: true
+    defaultConfig:
+      tracing:
+        sampling: 100.0
+    extensionProviders:
+    - name: otel-x-ray
+      opentelemetry:
+        service: x-ray-collector.observability.svc.cluster.local
+        port: 4317
+    defaultProviders:
+      tracing:
+      - otel-x-ray
+      metrics:
+      - prometheus

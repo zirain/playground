@@ -1,0 +1,39 @@
+apiVersion: opentelemetry.io/v1alpha1
+kind: OpenTelemetryCollector
+metadata:
+  name: x-ray
+  namespace: observability
+spec:
+  config: |
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+          http:
+            endpoint: 0.0.0.0:4318
+
+    exporters:
+      logging:
+        loglevel: debug
+      awsxray:
+        region: us-west-2
+        telemetry:
+          enabled: true
+
+    processors:
+      memory_limiter:
+        limit_mib: 100
+        check_interval: 5s
+
+    service:
+      pipelines:
+        traces:
+          processors:
+            - memory_limiter
+          receivers:
+            - otlp
+          exporters:
+            - awsxray
+            - logging
+
