@@ -1,0 +1,85 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: sleep-xray-tracing
+spec:
+  workloadSelector:
+    labels:
+      app: sleep
+  configPatches:
+    - applyTo: NETWORK_FILTER
+      match:
+        context: ANY
+        listener:
+          filterChain:
+            filter:
+              name: "envoy.filters.network.http_connection_manager"
+      patch:
+        operation: MERGE
+        value:
+          typed_config:
+            "@type": "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager"
+            tracing:
+              randomSampling:
+                value: 100.0
+              provider:
+                name: "envoy.tracers.xray"
+                typed_config:
+                  "@type": type.googleapis.com/envoy.config.trace.v3.XRayConfig
+                  segment_name: "sleep" # This should be statically set and can't be configured per workload!
+                  daemon_endpoint:
+                    protocol: UDP
+                    address: 10.100.220.33
+                    port_value: 2000
+                  sampling_rule_manifest:
+                    inline_string: |
+                      {
+                        "version": 2,
+                        "default": {
+                          "fixed_target": 1,
+                          "rate": 1.0
+                        }
+                      }
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: httpbin-xray-tracing
+spec:
+  workloadSelector:
+    labels:
+      app: httpbin
+  configPatches:
+    - applyTo: NETWORK_FILTER
+      match:
+        context: ANY
+        listener:
+          filterChain:
+            filter:
+              name: "envoy.filters.network.http_connection_manager"
+      patch:
+        operation: MERGE
+        value:
+          typed_config:
+            "@type": "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager"
+            tracing:
+              randomSampling:
+                value: 100.0
+              provider:
+                name: "envoy.tracers.xray"
+                typed_config:
+                  "@type": type.googleapis.com/envoy.config.trace.v3.XRayConfig
+                  segment_name: "httpbin" # This should be statically set and can't be configured per workload!
+                  daemon_endpoint:
+                    protocol: UDP
+                    address: 10.100.220.33
+                    port_value: 2000
+                  sampling_rule_manifest:
+                    inline_string: |
+                      {
+                        "version": 2,
+                        "default": {
+                          "fixed_target": 1,
+                          "rate": 1.0
+                        }
+                      }

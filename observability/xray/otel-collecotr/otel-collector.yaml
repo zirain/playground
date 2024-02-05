@@ -17,9 +17,6 @@ spec:
       logging:
         loglevel: debug
       awsxray:
-        region: us-west-2
-        telemetry:
-          enabled: true
 
     processors:
       memory_limiter:
@@ -27,6 +24,9 @@ spec:
         check_interval: 5s
 
     service:
+      telemetry:
+        logs:
+          level: "debug"
       pipelines:
         traces:
           processors:
