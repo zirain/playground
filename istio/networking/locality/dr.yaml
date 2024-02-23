@@ -1,0 +1,14 @@
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: httpbin
+spec:
+  host: httpbin.default.svc.cluster.local
+  trafficPolicy:
+    loadBalancer:
+      localityLbSetting:
+        enabled: true
+    outlierDetection:
+      consecutive5xxErrors: 100
+      interval: 1s
+      baseEjectionTime: 1m
