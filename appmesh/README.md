@@ -29,7 +29,7 @@ eksctl create cluster \
 ```
 
 ```shell
-export VPC_ID=$(aws eks describe-cluster --name appmeshtest-zirain | jq -r .cluster.resourcesVpcConfig.vpcId)
+export KUBECONFIG=~/.kube/eksctl/clusters/appmeshtest-zirain
 ```
 
 ## Setup appmesh controller
@@ -64,6 +64,34 @@ helm upgrade -i appmesh-controller eks/appmesh-controller \
     --set region=us-east-2 \
     --set serviceAccount.create=false \
     --set serviceAccount.name=appmesh-controller
+```
+
+Enable X-Ray:
+
+```shell
+helm upgrade -i appmesh-controller eks/appmesh-controller \
+    --namespace appmesh-system \
+    --set region=us-east-2 \
+    --set tracing.enabled=true \
+    --set tracing.provider=x-ray \
+    --set serviceAccount.create=false \
+    --set serviceAccount.name=appmesh-controller
+```
+
+## Install demo app
+
+```shell
+kubectl apply -f appmesh/manifests/manifest.yaml
+kubectl apply -f appmesh/manifests/base.yaml
+```
+
+Verify result:
+```shell
+kubectl exec -it deploy/client -n howto-k8s-http2 -- curl color.howto-k8s-http2.svc.cluster.local:8080
+
+kubectl exec -it deploy/client -n howto-k8s-http2 -- curl -H "color: red" color.howto-k8s-http2.svc.cluster.local:8080
+kubectl exec -it deploy/client -n howto-k8s-http2 -- curl -H "color: green" color.howto-k8s-http2.svc.cluster.local:8080
+kubectl exec -it deploy/client -n howto-k8s-http2 -- curl -H "color: blue" color.howto-k8s-http2.svc.cluster.local:8080
 ```
 
 ## Cleanup

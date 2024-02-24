@@ -1,0 +1,96 @@
+{
+    "Id": "1-65d9fa26-2babcc319d9a4f988f816ea5",
+    "Duration": 0.001,
+    "LimitExceeded": false,
+    "Segments": [
+        {
+            "Id": "3299960c04dde9e1",
+            "Document": {
+                "id": "3299960c04dde9e1",
+                "name": "howto-k8s-http2/red_howto-k8s-http2",
+                "start_time": 1708784166.494637,
+                "trace_id": "1-65d9fa26-2babcc319d9a4f988f816ea5",
+                "end_time": 1708784166.4953635,
+                "http": {
+                    "request": {
+                        "url": "http://red.howto-k8s-http2.svc.cluster.local:8080/ping",
+                        "method": "GET",
+                        "user_agent": "Envoy/HC",
+                        "client_ip": "192.168.2.176",
+                        "x_forwarded_for": false
+                    },
+                    "response": {
+                        "status": 200,
+                        "content_length": 0
+                    }
+                },
+                "aws": {
+                    "app_mesh": {
+                        "mesh_name": "howto-k8s-http2",
+                        "virtual_node_name": "red_howto-k8s-http2"
+                    }
+                },
+                "annotations": {
+                    "response_flags": "-",
+                    "component": "proxy",
+                    "upstream_cluster": "cds_ingress_howto-k8s-http2_red_howto-k8s-http2_http2_8080",
+                    "downstream_cluster": "-",
+                    "request_size": "0",
+                    "http.protocol": "HTTP/2",
+                    "direction": "ingress",
+                    "node_id": "mesh/howto-k8s-http2/virtualNode/red_howto-k8s-http2",
+                    "upstream_cluster.name": "cds_ingress_howto-k8s-http2_red_howto-k8s-http2_http2_8080"
+                },
+                "origin": "AWS::AppMesh::Proxy"
+            }
+        }
+    ]
+},
+{
+    "Id": "1-65d9fa35-fb413f4e9b834e3cbff1a60e",
+    "Duration": 0.001,
+    "LimitExceeded": false,
+    "Segments": [
+        {
+            "Id": "b8390f3ac10a6ed8",
+            "Document": {
+                "id": "b8390f3ac10a6ed8",
+                "name": "howto-k8s-http2/red_howto-k8s-http2",
+                "start_time": 1708784181.5045347,
+                "trace_id": "1-65d9fa35-fb413f4e9b834e3cbff1a60e",
+                "end_time": 1708784181.5051467,
+                "http": {
+                    "request": {
+                        "url": "http://red.howto-k8s-http2.svc.cluster.local:8080/ping",
+                        "method": "GET",
+                        "user_agent": "Envoy/HC",
+                        "client_ip": "192.168.2.176",
+                        "x_forwarded_for": false
+                    },
+                    "response": {
+                        "status": 200,
+                        "content_length": 0
+                    }
+                },
+                "aws": {
+                    "app_mesh": {
+                        "mesh_name": "howto-k8s-http2",
+                        "virtual_node_name": "red_howto-k8s-http2"
+                    }
+                },
+                "annotations": {
+                    "response_flags": "-",
+                    "component": "proxy",
+                    "upstream_cluster": "cds_ingress_howto-k8s-http2_red_howto-k8s-http2_http2_8080",
+                    "http.protocol": "HTTP/2",
+                    "request_size": "0",
+                    "downstream_cluster": "-",
+                    "node_id": "mesh/howto-k8s-http2/virtualNode/red_howto-k8s-http2",
+                    "direction": "ingress",
+                    "upstream_cluster.name": "cds_ingress_howto-k8s-http2_red_howto-k8s-http2_http2_8080"
+                },
+                "origin": "AWS::AppMesh::Proxy"
+            }
+        }
+    ]
+}

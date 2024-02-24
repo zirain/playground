@@ -1,0 +1,202 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: howto-k8s-http2
+  labels:
+    mesh: howto-k8s-http2
+    appmesh.k8s.aws/sidecarInjectorWebhook: enabled
+---
+apiVersion: appmesh.k8s.aws/v1beta2
+kind: Mesh
+metadata:
+  name: howto-k8s-http2
+spec:
+  namespaceSelector:
+    matchLabels:
+      mesh: howto-k8s-http2
+---
+apiVersion: appmesh.k8s.aws/v1beta2
+kind: VirtualNode
+metadata:
+  name: client
+  namespace: howto-k8s-http2
+spec:
+  podSelector:
+    matchLabels:
+      app: client
+  listeners:
+    - portMapping:
+        port: 8080
+        protocol: http
+  backends:
+    - virtualService:
+        virtualServiceRef:
+          name: color
+  serviceDiscovery:
+    dns:
+      hostname: client.howto-k8s-http2.svc.cluster.local
+  logging:
+    accessLog:
+      file:
+        path: /dev/stdout
+---
+apiVersion: appmesh.k8s.aws/v1beta2
+kind: VirtualNode
+metadata:
+  name: red
+  namespace: howto-k8s-http2
+spec:
+  podSelector:
+    matchLabels:
+      app: color
+      version: red
+  listeners:
+    - portMapping:
+        port: 8080
+        protocol: http2
+      healthCheck:
+        port: 8080
+        protocol: http2
+        path: "/ping"
+        healthyThreshold: 2
+        unhealthyThreshold: 3
+        timeoutMillis: 2000
+        intervalMillis: 5000
+  serviceDiscovery:
+    dns:
+      hostname: red.howto-k8s-http2.svc.cluster.local
+---
+apiVersion: appmesh.k8s.aws/v1beta2
+kind: VirtualNode
+metadata:
+  name: blue
+  namespace: howto-k8s-http2
+spec:
+  podSelector:
+    matchLabels:
+      app: color
+      version: blue
+  listeners:
+    - portMapping:
+        port: 8080
+        protocol: http2
+      healthCheck:
+        port: 8080
+        protocol: http2
+        path: "/ping"
+        healthyThreshold: 2
+        unhealthyThreshold: 3
+        timeoutMillis: 2000
+        intervalMillis: 5000
+  serviceDiscovery:
+    dns:
+      hostname: blue.howto-k8s-http2.svc.cluster.local
+---
+apiVersion: appmesh.k8s.aws/v1beta2
+kind: VirtualNode
+metadata:
+  name: green
+  namespace: howto-k8s-http2
+spec:
+  podSelector:
+    matchLabels:
+      app: color
+      version: green
+  listeners:
+    - portMapping:
+        port: 8080
+        protocol: http2
+      healthCheck:
+        port: 8080
+        protocol: http2
+        path: "/ping"
+        healthyThreshold: 2
+        unhealthyThreshold: 3
+        timeoutMillis: 2000
+        intervalMillis: 5000
+  serviceDiscovery:
+    dns:
+      hostname: green.howto-k8s-http2.svc.cluster.local
+---
+apiVersion: appmesh.k8s.aws/v1beta2
+kind: VirtualService
+metadata:
+  name: color
+  namespace: howto-k8s-http2
+spec:
+  awsName: color.howto-k8s-http2.svc.cluster.local
+  provider:
+    virtualRouter:
+      virtualRouterRef:
+        name: color
+---
+apiVersion: appmesh.k8s.aws/v1beta2
+kind: VirtualRouter
+metadata:
+  namespace: howto-k8s-http2
+  name: color
+spec:
+  listeners:
+    - portMapping:
+        port: 8080
+        protocol: http2
+  routes:
+    - name: red-route
+      http2Route:
+        match:
+          prefix: /
+          headers:
+            - name: color
+              match:
+                exact: red
+        action:
+          weightedTargets:
+            - virtualNodeRef:
+                name: red
+              weight: 1
+      priority: 10
+    - name: blue-route
+      http2Route:
+        match:
+          prefix: /
+          headers:
+            - name: color
+              match:
+                exact: blue
+        action:
+          weightedTargets:
+            - virtualNodeRef:
+                name: blue
+              weight: 1
+      priority: 10
+    - name: green-route
+      http2Route:
+        match:
+          prefix: /
+          headers:
+            - name: color
+              match:
+                exact: green
+        action:
+          weightedTargets:
+            - virtualNodeRef:
+                name: green
+              weight: 1
+      priority: 10
+    - name: color-route
+      http2Route:
+        match:
+          prefix: /
+        action:
+          weightedTargets:
+            - virtualNodeRef:
+                name: red
+              weight: 1
+            - virtualNodeRef:
+                name: blue
+              weight: 1
+            - virtualNodeRef:
+                name: green
+              weight: 1
+      priority: 100

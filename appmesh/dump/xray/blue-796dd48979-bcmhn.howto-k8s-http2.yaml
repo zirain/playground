@@ -1,0 +1,288 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: "2024-02-24T14:01:08Z"
+  generateName: blue-796dd48979-
+  labels:
+    app: color
+    pod-template-hash: 796dd48979
+    version: blue
+  name: blue-796dd48979-bcmhn
+  namespace: howto-k8s-http2
+  ownerReferences:
+  - apiVersion: apps/v1
+    blockOwnerDeletion: true
+    controller: true
+    kind: ReplicaSet
+    name: blue-796dd48979
+    uid: 142e6e5c-1215-43fa-ad7e-f1b356a55dba
+  resourceVersion: "4014"
+  uid: 4162b5b1-b9a0-4b66-b617-5573aee70967
+spec:
+  containers:
+  - env:
+    - name: COLOR
+      value: blue
+    - name: PORT
+      value: "8080"
+    image: ghcr.io/zirain/color_server
+    imagePullPolicy: Always
+    name: app
+    ports:
+    - containerPort: 8080
+      protocol: TCP
+    resources: {}
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-7b87x
+      readOnly: true
+  - env:
+    - name: APPMESH_RESOURCE_ARN
+      value: mesh/howto-k8s-http2/virtualNode/blue_howto-k8s-http2
+    - name: APPMESH_DUALSTACK_ENDPOINT
+      value: "0"
+    - name: ENVOY_ADMIN_ACCESS_PORT
+      value: "9901"
+    - name: ENABLE_ENVOY_XRAY_TRACING
+      value: "1"
+    - name: APPMESH_PLATFORM_K8S_VERSION
+      value: v1.27.9-eks-5e0fdde
+    - name: APPNET_AGENT_ADMIN_MODE
+      value: uds
+    - name: APPNET_AGENT_ADMIN_UDS_PATH
+      value: /tmp/agent.sock
+    - name: AWS_REGION
+      value: us-east-2
+    - name: ENVOY_ADMIN_ACCESS_ENABLE_IPV6
+      value: "false"
+    - name: APPMESH_FIPS_ENDPOINT
+      value: "0"
+    - name: APPMESH_PREVIEW
+      value: "0"
+    - name: XRAY_DAEMON_PORT
+      value: "2000"
+    - name: APPMESH_PLATFORM_APP_MESH_CONTROLLER_VERSION
+      value: v1.12.7-dirty
+    - name: APPMESH_VIRTUAL_NODE_NAME
+      value: mesh/howto-k8s-http2/virtualNode/blue_howto-k8s-http2
+    - name: ENVOY_LOG_LEVEL
+      value: info
+    - name: ENVOY_ADMIN_ACCESS_LOG_FILE
+      value: /tmp/envoy_admin_access.log
+    - name: XRAY_SAMPLING_RATE
+      value: "0.05"
+    - name: APPMESH_PLATFORM_K8S_POD_UID
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: metadata.uid
+    image: 840364872350.dkr.ecr.us-west-2.amazonaws.com/aws-appmesh-envoy:v1.27.2.0-prod
+    imagePullPolicy: IfNotPresent
+    lifecycle:
+      preStop:
+        exec:
+          command:
+          - sh
+          - -c
+          - sleep 20
+    name: envoy
+    ports:
+    - containerPort: 9901
+      name: stats
+      protocol: TCP
+    readinessProbe:
+      exec:
+        command:
+        - sh
+        - -c
+        - curl -s http://localhost:9901/server_info | grep state | grep -q LIVE
+      failureThreshold: 3
+      initialDelaySeconds: 1
+      periodSeconds: 10
+      successThreshold: 1
+      timeoutSeconds: 1
+    resources:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+    securityContext:
+      runAsUser: 1337
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-7b87x
+      readOnly: true
+  - env:
+    - name: AWS_REGION
+      value: us-east-2
+    image: public.ecr.aws/xray/aws-xray-daemon:latest
+    imagePullPolicy: Always
+    name: xray-daemon
+    ports:
+    - containerPort: 2000
+      name: xray
+      protocol: UDP
+    resources:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+    securityContext:
+      runAsUser: 1337
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-7b87x
+      readOnly: true
+  dnsPolicy: ClusterFirst
+  enableServiceLinks: true
+  initContainers:
+  - env:
+    - name: APPMESH_START_ENABLED
+      value: "1"
+    - name: APPMESH_IGNORE_UID
+      value: "1337"
+    - name: APPMESH_ENVOY_INGRESS_PORT
+      value: "15000"
+    - name: APPMESH_ENVOY_EGRESS_PORT
+      value: "15001"
+    - name: APPMESH_APP_PORTS
+      value: "8080"
+    - name: APPMESH_EGRESS_IGNORED_IP
+      value: 169.254.169.254
+    - name: APPMESH_EGRESS_IGNORED_PORTS
+      value: "22"
+    - name: APPMESH_ENABLE_IPV6
+      value: "1"
+    image: 840364872350.dkr.ecr.us-west-2.amazonaws.com/aws-appmesh-proxy-route-manager:v7-prod
+    imagePullPolicy: IfNotPresent
+    name: proxyinit
+    resources:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+    securityContext:
+      capabilities:
+        add:
+        - NET_ADMIN
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-7b87x
+      readOnly: true
+  nodeName: ip-192-168-71-181.us-east-2.compute.internal
+  preemptionPolicy: PreemptLowerPriority
+  priority: 0
+  restartPolicy: Always
+  schedulerName: default-scheduler
+  securityContext:
+    fsGroup: 1337
+  serviceAccount: default
+  serviceAccountName: default
+  terminationGracePeriodSeconds: 30
+  tolerations:
+  - effect: NoExecute
+    key: node.kubernetes.io/not-ready
+    operator: Exists
+    tolerationSeconds: 300
+  - effect: NoExecute
+    key: node.kubernetes.io/unreachable
+    operator: Exists
+    tolerationSeconds: 300
+  volumes:
+  - name: kube-api-access-7b87x
+    projected:
+      defaultMode: 420
+      sources:
+      - serviceAccountToken:
+          expirationSeconds: 3607
+          path: token
+      - configMap:
+          items:
+          - key: ca.crt
+            path: ca.crt
+          name: kube-root-ca.crt
+      - downwardAPI:
+          items:
+          - fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+            path: namespace
+status:
+  conditions:
+  - lastProbeTime: null
+    lastTransitionTime: "2024-02-24T14:01:12Z"
+    status: "True"
+    type: Initialized
+  - lastProbeTime: null
+    lastTransitionTime: "2024-02-24T14:01:21Z"
+    status: "True"
+    type: Ready
+  - lastProbeTime: null
+    lastTransitionTime: "2024-02-24T14:01:21Z"
+    status: "True"
+    type: ContainersReady
+  - lastProbeTime: null
+    lastTransitionTime: "2024-02-24T14:01:08Z"
+    status: "True"
+    type: PodScheduled
+  containerStatuses:
+  - containerID: containerd://df622c261c167fbc708fd63c3c45b9782ab3b947fecae45079dc2d789b423c53
+    image: ghcr.io/zirain/color_server:latest
+    imageID: ghcr.io/zirain/color_server@sha256:539d08d4a88df78b42a7e22d30f348ae49f0762d3c7d0b163c0c07783553b5cc
+    lastState: {}
+    name: app
+    ready: true
+    restartCount: 0
+    started: true
+    state:
+      running:
+        startedAt: "2024-02-24T14:01:16Z"
+  - containerID: containerd://4c3e163c6ae7484fcdabac4b8366f3decc6a21ce5b3bc8ecc11e5114e2ed17b9
+    image: 840364872350.dkr.ecr.us-west-2.amazonaws.com/aws-appmesh-envoy:v1.27.2.0-prod
+    imageID: 840364872350.dkr.ecr.us-west-2.amazonaws.com/aws-appmesh-envoy@sha256:54560493ee400ecbf0a342bca172798e8c65062aa0bc11c6c4aa722b74899e96
+    lastState: {}
+    name: envoy
+    ready: true
+    restartCount: 0
+    started: true
+    state:
+      running:
+        startedAt: "2024-02-24T14:01:19Z"
+  - containerID: containerd://c4bdcf992fe5d035e750dd9a43671c949cf59169e5dee6607a4198ad419e6a26
+    image: public.ecr.aws/xray/aws-xray-daemon:latest
+    imageID: public.ecr.aws/xray/aws-xray-daemon@sha256:27446ee920f9d06dcd7273b821ac5eb8cb989ca0527e9561b913cd19c38b015f
+    lastState: {}
+    name: xray-daemon
+    ready: true
+    restartCount: 0
+    started: true
+    state:
+      running:
+        startedAt: "2024-02-24T14:01:20Z"
+  hostIP: 192.168.71.181
+  initContainerStatuses:
+  - containerID: containerd://646a12d68621377b677e4bbce7d9c41d76613c43c9c789e5e7a7f7396fde7081
+    image: 840364872350.dkr.ecr.us-west-2.amazonaws.com/aws-appmesh-proxy-route-manager:v7-prod
+    imageID: 840364872350.dkr.ecr.us-west-2.amazonaws.com/aws-appmesh-proxy-route-manager@sha256:36d444b57dc253ea9e76cd6a6c5525416c4f9012c5d3a836ea2da91ab2bb28ff
+    lastState: {}
+    name: proxyinit
+    ready: true
+    restartCount: 0
+    state:
+      terminated:
+        containerID: containerd://646a12d68621377b677e4bbce7d9c41d76613c43c9c789e5e7a7f7396fde7081
+        exitCode: 0
+        finishedAt: "2024-02-24T14:01:12Z"
+        reason: Completed
+        startedAt: "2024-02-24T14:01:12Z"
+  phase: Running
+  podIP: 192.168.90.86
+  podIPs:
+  - ip: 192.168.90.86
+  qosClass: Burstable
+  startTime: "2024-02-24T14:01:08Z"
