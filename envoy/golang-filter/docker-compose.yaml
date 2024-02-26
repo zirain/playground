@@ -3,6 +3,7 @@ services:
   envoy:
     image: envoyproxy/envoy:contrib-v1.29.1
     ports:
+      - "9901:9901"
       - "10000:10000"
     volumes:
       - ./libgolang.so:/etc/envoy/libgolang.so
