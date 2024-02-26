@@ -106,6 +106,7 @@ dist
 
 .idea
 *.wasm
+*.so
 
 envoy/wasm/bazel/bazel-*
 clang/bazel-*

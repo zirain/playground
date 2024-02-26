@@ -1,0 +1,13 @@
+version: '3'
+services:
+  envoy:
+    image: envoyproxy/envoy:contrib-v1.29.1
+    ports:
+      - "10000:10000"
+    volumes:
+      - ./libgolang.so:/etc/envoy/libgolang.so
+      - ./envoy.yaml:/etc/envoy/envoy.yaml
+  httpbin:
+    image: kennethreitz/httpbin
+    ports:
+      - "8000:80"
