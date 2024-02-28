@@ -17,7 +17,7 @@ metadata:
   labels:
     app: infra-backend-v1
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: infra-backend-v1
@@ -62,7 +62,7 @@ metadata:
   labels:
     app: infra-backend-v2
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: infra-backend-v2
@@ -106,7 +106,7 @@ metadata:
   labels:
     app: infra-backend-v3
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: infra-backend-v3
