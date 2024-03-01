@@ -39,6 +39,8 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
+        - name: SERVICE_NAME
+          value: infra-backend-v1
         resources:
           requests:
             cpu: 10m
@@ -83,6 +85,8 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
+        - name: SERVICE_NAME
+          value: infra-backend-v2
         resources:
           requests:
             cpu: 10m
@@ -127,6 +131,8 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
+        - name: SERVICE_NAME
+          value: infra-backend-v3
         resources:
           requests:
             cpu: 10m
