@@ -1,5 +1,4 @@
-# How to use Stats ECDS
-
+@howardjohn test with following steps
 
 ## Install Istio
 
@@ -62,9 +61,9 @@ EOF
 kubectl delete telemetry -n istio-system mesh-default
 ```
 
-## Result
+## XDS Response Bytes
 
-| before | after  | delta  |
-| ------ | ------ | ------ |
-| 180440 | 600845 | 420405 |
-| 200063 | 468192 | 268129 |
+|                        | before | after  | delta  |
+| ---------------------- | ------ | ------ | ------ |
+| SLEEP1                 | 180440 | 600845 | 420405 |
+| SLEEP2(use stats-ecds) | 200063 | 468192 | 268129 |
