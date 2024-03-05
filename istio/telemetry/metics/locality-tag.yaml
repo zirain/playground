@@ -1,0 +1,16 @@
+apiVersion: telemetry.istio.io/v1alpha1
+kind: Telemetry
+metadata:
+  name: locality-tags
+  namespace: istio-system
+spec:
+  metrics:
+    - overrides:
+        - match:
+            metric: ALL_METRICS
+            mode: CLIENT
+          tagOverrides:
+            destination_locality:
+              value: upstream_peer.labels['locality'].value
+      providers:
+        - name: prometheus
