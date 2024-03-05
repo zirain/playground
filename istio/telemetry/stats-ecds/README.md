@@ -46,11 +46,23 @@ istioctl x es $SLEEP2 -n ns2 -oprom | grep envoy_cluster_upstream_cx_rx_bytes_to
 
 Then create/delete telemetry to trigger full push:
 
-```
-kubectl apply -f telemetry.yaml
-kubectl delete -f telemetry.yaml
+```shell
+cat <<EOF | kubectl apply -n istio-system -f -
+apiVersion: telemetry.istio.io/v1alpha1
+kind: Telemetry
+metadata:
+  name: mesh-default
+  namespace: istio-system
+spec:
+  accessLogging:
+    - providers:
+        - name: envoy
+EOF
+# delete Telemetry API after a while
+kubectl delete telemetry -n istio-system mesh-default
 ```
 
+## Result
 
 | before | after  | delta  |
 | ------ | ------ | ------ |
