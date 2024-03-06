@@ -1,0 +1,92 @@
+fullnameOverride: otel-collector
+mode: deployment
+config:
+  exporters:
+    prometheus:
+      endpoint: 0.0.0.0:19001
+    logging:
+      verbosity: detailed
+    loki:
+      endpoint: "http://loki.monitoring.svc:3100/loki/api/v1/push"
+    otlp:
+      endpoint: tempo.monitoring.svc:4317
+      tls:
+        insecure: true
+  extensions:
+    # The health_check extension is mandatory for this chart.
+    # Without the health_check extension the collector will fail the readiness and liveliness probes.
+    # The health_check extension can be modified, but should never be removed.
+    health_check: {}
+  processors:
+    k8sattributes:
+    attributes:
+      actions:
+        - action: insert
+          key: loki.attribute.labels
+          # k8s.pod.name is OpenTelemetry format for Kubernetes Pod name,
+          # Loki will convert this to k8s_pod_name label.
+          value: k8s.pod.name, k8s.namespace.name
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+          endpoint: ${env:MY_POD_IP}:4317
+        http:
+          endpoint: ${env:MY_POD_IP}:4318
+  service:
+    extensions:
+      - health_check
+    pipelines:
+      metrics:
+        exporters:
+          - prometheus
+          - logging
+        processors:
+          - k8sattributes
+        receivers:
+          - otlp
+      logs:
+        exporters:
+          - loki
+        processors:
+          - attributes
+        receivers:
+          - otlp
+      traces:
+        exporters:
+          - otlp
+        receivers:
+          - otlp
+clusterRole:
+  # Specifies whether a clusterRole should be created
+  # Some presets also trigger the creation of a cluster role and cluster role binding.
+  # If using one of those presets, this field is no-op.
+  create: true
+  # Annotations to add to the clusterRole
+  # Can be used in combination with presets that create a cluster role.
+  annotations: {}
+  # The name of the clusterRole to use.
+  # If not set a name is generated using the fullname template
+  # Can be used in combination with presets that create a cluster role.
+  name: ""
+  # A set of rules as documented here : https://kubernetes.io/docs/reference/access-authn-authz/rbac/
+  # Can be used in combination with presets that create a cluster role to add additional rules.
+  rules:
+    - apiGroups: [""]
+      resources: ["pods", "namespaces", "nodes"]
+      verbs: ["get", "watch", "list"]
+    - apiGroups: ["apps"]
+      resources: ["replicasets"]
+      verbs: ["get", "list", "watch"]
+    - apiGroups: ["extensions"]
+      resources: ["replicasets"]
+      verbs: ["get", "list", "watch"]
+
+  clusterRoleBinding:
+    # Annotations to add to the clusterRoleBinding
+    # Can be used in combination with presets that create a cluster role binding.
+    annotations: {}
+    # The name of the clusterRoleBinding to use.
+    # If not set a name is generated using the fullname template
+    # Can be used in combination with presets that create a cluster role binding.
+    name: ""
