@@ -10,7 +10,7 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
-var _ metricsservice.MetricsServiceServer = (*server)(nil)
+var showMetricsDetails = os.Getenv("SHOW_METRICS_DETAILS")
 
 type server struct {
 }
@@ -25,9 +25,11 @@ func (s *server) StreamMetrics(mtserver metricsservice.MetricsService_StreamMetr
 
 	envoyMetrics := messge.GetEnvoyMetrics()
 	envoyIdentifier := messge.GetIdentifier().String()
-	log.Printf("Received metrics from %s", envoyIdentifier)
-	for _, metric := range envoyMetrics {
-		log.Printf("Received metric: %v", metric)
+	log.Printf("Received %d metrics from %s", len(envoyMetrics), envoyIdentifier)
+	if showMetricsDetails != "" {
+		for _, metric := range envoyMetrics {
+			log.Printf("Received metric: %v", metric)
+		}
 	}
 
 	return nil
