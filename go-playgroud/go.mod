@@ -8,6 +8,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/credentials v1.16.13
 	github.com/aws/aws-sdk-go-v2/service/sts v1.26.6
 	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869
+	github.com/envoyproxy/go-control-plane v0.11.2-0.20231026140209-dc05a22efe95
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-logfmt/logfmt v0.5.1
 	github.com/gogo/protobuf v1.3.2
@@ -40,7 +41,9 @@ require (
 	github.com/bytedance/sonic v1.9.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
+	github.com/cncf/xds/go v0.0.0-20231016030527-8bd2eac9fb4a // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.2.0 // indirect
+	github.com/envoyproxy/protoc-gen-validate v1.0.2 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-kit/log v0.2.1 // indirect

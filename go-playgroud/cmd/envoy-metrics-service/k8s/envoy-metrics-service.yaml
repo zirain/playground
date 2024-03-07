@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: envoy-metrics-service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: envoy-metrics-service
+  labels:
+    app: envoy-metrics-service
+    service: envoy-metrics-service
+spec:
+  ports:
+    - port: 8080
+      name: grpc
+      targetPort: 8080
+  selector:
+    app: envoy-metrics-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: envoy-metrics-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: envoy-metrics-service
+  template:
+    metadata:
+      labels:
+        app: envoy-metrics-service
+    spec:
+      terminationGracePeriodSeconds: 0
+      serviceAccountName: envoy-metrics-service
+      containers:
+        - name: envoy-metrics-service
+          image: ghcr.io/zirain/envoy-metrics-service:latest
+          imagePullPolicy: Always
+          env:
+            - name: LISTEN_ADDRESS
+              value: "0.0.0.0:8080"
+---
+
