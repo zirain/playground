@@ -27,9 +27,9 @@ metadata:
   name: proxy-config
   namespace: envoy-gateway-system
 spec:
-  logging:
-    level:
-      default: debug
+  # logging:
+  #   level:
+  #     default: debug
   bootstrap:
     type: Merge
     value: |
