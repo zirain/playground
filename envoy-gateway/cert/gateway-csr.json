@@ -1,0 +1,12 @@
+{
+    "CN": "Envoy Gateway",
+    "hosts": [
+        "envoy-gateway.envoy-gateway-system",
+        "envoy-gateway.envoy-gateway-system.svc",
+        "envoy-gateway.envoy-gateway-system.svc.cluster.local"
+    ],
+    "key": {
+        "algo": "rsa",
+        "size": 2048
+    }
+}

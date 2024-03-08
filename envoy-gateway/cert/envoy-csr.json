@@ -1,0 +1,10 @@
+{
+    "CN": "*",
+    "hosts": [
+        "*.envoy-gateway-system"
+    ],
+    "key": {
+        "algo": "rsa",
+        "size": 2048
+    }
+}

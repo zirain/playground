@@ -1,0 +1,7 @@
+{
+    "CN": "Envoy Gateway",
+    "key": {
+        "algo": "rsa",
+        "size": 2048
+    }
+}

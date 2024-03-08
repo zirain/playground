@@ -1,0 +1,65 @@
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  labels:
+    app.kubernetes.io/name: envoy-gateway
+  name: envoy-gateway
+  namespace: envoy-gateway-system
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  labels:
+    app.kubernetes.io/name: envoy-gateway
+  name: envoy-gateway
+  namespace: envoy-gateway-system
+spec:
+  dnsNames:
+    - "envoy-gateway.envoy-gateway-system"
+    - "envoy-gateway.envoy-gateway-system.svc"
+    - "envoy-gateway.envoy-gateway-system.svc.cluster.local"
+  issuerRef:
+    kind: Issuer
+    name: envoy-gateway
+  secretName: envoy-gateway
+  subject:
+    organizationalUnits:
+      - envoy-gateway
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  labels:
+    app.kubernetes.io/name: envoy-gateway
+  name: envoy
+  namespace: envoy-gateway-system
+spec:
+  dnsNames:
+    - "*.envoy-gateway-system"
+  issuerRef:
+    kind: Issuer
+    name: envoy-gateway
+  secretName: envoy
+  subject:
+    organizationalUnits:
+      - "*"
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  labels:
+    app.kubernetes.io/name: envoy-gateway
+  name: envoy-rate-limit
+  namespace: envoy-gateway-system
+spec:
+  dnsNames:
+    - "*.envoy-gateway-system"
+  issuerRef:
+    kind: Issuer
+    name: envoy-gateway
+  secretName: envoy-rate-limit
+  subject:
+    organizationalUnits:
+      - "*"
