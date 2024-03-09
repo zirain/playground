@@ -3,10 +3,38 @@ kind: Issuer
 metadata:
   labels:
     app.kubernetes.io/name: envoy-gateway
-  name: envoy-gateway
+  name: selfsigned-issuer
   namespace: envoy-gateway-system
 spec:
   selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: envoy-gateway-ca
+  namespace: envoy-gateway-system
+spec:
+  isCA: true
+  commonName: envoy-gateway
+  secretName: envoy-gateway-ca
+  privateKey:
+    algorithm: RSA
+    size: 2048
+  issuerRef:
+    name: selfsigned-issuer
+    kind: Issuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  labels:
+    app.kubernetes.io/name: envoy-gateway
+  name: eg-issuer
+  namespace: envoy-gateway-system
+spec:
+  ca:
+    secretName: envoy-gateway-ca
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -16,17 +44,21 @@ metadata:
   name: envoy-gateway
   namespace: envoy-gateway-system
 spec:
+  commonName: envoy-gateway
   dnsNames:
+    - "envoy-gateway"
     - "envoy-gateway.envoy-gateway-system"
     - "envoy-gateway.envoy-gateway-system.svc"
     - "envoy-gateway.envoy-gateway-system.svc.cluster.local"
   issuerRef:
     kind: Issuer
-    name: envoy-gateway
+    name: eg-issuer
+  usages:
+    - "digital signature"
+    - "data encipherment"
+    - "key encipherment"
+    - "content commitment"
   secretName: envoy-gateway
-  subject:
-    organizationalUnits:
-      - envoy-gateway
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -36,15 +68,18 @@ metadata:
   name: envoy
   namespace: envoy-gateway-system
 spec:
+  commonName: "*"
   dnsNames:
     - "*.envoy-gateway-system"
   issuerRef:
     kind: Issuer
-    name: envoy-gateway
+    name: eg-issuer
+  usages:
+    - "digital signature"
+    - "data encipherment"
+    - "key encipherment"
+    - "content commitment"
   secretName: envoy
-  subject:
-    organizationalUnits:
-      - "*"
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -54,12 +89,15 @@ metadata:
   name: envoy-rate-limit
   namespace: envoy-gateway-system
 spec:
+  commonName: "*"
   dnsNames:
     - "*.envoy-gateway-system"
   issuerRef:
     kind: Issuer
-    name: envoy-gateway
+    name: eg-issuer
+  usages:
+    - "digital signature"
+    - "data encipherment"
+    - "key encipherment"
+    - "content commitment"
   secretName: envoy-rate-limit
-  subject:
-    organizationalUnits:
-      - "*"

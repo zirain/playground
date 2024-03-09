@@ -1,6 +1,7 @@
 {
-    "CN": "Envoy Gateway",
+    "CN": "envoy-gateway",
     "hosts": [
+        "envoy-gateway",
         "envoy-gateway.envoy-gateway-system",
         "envoy-gateway.envoy-gateway-system.svc",
         "envoy-gateway.envoy-gateway-system.svc.cluster.local"

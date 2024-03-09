@@ -1,8 +1,36 @@
-# Custom 
+# Custom ControlPlane Certificates
+
+
+## cfssl
 
 ```shell
-cfssl gencert -initca ca-csr.json | cfssljson -bare ca
 bash cfssl.sh
+```
+
+## Cert-manager
+
+```shell
+helm install cert-manager jetstack/cert-manager \
+	--namespace cert-manager \
+	--set installCRDs=true \
+	--create-namespace \
+	--version v1.14.4
+
+kubectl apply -f cert-manager.yaml
+```
+
+## Verify
+
+```shell
+kubectl get secret -n envoy-gateway-system envoy -o jsonpath="{.data['ca\.crt']}"  | base64 -d - | step certificate inspect -
+kubectl get secret -n envoy-gateway-system envoy -o jsonpath="{.data['tls\.crt']}" | base64 -d - | step certificate inspect -
+kubectl get secret -n envoy-gateway-system envoy -o jsonpath="{.data['tls\.key']}" | base64 -d - | step certificate inspect -
+```
+
+```shell
+kubectl get secret -n envoy-gateway-system envoy-gateway -o jsonpath="{.data['ca\.crt']}"  | base64 -d - | step certificate inspect -
+kubectl get secret -n envoy-gateway-system envoy-gateway -o jsonpath="{.data['tls\.crt']}" | base64 -d - | step certificate inspect -
+kubectl get secret -n envoy-gateway-system envoy-gateway -o jsonpath="{.data['tls\.key']}" | base64 -d - | step certificate inspect -
 ```
 
 ## References
