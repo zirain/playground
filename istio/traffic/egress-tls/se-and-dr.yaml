@@ -1,0 +1,37 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: originate-mtls-for-nginx
+spec:
+  hosts:
+    - my-nginx.mesh-external.svc.cluster.local
+  ports:
+    - number: 80
+      name: http-port
+      protocol: HTTP
+      targetPort: 443
+    - number: 443
+      name: https-port
+      protocol: HTTPS
+  resolution: DNS
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: originate-mtls-for-nginx
+spec:
+  workloadSelector:
+    matchLabels:
+      app: sleep
+  host: my-nginx.mesh-external.svc.cluster.local
+  trafficPolicy:
+    loadBalancer:
+      simple: ROUND_ROBIN
+    portLevelSettings:
+      - port:
+          number: 80
+        tls:
+          mode: MUTUAL
+          credentialName: client-credential # this must match the secret created earlier to hold client certs, and works only when DR has a workloadSelector
+          sni: my-nginx.mesh-external.svc.cluster.local # this is optional
+
