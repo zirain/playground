@@ -1,0 +1,32 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: httpbin-lua
+spec:
+  workloadSelector:
+    labels:
+      app: httpbin
+  configPatches:
+    # The first patch adds the lua filter to the listener/http connection manager
+    - applyTo: HTTP_FILTER
+      match:
+        context: SIDECAR_INBOUND
+        listener:
+          filterChain:
+            filter:
+              name: "envoy.filters.network.http_connection_manager"
+              subFilter:
+                name: "istio.metadata_exchange"
+                #name: "envoy.filters.http.router"
+      patch:
+        operation: INSERT_BEFORE
+        value: # lua filter specification
+          name: envoy.lua
+          typed_config:
+            "@type": "type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua"
+            inlineCode: |
+              function envoy_on_request(request_handle)
+                -- Make an HTTP call to an upstream host with the following headers, body, and timeout.
+                val = request_handle:headers():get("x-envoy-peer-metadata-id")
+                request_handle:logWarn("get result: " .. val)
+              end
