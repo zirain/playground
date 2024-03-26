@@ -1,0 +1,52 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: httpbin-gateway
+  namespace: istio-system
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - "*"
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: httpbin
+spec:
+  hosts:
+    - "*"
+  gateways:
+    - istio-system/httpbin-gateway
+  http:
+    - match:
+        - uri:
+            prefix: /api/store
+      route:
+        - destination:
+            host: infra-backend-v1.default.svc.cluster.local
+            port:
+              number: 8000
+    - match:
+        - uri:
+            prefix: /
+      route:
+        - destination:
+            host: infra-backend-v2.default.svc.cluster.local
+            port:
+              number: 8000
+    # The order of the match rules is important
+    # Following match rule will be ignored because prefix:/ will match all requests
+    - match:
+        - uri:
+            regex: "^/api2/[1-9][0-9]*/.*$"
+      route:
+        - destination:
+            host: infra-backend-v1.default.svc.cluster.local
+            port:
+              number: 8000
