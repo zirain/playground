@@ -39,6 +39,9 @@ service:
       receivers: [zipkin, otlp]
       processors: [batch]
       exporters: [logging]
+    logs:
+      receivers: [otlp]
+      exporters: [logging]
     # metrics:
     #   receivers: [otlp]
     #   processors: [batch]
