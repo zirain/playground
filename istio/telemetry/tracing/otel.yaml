@@ -6,5 +6,5 @@ metadata:
 spec:
   tracing:
   - providers:
-    - name: "zipkin-otel"
+    - name: "otel-tracing"
     randomSamplingPercentage: 100.00
