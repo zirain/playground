@@ -3,8 +3,6 @@ kind: HTTPRoute
 metadata:
   name: weight-route
 spec:
-  hostnames:
-    - www.example.com
   parentRefs:
     - group: gateway.networking.k8s.io
       kind: Gateway
