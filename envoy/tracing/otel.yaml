@@ -215,7 +215,6 @@ static_resources:
                       port_value: 4317
     - name: zipkin
       connect_timeout: 0.25s
-      http2_protocol_options: {}
       lb_policy: round_robin
       load_assignment:
         cluster_name: zipkin
