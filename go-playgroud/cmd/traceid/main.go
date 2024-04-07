@@ -21,6 +21,13 @@ func main() {
 	}
 
 	fmt.Println(base64.StdEncoding.EncodeToString(traceID[:]))
+
+	traceID, err = hexToTraceID("00000000000000000ccce09bf12e94df")
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Println(base64.StdEncoding.EncodeToString(traceID[:]))
 }
 
 func hexToTraceID(hexStr string) (pcommon.TraceID, error) {
