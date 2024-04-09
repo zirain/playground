@@ -68,6 +68,8 @@ bazel test //test/common/stats:tag_extractor_impl_test
 
 ## coverage test
 
+The latest coverage report for main is available [here](https://storage.googleapis.com/envoy-postsubmit/main/coverage/index.html).
+
 ```console
 # find result in /tmp/envoy-docker-build/envoy/x64/generated/coverage.tar.zst
 rm -rf /tmp/envoy-docker-build/envoy/x64/testlogs.tar.zst /tmp/envoy-docker-build/envoy/x64/generated/coverage.tar.zst
