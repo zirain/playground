@@ -6,9 +6,9 @@ spec:
   selector:
     app: infra-backend-v1
   ports:
-  - protocol: TCP
-    port: 8080
-    targetPort: 3000
+    - protocol: TCP
+      port: 8080
+      targetPort: 3000
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -27,23 +27,26 @@ spec:
         app: infra-backend-v1
     spec:
       containers:
-      - name: infra-backend-v1
-        # From https://github.com/kubernetes-sigs/ingress-controller-conformance/tree/master/images/echoserver
-        image: gcr.io/k8s-staging-gateway-api/echo-basic:v20231214-v1.0.0-140-gf544a46e
-        env:
-        - name: POD_NAME
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.name
-        - name: NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
-        - name: SERVICE_NAME
-          value: infra-backend-v1
-        resources:
-          requests:
-            cpu: 10m
+        - name: infra-backend-v1
+          # From https://github.com/kubernetes-sigs/ingress-controller-conformance/tree/master/images/echoserver
+          image: gcr.io/k8s-staging-gateway-api/echo-basic:v20231214-v1.0.0-140-gf544a46e
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: SERVICE_NAME
+              value: infra-backend-v1
+          ports:
+            - containerPort: 3000
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 10m
 ---
 apiVersion: v1
 kind: Service
@@ -53,9 +56,9 @@ spec:
   selector:
     app: infra-backend-v2
   ports:
-  - protocol: TCP
-    port: 8080
-    targetPort: 3000
+    - protocol: TCP
+      port: 8080
+      targetPort: 3000
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -74,22 +77,25 @@ spec:
         app: infra-backend-v2
     spec:
       containers:
-      - name: infra-backend-v2
-        image: gcr.io/k8s-staging-gateway-api/echo-basic:v20231214-v1.0.0-140-gf544a46e
-        env:
-        - name: POD_NAME
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.name
-        - name: NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
-        - name: SERVICE_NAME
-          value: infra-backend-v2
-        resources:
-          requests:
-            cpu: 10m
+        - name: infra-backend-v2
+          image: gcr.io/k8s-staging-gateway-api/echo-basic:v20231214-v1.0.0-140-gf544a46e
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: SERVICE_NAME
+              value: infra-backend-v2
+          ports:
+            - containerPort: 3000
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 10m
 ---
 apiVersion: v1
 kind: Service
@@ -99,9 +105,9 @@ spec:
   selector:
     app: infra-backend-v3
   ports:
-  - protocol: TCP
-    port: 8080
-    targetPort: 3000
+    - protocol: TCP
+      port: 8080
+      targetPort: 3000
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -120,19 +126,22 @@ spec:
         app: infra-backend-v3
     spec:
       containers:
-      - name: infra-backend-v3
-        image: gcr.io/k8s-staging-gateway-api/echo-basic:v20231214-v1.0.0-140-gf544a46e
-        env:
-        - name: POD_NAME
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.name
-        - name: NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
-        - name: SERVICE_NAME
-          value: infra-backend-v3
-        resources:
-          requests:
-            cpu: 10m
+        - name: infra-backend-v3
+          image: gcr.io/k8s-staging-gateway-api/echo-basic:v20231214-v1.0.0-140-gf544a46e
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: SERVICE_NAME
+              value: infra-backend-v3
+          ports:
+            - containerPort: 3000
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 10m
