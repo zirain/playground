@@ -1,0 +1,97 @@
+# istioctl pc r kuma-fbb59f-7z9fv --proxy-admin-port 9901 --name "kuma.default:HTTP:8080:*" -oyaml
+- ignorePortInHostMatching: true
+  name: kuma.default:HTTP:8080:*
+  requestHeadersToRemove:
+  - x-kuma-tags
+  validateClusters: false
+  virtualHosts:
+  - domains:
+    - '*'
+    name: '*'
+    routes:
+    - match:
+        path: /api/store
+      route:
+        clusterNotFoundResponseCode: INTERNAL_SERVER_ERROR
+        idleTimeout: 5s
+        retryPolicy:
+          numRetries: 5
+          perTryTimeout: 16s
+          retryBackOff:
+            baseInterval: 0.025s
+            maxInterval: 0.250s
+          retryOn: gateway-error,connect-failure,refused-stream
+        timeout: 15s
+        weightedClusters:
+          clusters:
+          - name: httpbin_default_svc_8000-732a2f143c735941
+            requestHeadersToAdd:
+            - header:
+                key: x-kuma-tags
+                value: '&kuma.io/service=kuma_default_gateway&&kuma.io/zone=default&'
+            weight: 1
+    - match:
+        prefix: /api/store/
+      route:
+        clusterNotFoundResponseCode: INTERNAL_SERVER_ERROR
+        idleTimeout: 5s
+        retryPolicy:
+          numRetries: 5
+          perTryTimeout: 16s
+          retryBackOff:
+            baseInterval: 0.025s
+            maxInterval: 0.250s
+          retryOn: gateway-error,connect-failure,refused-stream
+        timeout: 15s
+        weightedClusters:
+          clusters:
+          - name: httpbin_default_svc_8000-732a2f143c735941
+            requestHeadersToAdd:
+            - header:
+                key: x-kuma-tags
+                value: '&kuma.io/service=kuma_default_gateway&&kuma.io/zone=default&'
+            weight: 1
+    - match:
+        prefix: /
+      route:
+        clusterNotFoundResponseCode: INTERNAL_SERVER_ERROR
+        idleTimeout: 5s
+        retryPolicy:
+          numRetries: 5
+          perTryTimeout: 16s
+          retryBackOff:
+            baseInterval: 0.025s
+            maxInterval: 0.250s
+          retryOn: gateway-error,connect-failure,refused-stream
+        timeout: 15s
+        weightedClusters:
+          clusters:
+          - name: httpbin_default_svc_8000-732a2f143c735941
+            requestHeadersToAdd:
+            - header:
+                key: x-kuma-tags
+                value: '&kuma.io/service=kuma_default_gateway&&kuma.io/zone=default&'
+            weight: 1
+    - match:
+        safeRegex:
+          regex: ^/api/[1-9][0-9]*/.*$
+      route:
+        clusterNotFoundResponseCode: INTERNAL_SERVER_ERROR
+        idleTimeout: 5s
+        retryPolicy:
+          numRetries: 5
+          perTryTimeout: 16s
+          retryBackOff:
+            baseInterval: 0.025s
+            maxInterval: 0.250s
+          retryOn: gateway-error,connect-failure,refused-stream
+        timeout: 15s
+        weightedClusters:
+          clusters:
+          - name: httpbin_default_svc_8000-732a2f143c735941
+            requestHeadersToAdd:
+            - header:
+                key: x-kuma-tags
+                value: '&kuma.io/service=kuma_default_gateway&&kuma.io/zone=default&'
+            weight: 1
+

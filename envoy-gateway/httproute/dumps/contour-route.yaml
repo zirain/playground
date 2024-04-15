@@ -1,0 +1,43 @@
+# istioctl pc r envoy-contour-b75ld.projectcontour --proxy-admin-port 9001  --name http-80 -oyaml
+- ignorePortInHostMatching: true
+  name: http-80
+  requestHeadersToAdd:
+  - header:
+      key: x-request-start
+      value: t=%START_TIME(%s.%3f)%
+  virtualHosts:
+  - domains:
+    - '*'
+    name: '*'
+    routes:
+    - match:
+        safeRegex:
+          regex: ^^/api/[1-9][0-9]*/.*$
+      metadata:
+        filterMetadata:
+          envoy.access_loggers.file:
+            io.projectcontour.kind: HTTPRoute
+            io.projectcontour.name: match-order
+            io.projectcontour.namespace: default
+      route:
+        cluster: default/httpbin/8000/da39a3ee5e
+    - match:
+        pathSeparatedPrefix: /api/store
+      metadata:
+        filterMetadata:
+          envoy.access_loggers.file:
+            io.projectcontour.kind: HTTPRoute
+            io.projectcontour.name: match-order
+            io.projectcontour.namespace: default
+      route:
+        cluster: default/httpbin/8000/da39a3ee5e
+    - match:
+        prefix: /
+      metadata:
+        filterMetadata:
+          envoy.access_loggers.file:
+            io.projectcontour.kind: HTTPRoute
+            io.projectcontour.name: match-order
+            io.projectcontour.namespace: default
+      route:
+        cluster: default/httpbin/8000/da39a3ee5e

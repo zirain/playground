@@ -1,0 +1,30 @@
+# istioctl pc r envoy-default-eg-e41e7b31-7ffcd5c88f-6jchp.envoy-gateway-system --proxy-admin-port 19000 -oyaml
+- ignorePortInHostMatching: true
+  name: default/eg/http
+  virtualHosts:
+  - domains:
+    - '*'
+    name: default/eg/http/*
+    routes:
+    - match:
+        safeRegex:
+          regex: ^/api/[1-9][0-9]*/.*$
+      name: httproute/default/match-order/rule/0/match/1/*
+      route:
+        cluster: httproute/default/match-order/rule/0
+        upgradeConfigs:
+        - upgradeType: websocket
+    - match:
+        pathSeparatedPrefix: /api/store
+      name: httproute/default/match-order/rule/0/match/0/*
+      route:
+        cluster: httproute/default/match-order/rule/0
+        upgradeConfigs:
+        - upgradeType: websocket
+    - match:
+        prefix: /
+      name: httproute/default/match-order/rule/1/match/0/*
+      route:
+        cluster: httproute/default/match-order/rule/1
+        upgradeConfigs:
+        - upgradeType: websocket
