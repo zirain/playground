@@ -26,7 +26,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: istio-reader-service-account
-  namespace: istio-system
+  namespace: tetrate-istio-system
   labels:
     app: istio-reader
     release: tid
@@ -41,7 +41,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: istiod-service-account
-  namespace: istio-system
+  namespace: tetrate-istio-system
   labels:
     app: istiod
     release: tid
@@ -64,7 +64,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: istiod
-  namespace: istio-system
+  namespace: tetrate-istio-system
   labels:
     app: istiod
     release: tid
@@ -121,12 +121,12 @@ data:
       discoveryAddress: istiod.tetrate-istio-system.svc:15012
       tracing:
         zipkin:
-          address: zipkin.istio-system:9411
+          address: zipkin.tetrate-istio-system:9411
     defaultProviders:
       metrics:
       - prometheus
     enablePrometheusMerge: true
-    rootNamespace: istio-system
+    rootNamespace: tetrate-istio-system
     trustDomain: cluster.local
 ---
 # Source: tetrate-istio/templates/istiod-injector-configmap.yaml
@@ -163,7 +163,7 @@ data:
         "hub": "containers.istio.tetratelabs.com",
         "imagePullPolicy": "",
         "imagePullSecrets": [],
-        "istioNamespace": "istio-system",
+        "istioNamespace": "tetrate-istio-system",
         "istiod": {
           "enableAnalysis": false
         },
@@ -1959,7 +1959,7 @@ data:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: istiod-istio-system
+  name: istiod-tetrate-istio-system
   labels:
     app: istiod
     release: tid
@@ -2067,7 +2067,7 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: istio-reader-istio-system
+  name: istio-reader-tetrate-istio-system
   labels:
     app: istio-reader
     release: tid
@@ -2312,35 +2312,35 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: istio-reader-istio-system
+  name: istio-reader-tetrate-istio-system
   labels:
     app: istio-reader
     release: tid
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: istio-reader-istio-system
+  name: istio-reader-tetrate-istio-system
 subjects:
   - kind: ServiceAccount
     name: istio-reader-service-account
-    namespace: istio-system
+    namespace: tetrate-istio-system
 ---
 # Source: tetrate-istio/charts/tid-base/templates/clusterrolebinding.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: istiod-istio-system
+  name: istiod-tetrate-istio-system
   labels:
     app: istiod
     release: tid
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: istiod-istio-system
+  name: istiod-tetrate-istio-system
 subjects:
   - kind: ServiceAccount
     name: istiod-service-account
-    namespace: istio-system
+    namespace: tetrate-istio-system
 ---
 # Source: tetrate-istio/charts/tid-cni/templates/clusterrolebinding.yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -2396,7 +2396,7 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: istiod
-    namespace: istio-system
+    namespace: tetrate-istio-system
 ---
 # Source: tetrate-istio/templates/clusterrolebinding.yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -2413,7 +2413,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: istiod
-  namespace: istio-system
+  namespace: tetrate-istio-system
 ---
 # Source: tetrate-istio/templates/reader-clusterrolebinding.yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -2430,7 +2430,7 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: istio-reader-service-account
-    namespace: istio-system
+    namespace: tetrate-istio-system
 ---
 # Source: tetrate-istio/charts/tid-base/templates/role.yaml
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -2441,8 +2441,8 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: istiod-istio-system
-  namespace: istio-system
+  name: istiod-tetrate-istio-system
+  namespace: tetrate-istio-system
   labels:
     app: istiod
     release: tid
@@ -2464,7 +2464,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: istiod
-  namespace: istio-system
+  namespace: tetrate-istio-system
   labels:
     app: istiod
     release: tid
@@ -2500,26 +2500,26 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: istiod-istio-system
-  namespace: istio-system
+  name: istiod-tetrate-istio-system
+  namespace: tetrate-istio-system
   labels:
     app: istiod
     release: tid
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: istiod-istio-system
+  name: istiod-tetrate-istio-system
 subjects:
   - kind: ServiceAccount
     name: istiod-service-account
-    namespace: istio-system
+    namespace: tetrate-istio-system
 ---
 # Source: tetrate-istio/templates/rolebinding.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: istiod
-  namespace: istio-system
+  namespace: tetrate-istio-system
   labels:
     app: istiod
     release: tid
@@ -2530,7 +2530,7 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: istiod
-    namespace: istio-system
+    namespace: tetrate-istio-system
 ---
 # Source: tetrate-istio/templates/service.yaml
 apiVersion: v1
@@ -3032,7 +3032,7 @@ webhooks:
     clientConfig:
       service:
         name: istiod
-        namespace: istio-system
+        namespace: tetrate-istio-system
         path: "/validate"
     rules:
       - operations:
