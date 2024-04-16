@@ -9,7 +9,7 @@ helm repo add fluxcd-community https://fluxcd-community.github.io/helm-charts
 helm search repo fluxcd-community
 helm show values fluxcd-community/flux2
 
-helm install fluxcd flux2 --version 2.7.0 -n fluxcd-system --create-namespace \
+helm upgrade -i fluxcd flux2 --version 2.7.0 -n fluxcd-system --create-namespace \
     --repo https://fluxcd-community.github.io/helm-charts \
     -f /root/go/src/github.com/zirain/playground/k8s/fluxcd/values/fluxcd.values.yaml
 ```
