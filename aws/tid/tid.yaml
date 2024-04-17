@@ -3,11 +3,11 @@
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  name: istiod
+  name: istiod-1-18-1
   namespace: tetrate-istio-system
   labels:
     app: istiod
-    istio.io/rev: default
+    istio.io/rev: 1-18-1
     install.operator.istio.io/owning-resource: unknown
     operator.istio.io/component: "Pilot"
     release: tid
@@ -17,7 +17,7 @@ spec:
   selector:
     matchLabels:
       app: istiod
-      istio: pilot
+      istio.io/rev: 1-18-1
 ---
 # Source: tetrate-istio/charts/tid-base/templates/reader-serviceaccount.yaml
 # This service account aggregates reader permissions for the revisions in a given cluster
@@ -63,7 +63,7 @@ metadata:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: istiod
+  name: istiod-1-18-1
   namespace: tetrate-istio-system
   labels:
     app: istiod
@@ -103,10 +103,10 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: istio
+  name: istio-1-18-1
   namespace: tetrate-istio-system
   labels:
-    istio.io/rev: default
+    istio.io/rev: 1-18-1
     install.operator.istio.io/owning-resource: unknown
     operator.istio.io/component: "Pilot"
     release: tid
@@ -118,7 +118,7 @@ data:
 
   mesh: |-
     defaultConfig:
-      discoveryAddress: istiod.tetrate-istio-system.svc:15012
+      discoveryAddress: istiod-1-18-1.tetrate-istio-system.svc:15012
       tracing:
         zipkin:
           address: zipkin.tetrate-istio-system:9411
@@ -133,10 +133,10 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: istio-sidecar-injector
+  name: istio-sidecar-injector-1-18-1
   namespace: tetrate-istio-system
   labels:
-    istio.io/rev: default
+    istio.io/rev: 1-18-1
     install.operator.istio.io/owning-resource: unknown
     operator.istio.io/component: "Pilot"
     release: tid
@@ -230,7 +230,7 @@ data:
         "tag": "1.18.1-tetrate-v0",
         "variant": ""
       },
-      "revision": "",
+      "revision": "1-18-1",
       "sidecarInjectorWebhook": {
         "alwaysInjectSelector": [],
         "defaultTemplates": [],
@@ -2147,7 +2147,7 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: istiod-clusterrole-tetrate-istio-system
+  name: istiod-clusterrole-1-18-1-tetrate-istio-system
   labels:
     app: istiod
     release: tid
@@ -2243,7 +2243,7 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: istiod-gateway-controller-tetrate-istio-system
+  name: istiod-gateway-controller-1-18-1-tetrate-istio-system
   labels:
     app: istiod
     release: tid
@@ -2262,7 +2262,7 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: istio-reader-clusterrole-tetrate-istio-system
+  name: istio-reader-clusterrole-1-18-1-tetrate-istio-system
   labels:
     app: istio-reader
     release: tid
@@ -2385,48 +2385,48 @@ roleRef:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: istiod-clusterrole-tetrate-istio-system
+  name: istiod-clusterrole-1-18-1-tetrate-istio-system
   labels:
     app: istiod
     release: tid
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: istiod-clusterrole-tetrate-istio-system
+  name: istiod-clusterrole-1-18-1-tetrate-istio-system
 subjects:
   - kind: ServiceAccount
-    name: istiod
+    name: istiod-1-18-1
     namespace: tetrate-istio-system
 ---
 # Source: tetrate-istio/templates/clusterrolebinding.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: istiod-gateway-controller-tetrate-istio-system
+  name: istiod-gateway-controller-1-18-1-tetrate-istio-system
   labels:
     app: istiod
     release: tid
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: istiod-gateway-controller-tetrate-istio-system
+  name: istiod-gateway-controller-1-18-1-tetrate-istio-system
 subjects:
 - kind: ServiceAccount
-  name: istiod
+  name: istiod-1-18-1
   namespace: tetrate-istio-system
 ---
 # Source: tetrate-istio/templates/reader-clusterrolebinding.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: istio-reader-clusterrole-tetrate-istio-system
+  name: istio-reader-clusterrole-1-18-1-tetrate-istio-system
   labels:
     app: istio-reader
     release: tid
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: istio-reader-clusterrole-tetrate-istio-system
+  name: istio-reader-clusterrole-1-18-1-tetrate-istio-system
 subjects:
   - kind: ServiceAccount
     name: istio-reader-service-account
@@ -2463,7 +2463,7 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: istiod
+  name: istiod-1-18-1
   namespace: tetrate-istio-system
   labels:
     app: istiod
@@ -2518,7 +2518,7 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: istiod
+  name: istiod-1-18-1
   namespace: tetrate-istio-system
   labels:
     app: istiod
@@ -2526,20 +2526,20 @@ metadata:
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: istiod
+  name: istiod-1-18-1
 subjects:
   - kind: ServiceAccount
-    name: istiod
+    name: istiod-1-18-1
     namespace: tetrate-istio-system
 ---
 # Source: tetrate-istio/templates/service.yaml
 apiVersion: v1
 kind: Service
 metadata:
-  name: istiod
+  name: istiod-1-18-1
   namespace: tetrate-istio-system
   labels:
-    istio.io/rev: default
+    istio.io/rev: 1-18-1
     install.operator.istio.io/owning-resource: unknown
     operator.istio.io/component: "Pilot"
     app: istiod
@@ -2562,9 +2562,7 @@ spec:
       protocol: TCP
   selector:
     app: istiod
-    # Label used by the 'default' service. For versioned deployments we match with app and version.
-    # This avoids default deployment picking the canary
-    istio: pilot
+    istio.io/rev: 1-18-1
 ---
 # Source: tetrate-istio/charts/tid-cni/templates/daemonset.yaml
 # This manifest installs the Istio install-cni container, as well
@@ -2709,11 +2707,11 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: istiod
+  name: istiod-1-18-1
   namespace: tetrate-istio-system
   labels:
     app: istiod
-    istio.io/rev: default
+    istio.io/rev: 1-18-1
     install.operator.istio.io/owning-resource: unknown
     operator.istio.io/component: "Pilot"
     istio: pilot
@@ -2726,23 +2724,24 @@ spec:
       maxUnavailable: 25%
   selector:
     matchLabels:
-      istio: pilot
+      app: istiod
+      istio.io/rev: 1-18-1
   template:
     metadata:
       labels:
         app: istiod
-        istio.io/rev: default
+        istio.io/rev: 1-18-1
         install.operator.istio.io/owning-resource: unknown
         sidecar.istio.io/inject: "false"
         operator.istio.io/component: "Pilot"
-        istio: pilot
+        istio: istiod
       annotations:
         prometheus.io/port: "15014"
         prometheus.io/scrape: "true"
         ambient.istio.io/redirection: disabled
         sidecar.istio.io/inject: "false"
     spec:
-      serviceAccountName: istiod
+      serviceAccountName: istiod-1-18-1
       securityContext:
         fsGroup: 1337
       containers:
@@ -2772,7 +2771,7 @@ spec:
             timeoutSeconds: 5
           env:
           - name: REVISION
-            value: "default"
+            value: "1-18-1"
           - name: JWT_POLICY
             value: third-party-jwt
           - name: PILOT_CERT_PROVIDER
@@ -2801,7 +2800,7 @@ spec:
           - name: PILOT_ENABLE_PROTOCOL_SNIFFING_FOR_INBOUND
             value: "true"
           - name: ISTIOD_ADDR
-            value: istiod.tetrate-istio-system.svc:15012
+            value: istiod-1-18-1.tetrate-istio-system.svc:15012
           - name: PILOT_ENABLE_ANALYSIS
             value: "false"
           - name: CLUSTER_ID
@@ -2892,9 +2891,9 @@ spec:
 apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
 metadata:
-  name: istio-sidecar-injector-tetrate-istio-system
+  name: istio-sidecar-injector-1-18-1-tetrate-istio-system
   labels:
-    istio.io/rev: default
+    istio.io/rev: 1-18-1
     install.operator.istio.io/owning-resource: unknown
     operator.istio.io/component: "Pilot"
     app: sidecar-injector
@@ -2903,7 +2902,7 @@ webhooks:
 - name: rev.namespace.sidecar-injector.istio.io
   clientConfig:
     service:
-      name: istiod
+      name: istiod-1-18-1
       namespace: tetrate-istio-system
       path: "/inject"
       port: 443
@@ -2920,7 +2919,7 @@ webhooks:
     - key: istio.io/rev
       operator: In
       values:
-      - "default"
+      - "1-18-1"
     - key: istio-injection
       operator: DoesNotExist
   objectSelector:
@@ -2932,7 +2931,7 @@ webhooks:
 - name: rev.object.sidecar-injector.istio.io
   clientConfig:
     service:
-      name: istiod
+      name: istiod-1-18-1
       namespace: tetrate-istio-system
       path: "/inject"
       port: 443
@@ -2959,97 +2958,4 @@ webhooks:
     - key: istio.io/rev
       operator: In
       values:
-      - "default"
-- name: namespace.sidecar-injector.istio.io
-  clientConfig:
-    service:
-      name: istiod
-      namespace: tetrate-istio-system
-      path: "/inject"
-      port: 443
-  sideEffects: None
-  rules:
-  - operations: [ "CREATE" ]
-    apiGroups: [""]
-    apiVersions: ["v1"]
-    resources: ["pods"]
-  failurePolicy: Fail
-  admissionReviewVersions: ["v1beta1", "v1"]
-  namespaceSelector:
-    matchExpressions:
-    - key: istio-injection
-      operator: In
-      values:
-      - enabled
-  objectSelector:
-    matchExpressions:
-    - key: sidecar.istio.io/inject
-      operator: NotIn
-      values:
-      - "false"
-- name: object.sidecar-injector.istio.io
-  clientConfig:
-    service:
-      name: istiod
-      namespace: tetrate-istio-system
-      path: "/inject"
-      port: 443
-  sideEffects: None
-  rules:
-  - operations: [ "CREATE" ]
-    apiGroups: [""]
-    apiVersions: ["v1"]
-    resources: ["pods"]
-  failurePolicy: Fail
-  admissionReviewVersions: ["v1beta1", "v1"]
-  namespaceSelector:
-    matchExpressions:
-    - key: istio-injection
-      operator: DoesNotExist
-    - key: istio.io/rev
-      operator: DoesNotExist
-  objectSelector:
-    matchExpressions:
-    - key: sidecar.istio.io/inject
-      operator: In
-      values:
-      - "true"
-    - key: istio.io/rev
-      operator: DoesNotExist
----
-# Source: tetrate-istio/charts/tid-base/templates/default.yaml
-apiVersion: admissionregistration.k8s.io/v1
-kind: ValidatingWebhookConfiguration
-metadata:
-  name: istiod-default-validator
-  labels:
-    app: istiod
-    release: tid
-    istio: istiod
-    istio.io/rev: default
-webhooks:
-  - name: validation.istio.io
-    clientConfig:
-      service:
-        name: istiod
-        namespace: tetrate-istio-system
-        path: "/validate"
-    rules:
-      - operations:
-          - CREATE
-          - UPDATE
-        apiGroups:
-          - security.istio.io
-          - networking.istio.io
-          - telemetry.istio.io
-          - extensions.istio.io
-        apiVersions:
-          - "*"
-        resources:
-          - "*"
-    # Fail open until the validation webhook is ready. The webhook controller
-    # will update this to `Fail` and patch in the `caBundle` when the webhook
-    # endpoint is ready.
-    failurePolicy: Ignore
-    sideEffects: None
-    admissionReviewVersions: ["v1beta1", "v1"]
+      - "1-18-1"
