@@ -1,0 +1,18 @@
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyPatchPolicy
+metadata:
+  name: add-preserve-external-request-id
+spec:
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: eg
+  type: JSONPatch
+  jsonPatches:
+    - type: "type.googleapis.com/envoy.config.listener.v3.Listener"
+      # The listener name is of the form <GatewayNamespace>/<GatewayName>/<GatewayListenerName>
+      name: default/eg/http
+      operation:
+        op: add
+        path: "/default_filter_chain/filters/0/typed_config/preserve_external_request_id"
+        value: true
