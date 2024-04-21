@@ -1,0 +1,44 @@
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyPatchPolicy
+metadata:
+  name: preserve-external-request-id
+spec:
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: eg
+  type: JSONPatch
+  jsonPatches:
+    - type: "type.googleapis.com/envoy.config.listener.v3.Listener"
+      # The listener name is of the form <GatewayNamespace>/<GatewayName>/<GatewayListenerName>
+      name: default/eg/http
+      operation:
+        op: replace
+        path: "/default_filter_chain/filters/0"
+        value:
+          name: "envoy.filters.network.http_connection_manager"
+          typed_config:
+            "@type": "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager"
+            commonHttpProtocolOptions:
+              headersWithUnderscoresAction: REJECT_REQUEST
+            http2ProtocolOptions:
+              initialConnectionWindowSize: 1048576
+              initialStreamWindowSize: 65536
+              maxConcurrentStreams: 100
+            httpFilters:
+              - name: envoy.filters.http.router
+                typedConfig:
+                  "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+                  suppressEnvoyHeaders: true
+            mergeSlashes: true
+            normalizePath: true
+            pathWithEscapedSlashesAction: UNESCAPE_AND_REDIRECT
+            rds:
+              configSource:
+                ads: {}
+                resourceApiVersion: V3
+              routeConfigName: default/eg/http
+            serverHeaderTransformation: PASS_THROUGH
+            statPrefix: http
+            useRemoteAddress: true
+            preserveExternalRequestId: true
