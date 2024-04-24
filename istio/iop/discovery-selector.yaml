@@ -1,0 +1,12 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+spec:
+  meshConfig:
+    accessLogFile: /dev/stdout
+    discoverySelectors:
+      - matchLabels:
+          istio.io/rev: 1-20-0
+  values:
+    pilot:
+      env:
+        ENABLE_ENHANCED_RESOURCE_SCOPING: "true" # need this before v1.22
