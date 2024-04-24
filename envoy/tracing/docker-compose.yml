@@ -14,3 +14,5 @@ services:
       - "13133:13133" # health_check extension
       - "4317:4317" # OTLP gRPC receiver
       - "55679:55679" # zpages extension
+      - "11800:11800" # skywalking grpc
+      - "12800:12800" # skywalking http
