@@ -1,0 +1,33 @@
+{
+    "clusterName": "outbound|8000||httpbin.default.svc.cluster.local",
+    "endpoints": [
+        {
+            "locality": {},
+            "lbEndpoints": [
+                {
+                    "endpoint": {
+                        "address": {
+                            "socketAddress": {
+                                "address": "10.244.0.90",
+                                "portValue": 8080
+                            }
+                        }
+                    },
+                    "healthStatus": "HEALTHY",
+                    "metadata": {
+                        "filterMetadata": {
+                            "envoy.transport_socket_match": {
+                                "tlsMode": "istio"
+                            },
+                            "istio": {
+                                "workload": "httpbin;default;httpbin;v1;Kubernetes"
+                            }
+                        }
+                    },
+                    "loadBalancingWeight": 1
+                }
+            ],
+            "loadBalancingWeight": 1
+        }
+    ]
+}
