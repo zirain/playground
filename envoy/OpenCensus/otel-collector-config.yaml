@@ -1,0 +1,32 @@
+receivers:
+  opencensus:
+    endpoint: 0.0.0.0:55678
+  otlp:
+    protocols:
+      grpc:
+      http:
+processors:
+  batch:
+exporters:
+  logging:
+    loglevel: debug
+extensions:
+  memory_ballast:
+    size_mib: 512
+  zpages:
+    endpoint: 0.0.0.0:55679
+  health_check:
+service:
+  extensions: [memory_ballast, zpages, health_check]
+  pipelines:
+    logs:
+      receivers: [otlp]
+      exporters: [logging]
+    traces:
+      receivers:
+        - otlp
+        - opencensus
+      exporters:
+        # - zipkin
+        - logging
+        # - jaeger

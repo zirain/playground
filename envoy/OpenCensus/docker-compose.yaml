@@ -1,0 +1,21 @@
+version: '3'
+services:
+  # envoy:
+  #   image: envoyproxy/envoy:dev
+  #   ports:
+  #     - "18000:18000"
+  #     - "9901:9901"
+  #   volumes:
+  #     - ./envoy.yaml:/etc/envoy/envoy.yaml
+
+  otel-collector:
+    image: otel/opentelemetry-collector # latest
+    restart: always
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - "4317:4317" # OTLP gRPC receiver
+      - "4318:4318" # OTLP HTTP receiver
+      - "55678:55678" 
+      - "55679:55679" # zpages extension
