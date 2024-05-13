@@ -8,3 +8,14 @@ spec:
     - providers:
         - name: "zipkin"
       randomSamplingPercentage: 100.00
+---
+apiVersion: telemetry.istio.io/v1alpha1
+kind: Telemetry
+metadata:
+  name: ns-level
+  namespace: default
+spec:
+  tracing:
+    - providers:
+        - name: "zipkin"
+      randomSamplingPercentage: 99.00
