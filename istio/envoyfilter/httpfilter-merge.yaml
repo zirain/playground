@@ -1,0 +1,26 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: httpfilter-merge
+  namespace: istio-system
+spec:
+  configPatches:
+    - applyTo: HTTP_FILTER
+      match:
+        context: SIDECAR_OUTBOUND
+        listener:
+          filterChain:
+            filter:
+              name: envoy.filters.network.http_connection_manager
+              subFilter:
+                name: istio.stats
+        proxy:
+          proxyVersion: ^1\.22.*
+      patch:
+        operation: MERGE
+        value:
+          name: istio.stats
+          typedConfig:
+            "@type": type.googleapis.com/stats.PluginConfig
+            disableHostHeaderFallback: true
+            tcpReportingDuration: 10s
