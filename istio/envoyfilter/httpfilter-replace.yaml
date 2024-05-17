@@ -1,0 +1,26 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: httpfilter-replace
+  namespace: istio-system
+spec:
+  configPatches:
+    - applyTo: HTTP_FILTER
+      match:
+        context: GATEWAY
+        listener:
+          filterChain:
+            filter:
+              name: envoy.filters.network.http_connection_manager
+              subFilter:
+                name: istio.stats
+        proxy:
+          proxyVersion: ^1\.22.*
+      patch:
+        operation: REPLACE
+        value:
+          name: istio.stats
+          typedConfig:
+            "@type": type.googleapis.com/stats.PluginConfig
+            disableHostHeaderFallback: false
+            tcpReportingDuration: 10s
