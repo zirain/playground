@@ -29,7 +29,7 @@ static_resources:
                               "@type": type.googleapis.com/envoy.extensions.formatter.cel.v3.Cel
                         text_format_source:
                           inline_string: |
-                            [%START_TIME%] %CEL(request.path)% %CEL(response.code)%
+                            [%START_TIME%] %CEL(request.path)% %CEL(response.code)% %CEL(request.url_path.contains('get'))%
                       path: /dev/stdout
                 stat_prefix: ingress_http
                 codec_type: auto
