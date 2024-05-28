@@ -11,6 +11,7 @@ spec:
             mode: CLIENT
           tagOverrides:
             x_user_email:
-              value: request.headers['x-user-email']
+              value: |
+                'x-user-email' in request.headers ? request.headers['x-user-email'] : 'empty'
       providers:
         - name: prometheus
