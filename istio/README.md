@@ -113,3 +113,11 @@ REGISTRY=zirain VERSION=dev make docker_image
 kind load docker-image zirain/ratelimit:dev --name istio
 kubectl rollout restart deployment ratelimit
 ```
+
+# Release Builder
+
+[Release Builder](https://github.com/istio/release-builder) will capture the commit sha and store it on GCS, and will use it when pushlishing.
+
+```shell
+gsutil cp gs://istio-prerelease/prerelease/1.22.0/manifest.yaml manifest.yaml && cat manifest.yaml
+```
