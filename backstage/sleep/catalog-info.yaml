@@ -1,0 +1,12 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: "sleep"
+  description: "sleep"
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+    argocd/app-name: sleep
+spec:
+  type: website
+  lifecycle: experimental
+  owner: "group:default/guests"
