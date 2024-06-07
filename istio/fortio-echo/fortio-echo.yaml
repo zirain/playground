@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: fortio-echo
+  labels:
+    app: fortio-echo
+    service: fortio-echo
+spec:
+  ports:
+    - name: tcp
+      port: 8078
+  selector:
+    app: fortio-echo
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fortio-echo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fortio-echo
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: fortio-echo
+        version: v1
+        sidecar.istio.io/inject: "false" # do not inject
+    spec:
+      containers:
+        - name: fortio-echo
+          image: fortio/fortio:latest_release
+          command:
+            - fortio
+            - tcp-echo
+          ports:
+            - containerPort: 8078
