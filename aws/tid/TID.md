@@ -5,7 +5,7 @@
 ```console
 eksctl create cluster \
     --region=us-east-2 \
-    --version 1.28 \
+    --version 1.29 \
     --name tidtest-zirain \
     --nodes-min 2 \
     --nodes-max 3 \
@@ -22,7 +22,7 @@ export KUBECONFIG=~/.kube/eksctl/clusters/tidtest-zirain
 
 ```console
 aws eks create-addon --addon-name tetrate-io_istio-distro \
-    --addon-version v1.20.3-eksbuild.1 \
+    --addon-version v1.20.6-eksbuild.1 \
     --region=us-east-2 \
     --cluster tidtest-zirain
 ```
