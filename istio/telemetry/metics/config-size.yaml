@@ -1,0 +1,13 @@
+# https://github.com/istio/istio/issues/46858
+apiVersion: telemetry.istio.io/v1alpha1
+kind: Telemetry
+metadata:
+  name: custom-tags
+spec:
+  metrics:
+    - providers:
+        - name: prometheus
+      overrides:
+        - tagOverrides:
+            destination_service:
+              value: "CATHAL_TEST_1"

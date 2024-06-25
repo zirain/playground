@@ -22,3 +22,7 @@ spec:
   metrics:
     - providers:
         - name: prometheus
+      # reenable all metrics won't work without the following override
+      # overrides:
+      #   - match:
+      #       metric: ALL_METRICS
