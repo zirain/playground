@@ -1,18 +1,13 @@
 # Securing the istio Service Mesh using cert-manager
 
-## Helm setup
-
-```bash
-# Helm setup
-helm repo add jetstack https://charts.jetstack.io
-helm repo update
-```
+https://artifacthub.io/packages/helm/cert-manager/cert-manager
 
 ## Installing cert-manager
 
 ``` bash
 # install cert-manager; this might take a little time
-helm install cert-manager jetstack/cert-manager \
+helm install cert-manager cert-manager \
+	--repo https://charts.jetstack.io \
 	--namespace cert-manager \
 	--set installCRDs=true \
 	--create-namespace \
@@ -42,7 +37,10 @@ kubectl create secret generic -n cert-manager istio-root-ca --from-file=ca.pem=r
 
 ```bash
 # We set a few helm template values so we can point at our static root CA
-helm install -n cert-manager cert-manager-istio-csr jetstack/cert-manager-istio-csr -f istio/certmanager/istio-csr/example-issuer.yaml
+helm install cert-manager-istio-csr cert-manager-istio-csr\
+	--repo https://charts.jetstack.io \
+	-n cert-manager -f istio/certmanager/istio-csr/istio-csr.values.yaml \
+	--version v0.9.0
 
 kubectl rollout status deploy cert-manager-istio-csr -n cert-manager --timeout 5m
 

@@ -2,9 +2,9 @@ app:
   tls:
     rootCAFile: /var/run/secrets/istio-csr/ca.pem
 volumeMounts:
-- name: root-ca
-  mountPath: /var/run/secrets/istio-csr
-volume:
-- name: root-ca
-  secret:
-    secretName: istio-root-ca
+  - name: root-ca
+    mountPath: /var/run/secrets/istio-csr
+volumes:
+  - name: root-ca
+    secret:
+      secretName: istio-root-ca

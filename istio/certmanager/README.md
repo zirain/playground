@@ -4,7 +4,7 @@
  
 ### Install cert-manager
 
-```console
+```shell
 helm repo add jetstack https://charts.jetstack.io
 helm repo update
 kubectl create namespace cert-manager
@@ -13,7 +13,7 @@ helm install -n cert-manager cert-manager jetstack/cert-manager --set installCRD
 
 ### Create Self-Signed Issuer
 
-```console
+```shell
 kubectl apply -f istio/certmanager/selfsigned.yaml -nistio-system
 
 # verify
@@ -34,7 +34,7 @@ kubectl create secret generic -n cert-manager istio-root-ca --from-file=ca.pem=c
 
 ### install istio-csr
 
-```console
+```shell
 helm install -n cert-manager cert-manager-istio-csr jetstack/cert-manager-istio-csr \
 	--set "app.tls.rootCAFile=/var/run/secrets/istio-csr/ca.pem" \
 	--set "volumeMounts[0].name=root-ca" \
@@ -45,11 +45,11 @@ helm install -n cert-manager cert-manager-istio-csr jetstack/cert-manager-istio-
 kubectl get certificates -n istio-system
 ```
 
-```console
+```shell
 istioctl install -f istio/certmanager/iop.yaml -y
 ```
 
-```console
+```shell
 istioctl proxy-config secret $(kubectl get pods -o jsonpath='{.items..metadata.name}' --selector app=httpbin) -o json | jq -r '.dynamicActiveSecrets[0].secret.tlsCertificate.certificateChain.inlineBytes' | base64 --decode | openssl x509 -text -noout
 ```
 
