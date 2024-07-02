@@ -4,7 +4,7 @@ metadata:
   name: cert-manager-integration
   namespace: istio-system
 spec:
-  # profile: ambient
+  profile: ambient
   values:
     global:
       caAddress: cert-manager-istio-csr.cert-manager.svc:443
