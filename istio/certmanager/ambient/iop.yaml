@@ -1,0 +1,14 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  name: cert-manager-integration
+  namespace: istio-system
+spec:
+  # profile: ambient
+  values:
+    global:
+      caAddress: cert-manager-istio-csr.cert-manager.svc:443
+    ztunnel:
+      env:
+        # tell ztunnel to use cert-manager as the CA
+        CA_ROOT_CA: /etc/cert-manager/ca/root-cert.pem
