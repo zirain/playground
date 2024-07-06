@@ -42,7 +42,7 @@ func (a *ALSServer) StreamAccessLogs(logStream alsv2.AccessLogService_StreamAcce
 		if httpLogs != nil {
 			LogCount.WithLabelValues("v2", "http").Add(float64(len(httpLogs.LogEntry)))
 			for _, logEntry := range httpLogs.LogEntry {
-				log.Println("tcp: " + logEntry.String())
+				log.Println("http: " + logEntry.String())
 			}
 		}
 
@@ -53,8 +53,6 @@ func (a *ALSServer) StreamAccessLogs(logStream alsv2.AccessLogService_StreamAcce
 				log.Println("tcp: " + logEntry.String())
 			}
 		}
-
-		log.Printf("Received v2 log data: %s\n", data.String())
 	}
 }
 
@@ -75,7 +73,7 @@ func (a *ALSServerV3) StreamAccessLogs(logStream alsv3.AccessLogService_StreamAc
 		if httpLogs != nil {
 			LogCount.WithLabelValues("v3", "http").Add(float64(len(httpLogs.LogEntry)))
 			for _, logEntry := range httpLogs.LogEntry {
-				log.Println("tcp: " + logEntry.String())
+				log.Println("http: " + logEntry.String())
 			}
 		}
 
@@ -86,8 +84,6 @@ func (a *ALSServerV3) StreamAccessLogs(logStream alsv3.AccessLogService_StreamAc
 				log.Println("tcp: " + logEntry.String())
 			}
 		}
-
-		log.Printf("Received v3 log data: %s\n", data.String())
 	}
 }
 
@@ -106,11 +102,12 @@ func main() {
 	}
 
 	s := &http.Server{
-		Addr:    ":15014",
+		Addr:    ":19001",
 		Handler: mux,
 	}
 
 	go func() {
+		log.Println("Starting prometheus server on port 19001")
 		s.ListenAndServe()
 	}()
 
