@@ -17,7 +17,7 @@ var (
 	LogCount = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "log_count",
 		Help: "The total number of logs received.",
-	}, []string{"api_version"})
+	}, []string{"api_version", "log_type"})
 )
 
 func init() {
@@ -36,9 +36,22 @@ func (a *ALSServer) StreamAccessLogs(logStream alsv2.AccessLogService_StreamAcce
 			return err
 		}
 
+		log.Println("Received v2 log data from client:" + data.GetIdentifier().String())
+
 		httpLogs := data.GetHttpLogs()
 		if httpLogs != nil {
-			LogCount.WithLabelValues("v2").Add(float64(len(httpLogs.LogEntry)))
+			LogCount.WithLabelValues("v2", "http").Add(float64(len(httpLogs.LogEntry)))
+			for _, logEntry := range httpLogs.LogEntry {
+				log.Println("tcp: " + logEntry.String())
+			}
+		}
+
+		tcpLogs := data.GetTcpLogs()
+		if tcpLogs != nil {
+			LogCount.WithLabelValues("v2", "tcp").Add(float64(len(tcpLogs.LogEntry)))
+			for _, logEntry := range tcpLogs.LogEntry {
+				log.Println("tcp: " + logEntry.String())
+			}
 		}
 
 		log.Printf("Received v2 log data: %s\n", data.String())
@@ -56,9 +69,22 @@ func (a *ALSServerV3) StreamAccessLogs(logStream alsv3.AccessLogService_StreamAc
 			return err
 		}
 
+		log.Println("Received v3 log data from client:" + data.GetIdentifier().String())
+
 		httpLogs := data.GetHttpLogs()
 		if httpLogs != nil {
-			LogCount.WithLabelValues("v3").Add(float64(len(httpLogs.LogEntry)))
+			LogCount.WithLabelValues("v3", "http").Add(float64(len(httpLogs.LogEntry)))
+			for _, logEntry := range httpLogs.LogEntry {
+				log.Println("tcp: " + logEntry.String())
+			}
+		}
+
+		tcpLogs := data.GetTcpLogs()
+		if tcpLogs != nil {
+			LogCount.WithLabelValues("v3", "tcp").Add(float64(len(tcpLogs.LogEntry)))
+			for _, logEntry := range tcpLogs.LogEntry {
+				log.Println("tcp: " + logEntry.String())
+			}
 		}
 
 		log.Printf("Received v3 log data: %s\n", data.String())
