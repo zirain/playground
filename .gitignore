@@ -118,3 +118,5 @@ vendor
 
 # ignore prometheus metrics output
 *.prom
+
+*.tar.gz
