@@ -70,13 +70,31 @@ func (ctx *pluginContext) OnPluginStart(pluginConfigurationSize int) types.OnPlu
 }
 
 func (ctx *httpContext) OnHttpResponseHeaders(numHeaders int, endOfStream bool) types.Action {
+	proxywasm.LogErrorf("OnHttpResponseHeaders")
 	for key, value := range additionalHeaders {
 		proxywasm.AddHttpResponseHeader(key, value)
 	}
+
 	return types.ActionContinue
 }
 
+func (ctx *httpContext) OnHttpStreamDone() {
+	proxywasm.LogErrorf("OnHttpStreamDone")
+
+	reqHeaders, err := proxywasm.GetHttpRequestHeaders()
+	if err != nil {
+		proxywasm.LogErrorf("failed to get request headers: %v", err)
+		return
+	}
+	for _, h := range reqHeaders {
+		proxywasm.LogErrorf("request header: <%s: %s>", h[0], h[1])
+	}
+	return
+}
+
 func (ctx *httpContext) OnHttpRequestHeaders(int, bool) types.Action {
+	proxywasm.LogErrorf("OnHttpRequestHeaders")
+
 	ns := os.Getenv(podNamespaceEnv)
 	if ns == "" {
 		proxywasm.LogErrorf("pod namespace is empty")
