@@ -8,6 +8,8 @@ github.com/stretchr/testify v1.7.0 h1:nwc3DEeHmmLAfoZucVR881uASk0Mfjw8xYJ99tb5Cc
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/tetratelabs/proxy-wasm-go-sdk v0.16.0 h1:6xhDLV4DD2+q3Rs4CDh7cqo69rQ50XgCusv/58D44o4=
 github.com/tetratelabs/proxy-wasm-go-sdk v0.16.0/go.mod h1:8CxNZJ+9yDEvNnAog384fC8j1tKNF0tTZevGjOuY9ds=
+github.com/tetratelabs/proxy-wasm-go-sdk v0.24.0 h1:Xuwzknb4+OHBSYFXif0aBdV0F4MShL8L5YYFda9uUIs=
+github.com/tetratelabs/proxy-wasm-go-sdk v0.24.0/go.mod h1:niJQcnEDtftzrVC0/qqlSs2Kzr1dwb7VxpIPHBO2XXk=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
 gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b h1:h8qDotaEPuJATrMmW04NCwg7v22aHH28wwpauUhK9Oo=

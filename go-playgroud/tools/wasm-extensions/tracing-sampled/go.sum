@@ -6,5 +6,7 @@ github.com/stretchr/testify v1.8.4 h1:CcVxjf3Q8PM0mHUKJCdn+eZZtm5yQwehR5yeSVQQcU
 github.com/stretchr/testify v1.8.4/go.mod h1:sz/lmYIOXD/1dqDmKjjqLyZ2RngseejIcXlSw2iwfAo=
 github.com/tetratelabs/proxy-wasm-go-sdk v0.23.0 h1:e0dm/ypyd1xudIrg8VTsd8dawuYaSy2gqewH5zD4rU8=
 github.com/tetratelabs/proxy-wasm-go-sdk v0.23.0/go.mod h1:YqR8JZaY3Ev9ihXgjzAQAMkXEzPKKmy4Q5rsVWt4XGk=
+github.com/tetratelabs/proxy-wasm-go-sdk v0.24.0 h1:Xuwzknb4+OHBSYFXif0aBdV0F4MShL8L5YYFda9uUIs=
+github.com/tetratelabs/proxy-wasm-go-sdk v0.24.0/go.mod h1:niJQcnEDtftzrVC0/qqlSs2Kzr1dwb7VxpIPHBO2XXk=
 gopkg.in/yaml.v3 v3.0.1 h1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=
 gopkg.in/yaml.v3 v3.0.1/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
