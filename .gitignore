@@ -122,3 +122,4 @@ vendor
 *.tar.gz
 
 .bin
+build-log.txt
