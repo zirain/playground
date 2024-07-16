@@ -1,0 +1,40 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: filewatch
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: filewatch
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "19001"
+      labels:
+        app: filewatch
+    spec:
+      containers:
+        - name: filewatch
+          image: ghcr.io/zirain/filewatch:latest
+          imagePullPolicy: Always
+          env:
+            - name: WATCHED_FILE
+              value: "/app/watched.txt"
+          volumeMounts:
+            - name: filewatch
+              mountPath: /app
+      volumes:
+        - name: filewatch
+          configMap:
+            name: filewatch
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: filewatch
+data:
+  watched.txt: |
+    Hello, World!
