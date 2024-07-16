@@ -2,7 +2,6 @@ apiVersion: extensions.istio.io/v1alpha1
 kind: WasmPlugin
 metadata:
   name: display-metadata
-  namespace: default
 spec:
   selector:
     matchLabels:
