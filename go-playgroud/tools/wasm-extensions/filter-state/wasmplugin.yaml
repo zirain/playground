@@ -1,9 +1,0 @@
-apiVersion: extensions.istio.io/v1alpha1
-kind: WasmPlugin
-metadata:
-  name: filter-state
-spec:
-  selector:
-    matchLabels:
-      app: httpbin
-  url: oci://ghcr.io/zirain/filter-state:0.0.1
