@@ -11,7 +11,12 @@ RESITRY_MIRROR=${RESITRY_MIRROR:-"192.168.3.73:5000"}
 IP_FAMILY=${IP_FAMILY:-"ipv4"}
 IP_SPACE=${IPSPACE:-"255"}
 
-if [[ "${IP_FAMILY}" == "ipv6" ]]; then
+if [[ "${IP_FAMILY}" != "ipv4" && "${IP_FAMILY}" != "ipv6" && "${IP_FAMILY}" != "dual" ]]; then
+  echo "Invalid IP_FAMILY: ${IP_FAMILY}. Must be ipv4, ipv6 or dual"
+  exit 1
+fi
+
+if [[ "${IP_FAMILY}" == "ipv6" || "${IP_FAMILY}" == "dual" ]]; then
   ENVOS=$(uname 2>/dev/null || true)
   if [[ "${ENVOS}" != "Linux" ]]; then
     echo "Your system is not supported by this script. Only Linux is supported"
@@ -83,7 +88,7 @@ done
 
 ipv4Range="- ${ipv4Prefix}.${IP_SPACE}.200-${ipv4Prefix}.${IP_SPACE}.240"
 ipv6Range=""
-if [[ "${IP_FAMILY}" == "ipv6" ]]; then
+if [[ "${IP_FAMILY}" == "ipv6" || "${IP_FAMILY}" == "dual" ]]; then
   ipv6Range="- ${ipv6Prefix}::${IP_SPACE}:200-${ipv6Prefix}::${IP_SPACE}:240"
 fi
 
