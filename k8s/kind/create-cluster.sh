@@ -8,11 +8,23 @@ METALLB_VERSION=${METALLB_VERSION:-"v0.13.10"}
 KIND_NODE_TAG=${KIND_NODE_TAG:-"v1.28.0"}
 NUM_WORKERS=${NUM_WORKERS:-""}
 RESITRY_MIRROR=${RESITRY_MIRROR:-"192.168.3.73:5000"}
+IP_FAMILY=${IP_FAMILY:-"ipv4"}
+IP_SPACE=${IPSPACE:-"255"}
 
+if [[ "${IP_FAMILY}" == "ipv6" ]]; then
+  ENVOS=$(uname 2>/dev/null || true)
+  if [[ "${ENVOS}" != "Linux" ]]; then
+    echo "Your system is not supported by this script. Only Linux is supported"
+    exit 1
+  fi
+fi
 
 KIND_CFG=$(cat <<-EOM
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
+networking:
+  ipFamily: ${IP_FAMILY}
+  apiServerAddress: 127.0.0.1
 nodes:
 - role: control-plane
 containerdConfigPatches:
@@ -55,10 +67,26 @@ kubectl rollout status -n metallb-system deployment/controller --timeout 5m
 kubectl rollout status -n metallb-system daemonset/speaker --timeout 5m
 
 # Apply config with addresses based on docker network IPAM.
-subnet=$(docker network inspect kind | jq -r '.[].IPAM.Config[].Subnet | select(contains(":") | not)')
-# Assume default kind network subnet prefix of 16, and choose addresses in that range.
-address_first_octets=$(echo "${subnet}" | awk -F. '{printf "%s.%s",$1,$2}')
-address_range="${address_first_octets}.255.200-${address_first_octets}.255.250"
+ipv4Prefix=""
+ipv6Prefix=""
+
+# Get both ipv4 and ipv6 gateway for the cluster
+gatewaystr=$(docker network inspect -f '{{range .IPAM.Config }}{{ .Gateway }} {{end}}' kind | cut -f1,2)
+read -r -a gateways <<< "${gatewaystr}"
+for gateway in "${gateways[@]}"; do
+  if [[ "$gateway" == *"."* ]]; then
+    ipv4Prefix=$(echo "${gateway}" |cut -d'.' -f1,2)
+  else
+    ipv6Prefix=$(echo "${gateway}" |cut -d':' -f1,2,3,4)
+  fi
+done
+
+ipv4Range="- ${ipv4Prefix}.${IP_SPACE}.200-${ipv4Prefix}.${IP_SPACE}.240"
+ipv6Range=""
+if [[ "${IP_FAMILY}" == "ipv6" ]]; then
+  ipv6Range="- ${ipv6Prefix}::${IP_SPACE}:200-${ipv6Prefix}::${IP_SPACE}:240"
+fi
+
 kubectl apply -f - <<EOF
 apiVersion: metallb.io/v1beta1
 kind: IPAddressPool
@@ -67,7 +95,8 @@ metadata:
   name: kube-services
 spec:
   addresses:
-  - ${address_range}
+  ${ipv4Range}
+  ${ipv6Range}
 ---
 apiVersion: metallb.io/v1beta1
 kind: L2Advertisement
