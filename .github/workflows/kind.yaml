@@ -13,15 +13,11 @@ permissions:
 jobs:
   test:
     name: test
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
       - run: ./k8s/kind/create-cluster.sh
         env:
           IP_FAMILY: dual
-      - run: |
-          kubectl apply -f ./k8s/kind/
-          kubectl wait --for=condition=ready pod --all --timeout=300s
-
-      - run: |
-          kubectl exec -it deploy/sleep -- curl httpbin:8000/get
+          ENABLE_RESITRY_MIRROR: false
+      - run: ./k8s/kind/test.sh

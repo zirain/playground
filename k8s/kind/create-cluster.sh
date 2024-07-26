@@ -8,6 +8,7 @@ METALLB_VERSION=${METALLB_VERSION:-"v0.13.10"}
 KIND_NODE_TAG=${KIND_NODE_TAG:-"v1.30.0"}
 NUM_WORKERS=${NUM_WORKERS:-""}
 RESITRY_MIRROR=${RESITRY_MIRROR:-"192.168.3.73:5000"}
+ENABLE_RESITRY_MIRROR=${ENABLE_RESITRY_MIRROR:-"true"}
 IP_FAMILY=${IP_FAMILY:-"ipv4"}
 IP_SPACE=${IPSPACE:-"255"}
 
@@ -22,6 +23,17 @@ if [[ "${IP_FAMILY}" == "ipv6" || "${IP_FAMILY}" == "dual" ]]; then
     echo "Your system is not supported by this script. Only Linux is supported"
     exit 1
   fi
+fi
+
+
+MIRROR_CFG=""
+if [[ "${ENABLE_RESITRY_MIRROR}" == "true" ]]; then
+  MIRROR_CFG="plugins."io.containerd.grpc.v1.cri".registry.mirrors]
+  [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
+    endpoint = ["http://${RESITRY_MIRROR}", "https://registry-1.docker.io"]
+  [plugins."io.containerd.grpc.v1.cri".registry.mirrors."quay.io"]
+    endpoint = ["http://${RESITRY_MIRROR}", "https://quay.io"]
+"
 fi
 
 API_SERVER_ADDRESS=""
@@ -39,11 +51,7 @@ nodes:
 - role: control-plane
 containerdConfigPatches:
 - |-
-  [plugins."io.containerd.grpc.v1.cri".registry.mirrors]
-  [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
-    endpoint = ["http://${RESITRY_MIRROR}", "https://registry-1.docker.io"]
-  [plugins."io.containerd.grpc.v1.cri".registry.mirrors."quay.io"]
-    endpoint = ["http://${RESITRY_MIRROR}", "https://quay.io"]
+  ${MIRROR_CFG}
 EOM
 )
 
@@ -53,6 +61,9 @@ for _ in $(seq 1 "${NUM_WORKERS}"); do
   KIND_CFG+=$(printf "\n%s" "- role: worker")
 done
 fi
+
+echo "KIND config:"
+echo "${KIND_CFG}"
 
 ## Create kind cluster.
 if [[ -z "${KIND_NODE_TAG}" ]]; then
