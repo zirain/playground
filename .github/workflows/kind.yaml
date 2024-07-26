@@ -3,9 +3,9 @@ name: KIND Test
 on:
   push:
     branches:
-    - "main"
-    paths:
-    - 'k8s/kind/**'
+    - "master"
+    # paths:
+    # - 'k8s/kind/**'
 
 permissions:
   contents: read
@@ -17,7 +17,7 @@ jobs:
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332  # v4.1.7
       - run: ./k8s/kind/create-cluster.sh
-        with:
+        env:
           IP_FAMILY: dual
       - run: |
           kubectl apply -f ./k8s/kind/
