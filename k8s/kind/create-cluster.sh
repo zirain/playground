@@ -28,11 +28,11 @@ fi
 
 MIRROR_CFG=""
 if [[ "${ENABLE_RESITRY_MIRROR}" == "true" ]]; then
-  MIRROR_CFG="plugins."io.containerd.grpc.v1.cri".registry.mirrors]
-  [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
-    endpoint = ["http://${RESITRY_MIRROR}", "https://registry-1.docker.io"]
-  [plugins."io.containerd.grpc.v1.cri".registry.mirrors."quay.io"]
-    endpoint = ["http://${RESITRY_MIRROR}", "https://quay.io"]
+  MIRROR_CFG="[plugins.\"io.containerd.grpc.v1.cri\".registry.mirrors]
+  [plugins.\"io.containerd.grpc.v1.cri\".registry.mirrors.\"docker.io\"]
+    endpoint = [\"http://${RESITRY_MIRROR}\", \"https://registry-1.docker.io\"]
+  [plugins.\"io.containerd.grpc.v1.cri\".registry.mirrors.\"quay.io\"]
+    endpoint = [\"http://${RESITRY_MIRROR}\", \"https://quay.io\"]
 "
 fi
 
