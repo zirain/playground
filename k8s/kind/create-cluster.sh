@@ -5,7 +5,7 @@ set -euo pipefail
 # Setup default values
 CLUSTER_NAME=${CLUSTER_NAME:-"envoy-gateway"}
 METALLB_VERSION=${METALLB_VERSION:-"v0.13.10"}
-KIND_NODE_TAG=${KIND_NODE_TAG:-"v1.28.0"}
+KIND_NODE_TAG=${KIND_NODE_TAG:-"v1.30.0"}
 NUM_WORKERS=${NUM_WORKERS:-""}
 RESITRY_MIRROR=${RESITRY_MIRROR:-"192.168.3.73:5000"}
 IP_FAMILY=${IP_FAMILY:-"ipv4"}
@@ -16,12 +16,17 @@ if [[ "${IP_FAMILY}" != "ipv4" && "${IP_FAMILY}" != "ipv6" && "${IP_FAMILY}" != 
   exit 1
 fi
 
-if [[ "${IP_FAMILY}" == "ipv6" || "${IP_FAMILY}" == "dual" ]]; then
   ENVOS=$(uname 2>/dev/null || true)
+if [[ "${IP_FAMILY}" == "ipv6" || "${IP_FAMILY}" == "dual" ]]; then
   if [[ "${ENVOS}" != "Linux" ]]; then
     echo "Your system is not supported by this script. Only Linux is supported"
     exit 1
   fi
+fi
+
+API_SERVER_ADDRESS=""
+if [[ "${ENVOS}" != "Linux" ]]; then
+  API_SERVER_ADDRESS="apiServerAddress: 127.0.0.1"
 fi
 
 KIND_CFG=$(cat <<-EOM
@@ -29,7 +34,7 @@ kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
 networking:
   ipFamily: ${IP_FAMILY}
-  apiServerAddress: 127.0.0.1
+  ${API_SERVER_ADDRESS}
 nodes:
 - role: control-plane
 containerdConfigPatches:
@@ -112,3 +117,29 @@ spec:
   ipAddressPools:
   - kube-services
 EOF
+
+
+# IPv6 clusters need some CoreDNS changes in order to work in CI:
+# Istio CI doesn't offer IPv6 connectivity, so CoreDNS should be configured
+# to work in an offline environment:
+# https://github.com/coredns/coredns/issues/2494#issuecomment-457215452
+# CoreDNS should handle those domains and answer with NXDOMAIN instead of SERVFAIL
+# otherwise pods stops trying to resolve the domain.
+if [ "${IP_FAMILY}" = "ipv6" ] || [ "${IP_FAMILY}" = "dual" ]; then
+  # Get the current config
+  original_coredns=$(kubectl get -oyaml -n=kube-system configmap/coredns)
+  echo "Original CoreDNS config:"
+  echo "${original_coredns}"
+  # Patch it
+  fixed_coredns=$(
+    printf '%s' "${original_coredns}" | sed \
+      -e 's/^.*kubernetes cluster\.local/& internal/' \
+      -e '/^.*upstream$/d' \
+      -e '/^.*fallthrough.*$/d' \
+      -e '/^.*forward . \/etc\/resolv.conf$/d' \
+      -e '/^.*loop$/d' \
+  )
+  echo "Patched CoreDNS config:"
+  echo "${fixed_coredns}"
+  printf '%s' "${fixed_coredns}" | kubectl apply -f -
+fi
