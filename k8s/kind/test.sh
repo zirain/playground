@@ -4,8 +4,8 @@ set -euo pipefail
 
 
 function dump_logs() {
-  kubectl logs -l app=whoami -c istio-init
-  kubectl logs -l app=sleep -c istio-init
+  kubectl logs -l app=whoami -c istio-init --tail=-1
+  kubectl logs -l app=sleep -c istio-init --tail=-1
 }
 
 trap dump_logs EXIT
