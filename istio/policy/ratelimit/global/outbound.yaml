@@ -25,7 +25,7 @@ spec:
           typed_config:
             "@type": type.googleapis.com/envoy.extensions.filters.http.ratelimit.v3.RateLimit
             # domain can be anything! Match it to the ratelimter service config
-            domain: httpbin-ratelimit
+            domain: ratelimit
             failure_mode_deny: true
             rate_limit_service:
               grpc_service:
@@ -81,10 +81,11 @@ spec:
           rate_limits:
             - actions: # any actions in here
                 # Multiple actions nest the descriptors
-                # - generic_key:
-                # descriptor_value: "test"
                 - request_headers:
                     header_name: ":path"
                     descriptor_key: "PATH"
+                - generic_key:
+                    # descriptor_key: "test"
+                    descriptor_value: "true"
                     # - remote_address: {}
                     # - destination_cluster: {}
