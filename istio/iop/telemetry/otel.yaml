@@ -1,0 +1,29 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  name: otel
+  namespace: istio-system
+spec:
+  meshConfig:
+    accessLogFile: /dev/stdout
+    extensionProviders:
+      - name: otel-logging
+        envoyOtelAls:
+          service: opentelemetry-collector.istio-system.svc.cluster.local
+          port: 4317
+          logFormat:
+            labels:
+              podName: "%ENVIRONMENT(POD_NAME)%"
+              podNamespace: "%ENVIRONMENT(POD_NAMESPACE)%"
+      - name: otel-tracing
+        opentelemetry:
+          service: opentelemetry-collector.istio-system.svc.cluster.local
+          port: 4317
+    defaultProviders:
+      accessLogging:
+        - otel-logging
+        - envoy
+      metrics:
+        - prometheus
+      tracing:
+        - otel-tracing

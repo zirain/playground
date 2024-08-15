@@ -6,7 +6,7 @@ metadata:
 spec:
   tracing:
     - providers:
-        - name: "zipkin"
+        - name: "otel-tracing"
       randomSamplingPercentage: 100.00
 ---
 apiVersion: telemetry.istio.io/v1alpha1
@@ -20,5 +20,5 @@ spec:
       app: details
   tracing:
     - providers:
-        - name: "zipkin"
+        - name: "otel-tracing"
       disableSpanReporting: true
