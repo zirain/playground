@@ -1,6 +1,0 @@
-Logging:
-  LogLevel: 
-    Default: 'Warning'
-AllowedHosts: '*'
-TestConfig:
-  Name: 'Production'
