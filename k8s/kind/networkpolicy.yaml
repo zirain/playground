@@ -1,0 +1,10 @@
+# kubectl apply -f https://raw.githubusercontent.com/kubernetes-sigs/kube-network-policies/refs/heads/main/install.yaml
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: httpbin-deny-all
+spec:
+  podSelector:
+    matchLabels:
+      app: httpbin
+  ingress: []
