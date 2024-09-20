@@ -4,7 +4,7 @@ set -euo pipefail
 
 # Setup default values
 ISTIO_VERSION=${ISTIO_VERSION:-$(istioctl version --remote=false | cut -d ':' -f2 | xargs)}
-MIRROR_REGISTRY=${MIRROR_REGISTRY:-"nas.zirain.local:5000"}
+MIRROR_REGISTRY=${MIRROR_REGISTRY:-"registry.zirain.local:5000"}
 
 istioImages=(pilot proxyv2 ztunnel install-cni)
 

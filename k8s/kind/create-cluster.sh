@@ -6,8 +6,7 @@ set -euo pipefail
 CLUSTER_NAME=${CLUSTER_NAME:-"envoy-gateway"}
 METALLB_VERSION=${METALLB_VERSION:-"v0.13.10"}
 KIND_NODE_TAG=${KIND_NODE_TAG:-"v1.30.0"}
-NUM_WORKERS=${NUM_WORKERS:-""}
-RESITRY_MIRROR=${RESITRY_MIRROR:-"192.168.3.73:5000"}
+RESITRY_MIRROR=${RESITRY_MIRROR:-"registry.zirain.local:5000"}
 ENABLE_RESITRY_MIRROR=${ENABLE_RESITRY_MIRROR:-"true"}
 IP_FAMILY=${IP_FAMILY:-"ipv4"}
 IP_SPACE=${IPSPACE:-"255"}
@@ -49,18 +48,12 @@ networking:
   ${API_SERVER_ADDRESS}
 nodes:
 - role: control-plane
+- role: worker
 containerdConfigPatches:
 - |-
   ${MIRROR_CFG}
 EOM
 )
-
-# https://kind.sigs.k8s.io/docs/user/quick-start/#multi-node-clusters
-if [[ -n "${NUM_WORKERS}" ]]; then
-for _ in $(seq 1 "${NUM_WORKERS}"); do
-  KIND_CFG+=$(printf "\n%s" "- role: worker")
-done
-fi
 
 echo "KIND config:"
 echo "${KIND_CFG}"
