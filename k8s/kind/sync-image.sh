@@ -13,8 +13,15 @@ for imageName in ${istioImages[@]} ; do
     crane cp "docker.io/istio/${imageName}:${ISTIO_VERSION}-distroless" "${MIRROR_REGISTRY}/istio/${imageName}:${ISTIO_VERSION}-distroless"
 done
 
+golangImages=(golang:1.23.1 golang:1.22.6)
+for imageName in ${golangImages[@]} ; do
+    # crane cp "${imageName}" "${MIRROR_REGISTRY}/${imageName}" --platform linux/amd64
+    # golang image support too much platform, so we only sync amd64 and arm64
+    crane cp "${imageName}" "${MIRROR_REGISTRY}/${imageName}" --platform linux/arm64
+done
+
 # sync image from docker.io
-images=(golang:1.23.1 golang:1.22.6 fluent/fluent-bit:2.1.4 kong/httpbin:latest curlimages/curl:latest grafana/grafana:11.0.0 prom/prometheus:v2.52.0 grafana/tempo:2.1.1 bats/bats:v1.4.1)
+images=(fluent/fluent-bit:2.1.4 kong/httpbin:latest curlimages/curl:latest grafana/grafana:11.0.0 prom/prometheus:v2.52.0 grafana/tempo:2.1.1 bats/bats:v1.4.1)
 for imageName in ${images[@]} ; do
     crane cp "${imageName}" "${MIRROR_REGISTRY}/${imageName}"
 done
