@@ -21,7 +21,7 @@ for imageName in ${golangImages[@]} ; do
 done
 
 # sync image from docker.io
-images=(fluent/fluent-bit:2.1.4 kong/httpbin:latest curlimages/curl:latest grafana/grafana:11.0.0 prom/prometheus:v2.52.0 grafana/tempo:2.1.1 bats/bats:v1.4.1)
+images=(fluent/fluent-bit:2.1.4 mccutchen/go-httpbin:v2.5.0 kong/httpbin:latest curlimages/curl:latest grafana/grafana:11.0.0 prom/prometheus:v2.52.0 grafana/tempo:2.1.1 bats/bats:v1.4.1)
 for imageName in ${images[@]} ; do
     crane cp "${imageName}" "${MIRROR_REGISTRY}/${imageName}"
 done
