@@ -15,9 +15,8 @@ done
 
 golangImages=(golang:1.23.1 golang:1.22.6)
 for imageName in ${golangImages[@]} ; do
-    # crane cp "${imageName}" "${MIRROR_REGISTRY}/${imageName}" --platform linux/amd64
-    # golang image support too much platform, so we only sync amd64 and arm64
-    crane cp "${imageName}" "${MIRROR_REGISTRY}/${imageName}" --platform linux/arm64
+    # https://github.com/google/go-containerregistry/issues/2016
+    crane index filter "${imageName}" --platform linux/amd64 --platform linux/arm64 -t "${MIRROR_REGISTRY}/${imageName}"
 done
 
 # sync image from docker.io
