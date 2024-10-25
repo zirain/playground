@@ -20,3 +20,8 @@ EOF
 kubectl label node kind-worker topology.kubernetes.io/zone=cn-east1
 kubectl label node kind-worker2 topology.kubernetes.io/zone=cn-west2
 ```
+
+```shell
+kubectl label node envoy-gateway-worker topology.kubernetes.io/zone=cn-east1 --overwrite
+kubectl label node envoy-gateway-worker2 topology.kubernetes.io/zone=cn-west2 --overwrite
+```

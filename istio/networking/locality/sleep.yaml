@@ -13,43 +13,40 @@
 #   limitations under the License.
 
 ##################################################################################################
-# httpbin service
+# Sleep service
 ##################################################################################################
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: httpbin
+  name: sleep
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: httpbin
+  name: sleep
   labels:
-    app: httpbin
-    service: httpbin
+    app: sleep
+    service: sleep
 spec:
   ports:
-    - name: http
-      port: 8000
-      targetPort: 8080
+    - port: 80
+      name: http
   selector:
-    app: httpbin
+    app: sleep
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: httpbin
+  name: sleep
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: httpbin
-      version: v1
+      app: sleep
   template:
     metadata:
       labels:
-        app: httpbin
-        version: v1
+        app: sleep
     spec:
       affinity:
         podAntiAffinity:
@@ -57,11 +54,21 @@ spec:
             - topologyKey: kubernetes.io/hostname
               labelSelector:
                 matchLabels:
-                  app: httpbin
-      serviceAccountName: httpbin
+                  app: sleep
+      terminationGracePeriodSeconds: 0
+      serviceAccountName: sleep
       containers:
-        - image: docker.io/mccutchen/go-httpbin:v2.15.0
+        - name: sleep
+          image: curlimages/curl
+          command: ["/bin/sleep", "infinity"]
           imagePullPolicy: IfNotPresent
-          name: httpbin
-          ports:
-            - containerPort: 8080
+          volumeMounts:
+            - mountPath: /etc/sleep/tls
+              name: secret-volume
+      volumes:
+        - name: secret-volume
+          secret:
+            secretName: sleep-secret
+            optional: true
+---
+
