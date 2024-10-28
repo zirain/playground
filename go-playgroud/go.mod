@@ -17,6 +17,7 @@ require (
 	github.com/google/cel-go v0.18.1
 	github.com/google/uuid v1.6.0
 	github.com/grafana/tempo v1.5.0
+	github.com/kavu/go_reuseport v1.5.0
 	github.com/lestrrat-go/jwx/v2 v2.0.15
 	github.com/prometheus/client_golang v1.17.0
 	github.com/prometheus/common v0.45.0
