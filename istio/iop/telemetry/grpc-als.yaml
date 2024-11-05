@@ -1,0 +1,13 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+spec:
+  meshConfig:
+    extensionProviders:
+      - name: grpc-als
+        envoyHttpAls:
+          service: envoy-als.monitoring.svc.cluster.local
+          port: 8080
+    defaultProviders:
+      accessLogging:
+        - grpc-als
+        - envoy
