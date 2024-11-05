@@ -1,46 +1,41 @@
-# The preview profile contains features that are experimental.
-# This is intended to explore new features coming to Istio.
-# Stability, security, and performance are not guaranteed - use at your own risk.
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 spec:
-  meshConfig:
-    # proxyListenPort: 16001
-    # proxyInboundListenPort: 16006
-    accessLogFile: /dev/stdout
-    accessLogFormat: "[%START_TIME%] [%REQ(X-B3-TRACEID)%] [%REQ(X-ENVOY-ATTEMPT-COUNT)%] \"%REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)% %PROTOCOL%\" %RESPONSE_CODE% %RESPONSE_FLAGS% %RESPONSE_CODE_DETAILS% %CONNECTION_TERMINATION_DETAILS% \"%UPSTREAM_TRANSPORT_FAILURE_REASON%\" %BYTES_RECEIVED% %BYTES_SENT% %DURATION% %REQUEST_TX_DURATION% %RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)% \"%REQ(X-FORWARDED-FOR)%\" \"%REQ(USER-AGENT)%\" \"%REQ(X-REQUEST-ID)%\" \"%REQ(:AUTHORITY)%\" \"%UPSTREAM_HOST%\" %UPSTREAM_CLUSTER% %UPSTREAM_LOCAL_ADDRESS% %DOWNSTREAM_LOCAL_ADDRESS% %DOWNSTREAM_REMOTE_ADDRESS% %REQUESTED_SERVER_NAME% %ROUTE_NAME%\n"
-    extensionProviders:
-      - name: zipkin
-        zipkin:
-          service: zipkin.istio-system.svc.cluster.local
-          port: 9411
-    defaultProviders:
-      metrics:
-        - prometheus # use Telemetry API
-      # tracing:
-      #   - zipkin
-    defaultConfig:
-      tracing:
-        sampling: 100.0
-      # extraStatTags:
-      #   - source_x
-      #   - destination_x
-      # proxyAdminPort: 19000
-      proxyMetadata:
-        # WASM_MODULE_EXPIRY: 10m
-        # WASM_PURGE_INTERVAL: 1m
-        PROXY_CONFIG_XDS_AGENT: "true"
   values:
     global:
-      logging:
-        # level: "default:info,xdsproxy:debug,wasm:debug"
-        level: "all:debug"
+      # logging:
+      #   level: "xdsproxy:debug"
+      # proxy:
+      #   componentLogLevel: "filter:debug,http:debug"
     pilot:
       env:
-        ISTIO_MULTIROOT_MESH: "true"
         # METRIC_ROTATION_INTERVAL: 1m
-        # METRIC_GRACEFUL_DELETION_INTERVAL: 1m
-    telemetry:
-      enabled: true
-      v2:
-        enabled: false
+        # METRIC_GRACEFUL_DELETION_INTERVAL: 30s
+        # PILOT_ENABLE_PERSISTENT_SESSION_FILTER: "true"
+    #     PILOT_ENVOY_FILTER_STATS: "true"
+    #     ENABLE_EXTERNAL_NAME_ALIAS: "true"
+  meshConfig:
+    accessLogFile: /dev/stdout
+    defaultConfig:
+      tracing: {}
+    enableTracing: false
+    defaultProviders:
+      # tracing:
+      #   - zipkin
+    extensionProviders:
+      - zipkin:
+          service: zipkin.istio-system.svc.cluster.local
+          port: 9411
+        name: zipkin
+      - envoyOtelAls:
+          port: 4317
+          service: opentelemetry-collector.istio-system.svc.cluster.local
+        name: otel
+      - name: skywalking
+        skywalking:
+          port: 11800
+          service: tracing.istio-system.svc.cluster.local
+      - name: otel-tracing
+        opentelemetry:
+          port: 4317
+          service: opentelemetry-collector.istio-system.svc.cluster.local
