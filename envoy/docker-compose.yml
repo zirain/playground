@@ -2,9 +2,7 @@ version: '3'
 services:
   envoy:
     network_mode: "host"
-    # image: envoyproxy/envoy:dev-6301fefe405d5c9bade12658034f17f5ad4cdd3c fail
-    # image: envoyproxy/envoy:dev-01aed8aa302d707a5598dbfd063dcfe3b31655f8 pass
-    image: envoyproxy/envoy:v1.23-latest
+    image: envoyproxy/envoy:dev-874f7f5e9d7b5136ec1e82b7c42502d367fe25d9
     ports:
       - "3000:3000"
       - "9901:9901"
