@@ -1,0 +1,37 @@
+apiVersion: networking.istio.io/v1
+kind: Gateway
+metadata:
+  name: backend-gw
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    - hosts:
+        - "passthrough.example.com"
+      port:
+        name: https-passthrough
+        number: 443
+        protocol: TLS
+      tls:
+        mode: PASSTHROUGH
+---
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: backend-tls
+spec:
+  hosts:
+    - "passthrough.example.com"
+  gateways:
+    - backend-gw
+  tls:
+    - match:
+        - port: 443
+          sniHosts:
+            - "passthrough.example.com"
+      route:
+        - destination:
+            host: tls-backend
+            port:
+              number: 443
+---
