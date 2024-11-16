@@ -1,0 +1,55 @@
+apiVersion: networking.istio.io/v1
+kind: DestinationRule
+metadata:
+  name: httpbin-org
+  namespace: sidecar
+spec:
+  host: "*.httpbin.org"
+  trafficPolicy:
+    connectionPool:
+      tcp:
+        maxConnectionDuration: 300s
+    tls:
+      mode: ISTIO_MUTUAL
+---
+apiVersion: networking.istio.io/v1
+kind: ServiceEntry
+metadata:
+  name: httpbin-org
+  namespace: sidecar
+spec:
+  hosts:
+    - "*.httpbin.org"
+  location: MESH_EXTERNAL
+  ports:
+    - name: http
+      number: 443
+      protocol: HTTPS
+  resolution: NONE
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: header-case
+  namespace: sidecar
+spec:
+  configPatches:
+    - applyTo: CLUSTER
+      match:
+        cluster:
+          service: "*.httpbin.org"
+      patch:
+        operation: MERGE
+        value:
+          typed_extension_protocol_options:
+            envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+              "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+              commonHttpProtocolOptions:
+                maxConnectionDuration: 300s
+              use_downstream_protocol_config:
+                http_protocol_options:
+                  header_key_format:
+                    stateful_formatter:
+                      name: preserve_case
+                      typed_config:
+                        "@type": type.googleapis.com/envoy.extensions.http.header_formatters.preserve_case.v3.PreserveCaseFormatterConfig
