@@ -1,0 +1,29 @@
+kind: AuthorizationPolicy
+apiVersion: security.istio.io/v1beta1
+metadata:
+  name: istio-ingressgateway
+  namespace: istio-system
+spec:
+  action: ALLOW
+  rules:
+    - to:
+        - operation:
+            methods:
+              - GET
+            paths:
+              - /ip
+---
+# namespace level authz policy to allow GET request,
+# you should be careful the request forwarded from ingressgateway.
+kind: AuthorizationPolicy
+apiVersion: security.istio.io/v1beta1
+metadata:
+  name: allow-get
+  namespace: sidecar
+spec:
+  action: ALLOW
+  rules:
+    - to:
+        - operation:
+            methods:
+              - GET
