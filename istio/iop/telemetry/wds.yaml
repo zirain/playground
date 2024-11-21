@@ -1,0 +1,33 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  name: wds
+spec:
+  meshConfig:
+    accessLogFile: /dev/stdout
+    extensionProviders:
+      - name: grpc-als
+        envoyHttpAls:
+          service: envoy-als.monitoring.svc.cluster.local
+          port: 8080
+      - name: filter-state-log
+        envoyFileAccessLog:
+          path: /dev/stdout
+          logFormat:
+            text: "%REQ(X-ENVOY-ORIGINAL-PATH?:PATH)% %FILTER_STATE(upstream_peer)% %FILTER_STATE(downstream_peer)%\n"
+      - name: otel
+        envoyOtelAls:
+          service: otel-collector.monitoring.svc.cluster.local
+          port: 4317
+    defaultProviders:
+      accessLogging:
+        - filter-state-log
+      metrics:
+        - prometheus
+    defaultConfig:
+      proxyMetadata:
+        PEER_METADATA_DISCOVERY: "true"
+  values:
+    pilot:
+      env:
+        PILOT_DISABLE_MX_ALPN: "true"
