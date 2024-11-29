@@ -1,0 +1,23 @@
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: require-jwt-for-all
+  namespace: istio-system
+spec:
+  rules:
+    - from:
+        - source:
+            requestPrincipals: ["*"]
+---
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: require-jwt
+  namespace: istio-system
+spec:
+  rules:
+    - from:
+        - source:
+            principals:
+              - "cluster.local/ns/default/sa/sleep"
+              - "cluster.local/ns/backend/sa/backend"
