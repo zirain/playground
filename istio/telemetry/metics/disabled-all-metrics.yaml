@@ -8,7 +8,8 @@ spec:
     - overrides:
         - disabled: true
           match:
-            metric: ALL_METRICS
+            metric: REQUEST_SIZE
+            # metric: ALL_METRICS
             mode: CLIENT_AND_SERVER
       providers:
         - name: prometheus
