@@ -1,0 +1,30 @@
+apiVersion: telemetry.istio.io/v1alpha1
+kind: Telemetry
+metadata:
+  name: custom-tags-1-23
+  namespace: istio-system
+spec:
+  metrics:
+    - overrides:
+        - match:
+            metric: ALL_METRICS
+            mode: CLIENT_AND_SERVER
+          tagOverrides:
+            x_user_email:
+              value: |
+                'x-user-email' in request.headers ? request.headers['x-user-email'] : 'empty'
+        - match:
+            metric: ALL_METRICS
+            mode: CLIENT
+            x_added_tag:
+              value: |
+                upstream_peer.workload_name
+        - match:
+            metric: ALL_METRICS
+            mode: SERVER
+          tagOverrides:
+            x_added_tag:
+              value: |
+                downstream_peer.workload_name
+      providers:
+        - name: prometheus
