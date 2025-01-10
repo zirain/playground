@@ -10,6 +10,7 @@ spec:
             metric: ALL_METRICS
             mode: CLIENT
           tagOverrides:
+            # For TCP, upstream_peer is not available in `filter_state`, so we use `upstream_filter_state`
             upstream_role:
               value: |
                 has(filter_state.upstream_peer) ? filter_state.upstream_peer.labels["role"] : upstream_filter_state.upstream_peer.labels["role"]
