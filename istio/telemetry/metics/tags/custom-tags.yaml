@@ -10,13 +10,14 @@ spec:
             metric: ALL_METRICS
             mode: CLIENT
           tagOverrides:
-            destination_x:
-              value: filter_state.upstream_peer.app
+            upstream_role:
+              value: |
+                has(filter_state.upstream_peer) ? filter_state.upstream_peer.labels["role"] : upstream_filter_state.upstream_peer.labels["role"]
         - match:
             metric: ALL_METRICS
             mode: SERVER
           tagOverrides:
-            source_x:
-              value: filter_state.downstream_peer.app
+            downstream_role:
+              value: filter_state.downstream_peer.labels["role"]
       providers:
         - name: prometheus
