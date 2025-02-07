@@ -4,10 +4,14 @@ metadata:
   name: my-opa-authz
   namespace: istio-system
 spec:
-  selector:
-    matchLabels:
-      ext-authz: enabled
+  # selector:
+  #   matchLabels:
+  #     ext-authz: enabled
   action: CUSTOM
   provider:
     name: "opa.local"
-  rules: [{}]
+  rules:
+    - to:
+        - operation:
+            paths: ["/*"]
+            methods: ["GET", "POST", "PUT", "DELETE"]
