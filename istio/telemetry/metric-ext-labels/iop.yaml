@@ -1,0 +1,7 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+spec:
+  values:
+    pilot:
+      env:
+        PILOT_MX_ADDITIONAL_LABELS: "role"
