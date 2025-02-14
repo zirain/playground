@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/google/cel-go/cel"
+	"sigs.k8s.io/yaml"
 )
 
 func main() {
@@ -22,6 +23,7 @@ func celDemo1() {
 	env, _ := cel.NewEnv()
 
 	celTexts := []string{
+		"xds.node.id == \"node_name\"",
 		"response.code >= 500", // valid
 		"code >= 500",          // valid
 		"code == 200",          // valid
@@ -29,10 +31,14 @@ func celDemo1() {
 	}
 
 	for _, txt := range celTexts {
-		_, issue := env.Parse(txt)
+		ast, issue := env.Parse(txt)
 		if issue.Err() != nil {
 			fmt.Printf("cel parse failed. txt: %s err: %v \n", txt, issue.Err())
 			return
+		} else {
+			expr, _ := cel.AstToParsedExpr(ast)
+			out, _ := yaml.Marshal(expr.GetExpr())
+			fmt.Println(string(out))
 		}
 	}
 

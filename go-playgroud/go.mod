@@ -31,6 +31,7 @@ require (
 	google.golang.org/grpc v1.62.1
 	google.golang.org/grpc/examples v0.0.0-20231031004122-b82468a3462e
 	istio.io/istio v0.0.0-20231031024527-7aa04ee418cd
+	sigs.k8s.io/yaml v1.3.0
 )
 
 require (
