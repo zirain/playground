@@ -1,0 +1,17 @@
+name: nighthawk
+
+on:
+  push:
+    branches:
+      - "master"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build Conatiner
+        run: docker build -f envoy/nighthawk/Dockerfile -t ghcr.io/zirain/nighthawk-dev:latest .
+      - name: Build
+        run: docker run ghcr.io/zirain/nighthawk-dev:latest nighthawk_client --help
