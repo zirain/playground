@@ -1,0 +1,29 @@
+apiVersion: networking.istio.io/v1
+kind: WorkloadEntry
+metadata:
+  name: httpbin-we
+spec:
+  address: httpbin.org
+  labels:
+    app: httpbin-org
+  # ports:
+  #   http: 8000
+---
+apiVersion: networking.istio.io/v1
+kind: ServiceEntry
+metadata:
+  name: httpbin
+spec:
+  exportTo:
+    - "*"
+  hosts:
+    - httpbin.org
+  location: MESH_EXTERNAL
+  ports:
+    - name: http
+      number: 80
+      protocol: HTTP
+  resolution: DNS
+  workloadSelector:
+    labels:
+      app: httpbin-org
