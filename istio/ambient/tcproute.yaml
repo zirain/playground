@@ -1,0 +1,33 @@
+apiVersion: gateway.networking.k8s.io/v1alpha2
+kind: TCPRoute
+metadata:
+  name: tcp-route
+spec:
+  parentRefs:
+    - kind: ServiceEntry
+      group: networking.istio.io
+      name: httpbin
+  rules:
+    - backendRefs:
+        - name: httpbin.org
+          group: networking.istio.io
+          kind: Hostname
+          port: 80
+---
+apiVersion: networking.istio.io/v1
+kind: ServiceEntry
+metadata:
+  name: httpbin-org
+  labels:
+    istio.io/use-waypoint: waypoint
+spec:
+  exportTo:
+    - "*"
+  hosts:
+    - httpbin.org
+  location: MESH_EXTERNAL
+  ports:
+    - name: tcp
+      number: 80
+      protocol: TCP
+  resolution: DNS

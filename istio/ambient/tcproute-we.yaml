@@ -1,0 +1,48 @@
+apiVersion: gateway.networking.k8s.io/v1alpha2
+kind: TCPRoute
+metadata:
+  name: tcp-route
+spec:
+  parentRefs:
+    - kind: ServiceEntry
+      group: networking.istio.io
+      name: httpbin-local
+  rules:
+    - backendRefs:
+        - name: httpbin.local
+          group: networking.istio.io
+          kind: Hostname
+          port: 8000
+---
+apiVersion: networking.istio.io/v1
+kind: WorkloadEntry
+metadata:
+  name: httpbin-we
+spec:
+  # address: 192.168.4.124
+  address: httpbin.local # can we use fqdn here?
+  labels:
+    app: httpbin-local
+  # ports:
+  #   http: 8000
+---
+apiVersion: networking.istio.io/v1
+kind: ServiceEntry
+metadata:
+  name: httpbin-local
+  # labels:
+  #   istio.io/use-waypoint: waypoint
+spec:
+  exportTo:
+    - "*"
+  hosts:
+    - httpbin.local
+  location: MESH_EXTERNAL
+  ports:
+    - name: tcp
+      number: 8000
+      protocol: TCP
+  resolution: DNS
+  workloadSelector:
+    labels:
+      app: httpbin-local
