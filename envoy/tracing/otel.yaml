@@ -58,6 +58,8 @@ static_resources:
                           cluster_name: otel-collector
                         timeout: 0.250s
                       service_name: envoy-1
+                  # randomSampling:
+                  #   value: 0.05
                 # tracing:
                 #   provider:
                 #     name: envoy.tracers.zipkin
