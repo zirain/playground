@@ -1,10 +1,14 @@
 # Istio Ambient Mode
 
+```shell
+istioctl -f iop.yaml -y
 
+kubectl apply -f apps/http
+
+kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.1/standard-install.yaml
+
+```
 
 ```shell
-HUB=ghr.io/zirain TAG=ambient make docker.pilot docker.proxyv2 docker.install-cni && kind load docker-image ghr.io/zirain/pilot:ambient --name ambient && kind load docker-image ghr.io/zirain/proxyv2:ambient --name ambient && kind load docker-image ghr.io/zirain/install-cni:ambient --name ambient 
-
-out/linux_amd64/istioctl install --kubeconfig /root/.kube/istio-ambient.config  --set hub=ghr.io/zirain --set tag=ambient --set profile=ambient -f /root/go/src/playground/istio/ambient/iop.yaml
-
+kubectl label namespace default istio.io/dataplane-mode=ambient
 ```

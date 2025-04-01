@@ -1,0 +1,82 @@
+apiVersion: networking.istio.io/v1beta1
+kind: ProxyConfig
+metadata:
+  name: disable-hbone
+spec:
+  selector:
+    matchLabels:
+      gateway.networking.k8s.io/gateway-name: simple-http-waypoint
+  environmentVariables:
+    ISTIO_META_DISABLE_HBONE_SEND: "true"
+---
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: Gateway
+metadata:
+  name: simple-http-waypoint
+  labels:
+    istio.io/dataplane-mode: ambient
+  annotations:
+    networking.istio.io/service-type: ClusterIP
+spec:
+  gatewayClassName: istio
+  listeners:
+    - name: httpbin-fqdn
+      hostname: httpbin.default.svc.cluster.local
+      port: 8000
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: httpbin-svc
+      hostname: httpbin.default.svc
+      port: 8000
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: httpbin-namespace
+      hostname: httpbin.default
+      port: 8000
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: httpbin-short
+      hostname: httpbin
+      port: 8000
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+    # HACK:zTunnel currently expects the HBONE port to always be on the Waypoint's Service
+    # This will be fixed in future PRs to both istio and zTunnel.
+    - name: fake-hbone-port
+      port: 15008
+      protocol: TCP
+---
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: HTTPRoute
+metadata:
+  name: httpbin-httproute
+spec:
+  parentRefs:
+    - name: simple-http-waypoint
+  hostnames:
+    - httpbin.default.svc.cluster.local
+    - httpbin.default.svc
+    - httpbin.default
+    - httpbin
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      filters:
+        - type: ResponseHeaderModifier
+          responseHeaderModifier:
+            add:
+              - name: traversed-waypoint
+                value: simple-http-gateway
+      backendRefs:
+        - name: httpbin
+          port: 8000
