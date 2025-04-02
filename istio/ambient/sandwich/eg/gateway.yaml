@@ -1,0 +1,101 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: eg
+spec:
+  controllerName: gateway.envoyproxy.io/gatewayclass-controller
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyProxy
+metadata:
+  name: ingress
+spec:
+  # routingType: Service # Send to service instead of endpoint
+  provider:
+    kubernetes:
+      envoyService:
+        type: ClusterIP
+        patch:
+          type: StrategicMerge
+          value:
+            spec:
+              ports:
+                # HACK:zTunnel currently expects the HBONE port to always be on the Waypoint's Service
+                # This will be fixed in future PRs to both istio and zTunnel.
+                - name: fake-hbone-port
+                  port: 15008
+                  protocol: TCP
+                  targetPort: 15008
+    type: Kubernetes
+---
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: Gateway
+metadata:
+  name: eg-http-waypoint
+  labels:
+    istio.io/dataplane-mode: ambient
+  annotations:
+    networking.istio.io/service-type: ClusterIP
+spec:
+  gatewayClassName: eg
+  infrastructure:
+    parametersRef:
+      group: gateway.envoyproxy.io
+      kind: EnvoyProxy
+      name: ingress
+  listeners:
+    - name: httpbin-fqdn
+      hostname: httpbin.default.svc.cluster.local
+      port: 8000
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: httpbin-svc
+      hostname: httpbin.default.svc
+      port: 8000
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: httpbin-namespace
+      hostname: httpbin.default
+      port: 8000
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: httpbin-short
+      hostname: httpbin
+      port: 8000
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+---
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: HTTPRoute
+metadata:
+  name: httpbin-httproute
+spec:
+  parentRefs:
+    - name: eg-http-waypoint
+  hostnames:
+    - httpbin.default.svc.cluster.local
+    - httpbin.default.svc
+    - httpbin.default
+    - httpbin
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      filters:
+        - type: ResponseHeaderModifier
+          responseHeaderModifier:
+            add:
+              - name: traversed-waypoint
+                value: eg-http-gateway
+      backendRefs:
+        - name: httpbin
+          port: 8000
