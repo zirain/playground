@@ -5,11 +5,12 @@ set -euo pipefail
 # Setup default values
 CLUSTER_NAME=${CLUSTER_NAME:-"envoy-gateway"}
 METALLB_VERSION=${METALLB_VERSION:-"v0.13.10"}
-KIND_NODE_TAG=${KIND_NODE_TAG:-"v1.31.0"}
+KIND_NODE_TAG=${KIND_NODE_TAG:-"v1.32.0"}
 RESITRY_MIRROR=${RESITRY_MIRROR:-"192.168.4.146:5000"}
 ENABLE_RESITRY_MIRROR=${ENABLE_RESITRY_MIRROR:-"true"}
 IP_FAMILY=${IP_FAMILY:-"ipv4"}
 IP_SPACE=${IPSPACE:-"255"}
+NUM_WORKERS=${NUM_WORKERS:-""}
 
 if [[ "${IP_FAMILY}" != "ipv4" && "${IP_FAMILY}" != "ipv6" && "${IP_FAMILY}" != "dual" ]]; then
   echo "Invalid IP_FAMILY: ${IP_FAMILY}. Must be ipv4, ipv6 or dual"
@@ -24,6 +25,14 @@ if [[ "${IP_FAMILY}" == "ipv6" || "${IP_FAMILY}" == "dual" ]]; then
   fi
 fi
 
+NODES_CFG=""
+if [[ -n "${NUM_WORKERS}" ]]; then
+NODES_CFG="nodes:"
+NODES_CFG+=$(printf "\n%s" "- role: control-plane")
+for _ in $(seq 1 "${NUM_WORKERS}"); do
+  NODES_CFG+=$(printf "\n%s" "- role: worker")
+done
+fi
 
 MIRROR_CFG=""
 if [[ "${ENABLE_RESITRY_MIRROR}" == "true" ]]; then
@@ -46,10 +55,7 @@ apiVersion: kind.x-k8s.io/v1alpha4
 networking:
   ipFamily: ${IP_FAMILY}
   ${API_SERVER_ADDRESS}
-nodes:
-- role: control-plane
-- role: worker
-- role: worker
+${NODES_CFG}
 containerdConfigPatches:
 - |-
   ${MIRROR_CFG}
