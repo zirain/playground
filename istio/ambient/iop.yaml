@@ -2,6 +2,31 @@ apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 spec:
   profile: ambient
+  values:
+    global:
+      variant: distroless
+    cni:
+      # do not install CNI on control plane
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: NotIn
+                    values:
+                      - envoy-gateway-control-plane
+    ztunnel:
+      # do not install ztunnel on control plane
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: NotIn
+                    values:
+                      - envoy-gateway-control-plane
   meshConfig:
     accessLogFile: /dev/stdout
     defaultConfig:
@@ -18,4 +43,4 @@ spec:
       metrics:
         - prometheus
       tracing:
-        - otel-tracing
+        # - otel-tracing
