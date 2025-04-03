@@ -25,6 +25,7 @@ kind: Service
 metadata:
   name: httpbin
   labels:
+    istio.io/use-waypoint: simple-http-waypoint
     app: httpbin
     service: httpbin
 spec:
