@@ -1,0 +1,76 @@
+# kubectl exec deploy/sleep -- curl https://api.github.com/users/kennethreitz
+---
+apiVersion: networking.istio.io/v1
+kind: ServiceEntry
+metadata:
+  name: github-api
+spec:
+  hosts:
+    - api.github.com
+  location: MESH_EXTERNAL
+  ports:
+    - number: 443
+      name: https
+      protocol: TLS
+  resolution: DNS
+---
+apiVersion: networking.istio.io/v1
+kind: Gateway
+metadata:
+  name: istio-egressgateway
+spec:
+  selector:
+    istio: egressgateway
+  servers:
+    - port:
+        number: 443
+        name: tls
+        protocol: TLS
+      hosts:
+        - api.github.com
+      tls:
+        mode: PASSTHROUGH
+---
+apiVersion: networking.istio.io/v1
+kind: DestinationRule
+metadata:
+  name: egressgateway-for-github
+spec:
+  host: istio-egressgateway.istio-system.svc.cluster.local
+  subsets:
+    - name: github
+---
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: github-through-egress-gateway
+spec:
+  hosts:
+    - api.github.com
+  gateways:
+    - istio-egressgateway
+    - mesh
+  tls:
+    - match:
+        - gateways:
+            - mesh
+          port: 443
+          sniHosts:
+            - api.github.com
+      route:
+        - destination:
+            host: istio-egressgateway.istio-system.svc.cluster.local
+            # subset: github
+            port:
+              number: 443
+    - match:
+        - gateways:
+            - istio-egressgateway
+          port: 443
+          sniHosts:
+            - api.github.com
+      route:
+        - destination:
+            host: api.github.com
+            port:
+              number: 443
