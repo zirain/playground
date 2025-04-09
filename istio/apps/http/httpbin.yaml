@@ -49,7 +49,7 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/componentLogLevel: filter:trace,misc:error
-        sidecar.istio.io/proxyImage: docker.io/istio/proxyv2:1.24.3
+        # sidecar.istio.io/proxyImage: docker.io/istio/proxyv2:1.24.3
       labels:
         app: httpbin
         version: v1

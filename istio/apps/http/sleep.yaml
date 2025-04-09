@@ -47,7 +47,8 @@ spec:
     metadata:
       annotations:
         sidecar.istio.io/componentLogLevel: filter:trace,misc:error
-        sidecar.istio.io/statsCompression: "gzip"
+        sidecar.istio.io/proxyImage: docker.io/istio/proxyv2:1.21.1
+        # sidecar.istio.io/statsCompression: "gzip"
       labels:
         app: sleep
         role: sleep
