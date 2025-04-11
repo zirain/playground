@@ -1,0 +1,20 @@
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: httpbin
+spec:
+  hosts:
+    - httpbin
+  http:
+    - match:
+        - uri:
+            prefix: /
+      retries:
+        attempts: 5
+        perTryTimeout: 2s
+        retryOn: "503,504,reset"
+      route:
+        - destination:
+            host: httpbin
+            port:
+              number: 8000
