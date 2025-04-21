@@ -14,7 +14,7 @@ ISTIO_MC_MODE=${ISTIO_MC_MODE:-"primary-remote"}
 ISTIO_NETWORK_MODE=${ISTIO_NETWORK_MODE:-"flat"}
 OS="$(uname)"
 
-KIND_CFG_PREFIX="${BASE_DIR}/${ISTIO_MC_MODE}/${ISTIO_NETWORK_MODE}/kind-configs"
+KIND_CFG_PREFIX="${BASE_DIR}/${ISTIO_MC_MODE}/kind-configs"
 KIND_CFG_FILES=$(ls ${KIND_CFG_PREFIX})
 
 KUBECONFIG_BASE=${KUBECONFIG_BASE:-".kube"}
@@ -60,7 +60,7 @@ for file in ${KIND_CFG_FILES[@]}; do
   done
 
   echo "Starting metallb deployment in cluster ${cluster_name}"
-  kubectl apply -f "${BASE_DIR}/metallb/metallb-native.yaml" --kubeconfig "${KUBECONFIG_BASE}/${CLUSTER_NAME}"
+  kubectl apply -f "${BASE_DIR}/addons/metallb-native.yaml" --kubeconfig "${KUBECONFIG_BASE}/${CLUSTER_NAME}"
   kubectl wait --for=condition=available --timeout=90s deployment/controller -n metallb-system --kubeconfig "${KUBECONFIG_BASE}/${CLUSTER_NAME}"
   kubectl apply --kubeconfig "${KUBECONFIG_BASE}/${CLUSTER_NAME}" -f - <<EOF >/dev/null 2>&1
 apiVersion: metallb.io/v1beta1
