@@ -20,6 +20,10 @@ install-app:
 	@echo "Installing Applications..."
 	@scripts/install-app.sh
 
+.PHONY: clean
+clean: delete-clusters
+	@rm -rf ./.kube
+
 .PHONY: help
 help:  ## Display this help
 	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} \

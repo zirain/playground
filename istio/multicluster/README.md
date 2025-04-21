@@ -1,14 +1,24 @@
+# Istio Multicluster
 
-# Multicluster with istio
+## Primary remote 
 
 
+### Same network
+
+```shell
+make create-clusters connect-clusters install-istio install-app
+```
 
 
-## Switch context 
+### Different networks
 
-```console
-export KUBECONFIG='/root/.kube/istio-primary.config'
+```shell
+ISTIO_NETWORK_MODE=non-flat make create-clusters connect-clusters install-istio install-app
+```
 
-export KUBECONFIG='/root/.kube/istio-remotes.config'
-kubectl config  use-context remote1
+
+## Cleanup
+
+```shell
+make clean
 ```

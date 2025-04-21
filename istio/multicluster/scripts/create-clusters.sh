@@ -50,7 +50,7 @@ for file in ${KIND_CFG_FILES[@]}; do
   file_name=$(basename ${file})
   file_full_path="${KIND_CFG_PREFIX}/${file}"
   cluster_name="${file_name%.*}"
-  kind create cluster --name "${cluster_name}" --image "kindest/node:${KIND_NODE_TAG}" --config "${file_full_path}"
+  kind create cluster --name "${cluster_name}" --image "kindest/node:${KIND_NODE_TAG}" --config "${file_full_path}" --kubeconfig "${KUBECONFIG_BASE}/${cluster_name}"
   # Wait for kind cluster ready
   while true; do
     if check_cluster_ready "${cluster_name}"; then
