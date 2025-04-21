@@ -20,8 +20,11 @@ install-app:
 	@echo "Installing Applications..."
 	@scripts/install-app.sh
 
-.PHONY: clean
-clean: delete-clusters
+.PHONY: up
+up: create-clusters connect-clusters install-istio install-app
+
+.PHONY: down
+down: delete-clusters
 	@rm -rf ./.kube
 
 .PHONY: help
