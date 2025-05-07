@@ -1,0 +1,58 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: eg
+spec:
+  controllerName: gateway.envoyproxy.io/gatewayclass-controller
+  parametersRef:
+    group: gateway.envoyproxy.io
+    kind: EnvoyProxy
+    name: proxy-config
+    namespace: envoy-gateway-system
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: eg
+spec:
+  gatewayClassName: eg
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyProxy
+metadata:
+  name: proxy-config
+  namespace: envoy-gateway-system
+spec:
+  provider:
+    type: Kubernetes
+    kubernetes:
+      envoyDeployment:
+        container:
+          # use the proxy image from Istio
+          image: istio/proxyv2:1.25.2
+---
+# apiVersion: gateway.envoyproxy.io/v1alpha1
+# kind: EnvoyPatchPolicy
+# metadata:
+#   name: istio-stats-filter
+# spec:
+#   targetRef:
+#     group: gateway.networking.k8s.io
+#     kind: Gateway
+#     name: eg
+#   type: JSONPatch
+#   jsonPatches:
+#     - type: "type.googleapis.com/envoy.config.listener.v3.Listener"
+#       # The listener name is of the form <GatewayNamespace>/<GatewayName>/<GatewayListenerName>
+#       name: default/eg/http
+#       operation:
+#         op: add
+#         path: "/default_filter_chain/filters/0/typed_config/http_filters/0"
+#         value:
+#           name: "istio.stats"
+#           typed_config:
+#             "@type": "type.googleapis.com/stats.PluginConfig"
