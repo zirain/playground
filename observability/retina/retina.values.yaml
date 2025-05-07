@@ -1,0 +1,6 @@
+image:
+  tag: v0.0.32
+operator:
+  tag: v0.0.32
+logLevel: info
+enabledPlugin_linux: dropreason,packetforward,linuxutil,dns

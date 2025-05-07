@@ -1,0 +1,29 @@
+image:
+  tag: v0.0.32
+operator:
+  enabled: true
+  repository: ghcr.io/microsoft/retina/retina-operator
+  tag: v0.0.32
+agent:
+  enabled: true
+  repository: ghcr.io/microsoft/retina/retina-agent
+  tag: v0.0.32
+  init:
+    enabled: true
+    repository: ghcr.io/microsoft/retina/retina-init
+    tag: v0.0.32
+os:
+  windows: true
+logLevel: info
+hubble:
+  tls:
+    enabled: false
+    auto:
+      enabled: false
+      method: cronJob
+      certValidityDuration: 1
+      schedule: "*/10 * * * *"
+  relay:
+    tls:
+      server:
+        enabled: false
