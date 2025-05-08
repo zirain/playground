@@ -1,0 +1,18 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+spec:
+  meshConfig:
+    enableTracing: true
+    defaultConfig:
+      tracing:
+        openCensusAgent:
+          address: "dns:opentelemetry-collector.istio-system.svc:55678"
+          context: [B3]
+    extensionProviders:
+      - name: dynatrace
+        opentelemetry:
+          service: arp66353.dev.dynatracelabs.com
+          port: 443
+          http:
+            timeout: 10s
+            path: "v1/traces"

@@ -1,0 +1,13 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: dynatrace-operator-se
+spec:
+  hosts:
+    - arp66353.dev.dynatracelabs.com
+  ports:
+    - name: https-port
+      number: 443
+      protocol: HTTPS
+  resolution: DNS
+  location: MESH_EXTERNAL

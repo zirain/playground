@@ -1,0 +1,55 @@
+- altStatName: outbound|443||arp66353.dev.dynatracelabs.com;
+  circuitBreakers:
+    thresholds:
+    - maxConnections: 4294967295
+      maxPendingRequests: 4294967295
+      maxRequests: 4294967295
+      maxRetries: 4294967295
+      trackRemaining: true
+  commonLbConfig: {}
+  connectTimeout: 10s
+  dnsJitter: 0.100s
+  dnsLookupFamily: V4_ONLY
+  dnsRefreshRate: 60s
+  filters:
+  - name: istio.metadata_exchange
+    typedConfig:
+      '@type': type.googleapis.com/udpa.type.v1.TypedStruct
+      typeUrl: type.googleapis.com/envoy.tcp.metadataexchange.config.MetadataExchange
+      value:
+        enable_discovery: true
+        protocol: istio-peer-exchange
+  lbPolicy: LEAST_REQUEST
+  loadAssignment:
+    clusterName: outbound|443||arp66353.dev.dynatracelabs.com
+    endpoints:
+    - lbEndpoints:
+      - endpoint:
+          address:
+            socketAddress:
+              address: arp66353.dev.dynatracelabs.com
+              portValue: 443
+        loadBalancingWeight: 1
+        metadata:
+          filterMetadata:
+            istio:
+              workload: ;;;;
+      loadBalancingWeight: 1
+      locality: {}
+  metadata:
+    filterMetadata:
+      istio:
+        external: true
+        services:
+        - host: arp66353.dev.dynatracelabs.com
+          name: arp66353.dev.dynatracelabs.com
+          namespace: default
+  name: outbound|443||arp66353.dev.dynatracelabs.com
+  respectDnsTtl: true
+  type: STRICT_DNS
+  typedDnsResolverConfig:
+    name: envoy.network.dns_resolver.cares
+    typedConfig:
+      '@type': type.googleapis.com/envoy.extensions.network.dns_resolver.cares.v3.CaresDnsResolverConfig
+      udpMaxQueries: 100
+
