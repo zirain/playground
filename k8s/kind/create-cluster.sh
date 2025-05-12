@@ -2,9 +2,10 @@
 
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 # Setup default values
 CLUSTER_NAME=${CLUSTER_NAME:-"envoy-gateway"}
-METALLB_VERSION=${METALLB_VERSION:-"v0.13.10"}
 KIND_NODE_TAG=${KIND_NODE_TAG:-"v1.32.0"}
 RESITRY_MIRROR=${RESITRY_MIRROR:-"192.168.4.146:5000"}
 ENABLE_RESITRY_MIRROR=${ENABLE_RESITRY_MIRROR:-"true"}
@@ -41,6 +42,8 @@ if [[ "${ENABLE_RESITRY_MIRROR}" == "true" ]]; then
     endpoint = [\"http://${RESITRY_MIRROR}\", \"https://registry-1.docker.io\"]
   [plugins.\"io.containerd.grpc.v1.cri\".registry.mirrors.\"quay.io\"]
     endpoint = [\"http://${RESITRY_MIRROR}\", \"https://quay.io\"]
+  [plugins.\"io.containerd.grpc.v1.cri\".registry.mirrors.\"ghcr.io\"]
+    endpoint = [\"http://${RESITRY_MIRROR}\", \"https://ghcr.io\"]
 "
 fi
 
@@ -77,7 +80,7 @@ EOF
 fi
 
 ## Install MetalLB.
-kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/"${METALLB_VERSION}"/config/manifests/metallb-native.yaml
+kubectl apply -f "${SCRIPT_DIR}/metallb-native.yaml"
 needCreate="$(kubectl get secret -n metallb-system memberlist --no-headers --ignore-not-found -o custom-columns=NAME:.metadata.name)"
 if [ -z "$needCreate" ]; then
     kubectl create secret generic -n metallb-system memberlist --from-literal=secretkey="$(openssl rand -base64 128)"
