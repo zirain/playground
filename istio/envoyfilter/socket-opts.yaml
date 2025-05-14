@@ -1,0 +1,34 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: istio-gateway-downstream-tcp-keep-alive
+  namespace: istio-system
+spec:
+  configPatches:
+    - applyTo: LISTENER
+      match:
+        context: GATEWAY
+      patch:
+        operation: MERGE
+        value:
+          socket_options:
+            - description: "Enable keep-alive" # Socket level options.
+              int_value: 1 # A nonzero value means "yes".
+              level: 1 # Means socket level options.
+              name: 9 # Means the keep-alive parameter.
+              state: STATE_PREBIND
+            - description: "Idle time before first keep-alive probe is sent" # TCP protocol
+              int_value: 60 # Seconds
+              level: 6 # IPPROTO_TCP
+              name: 4 # TCP_KEEPIDLE parameter - The time (in seconds) the connection needs to remain idle before TCP starts sending keepalive probes.
+              state: STATE_PREBIND
+            - description: "Keep-alive interval" # TCP protocol
+              int_value: 20 # Seconds
+              level: 6 # IPPROTO_TCP
+              name: 5 # The TCP_KEEPINTVL parameter - The time (in seconds) between individual keepalive probes.
+              state: STATE_PREBIND
+            - description: "Keep-alive probes count"
+              int_value: 3 # Number of failed probes.
+              level: 6 # IPPROTO_TCP
+              name: 6 # The TCP_KEEPCNT parameter - The maximum number of keepalive probes TCP should send before dropping the connection.
+              state: STATE_PREBIND
