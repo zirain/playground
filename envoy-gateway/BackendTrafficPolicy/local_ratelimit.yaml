@@ -1,0 +1,142 @@
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: BackendTrafficPolicy
+metadata:
+  name: ratelimit-specific-user
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: http-ratelimit-specific-user
+  rateLimit:
+    type: Local
+    local:
+      rules:
+        - limit:
+            requests: 10
+            unit: Hour
+        - clientSelectors:
+            - headers:
+                - name: x-user-id
+                  value: john
+          limit:
+            requests: 3
+            unit: Hour
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: BackendTrafficPolicy
+metadata:
+  name: ratelimit-all-traffic
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: http-ratelimit-all-traffic
+  retry:
+    numRetries: 5
+    perRetry:
+      backOff:
+        baseInterval: 100ms
+        maxInterval: 10s
+      timeout: 250ms
+    retryOn:
+      httpStatusCodes:
+        - 500
+        - 429
+      triggers:
+        - connect-failure
+        - retriable-status-codes
+  rateLimit:
+    type: Local
+    local:
+      rules:
+        - limit:
+            requests: 3
+            unit: Hour
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: http-ratelimit-specific-user
+spec:
+  parentRefs:
+    - name: eg
+  rules:
+    - backendRefs:
+        - name: infra-backend-v1
+          port: 8080
+      matches:
+        - path:
+            type: Exact
+            value: /ratelimit-specific-user
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: http-ratelimit-all-traffic
+spec:
+  parentRefs:
+    - name: eg
+  rules:
+    - backendRefs:
+        - name: infra-backend-v1
+          port: 8080
+      matches:
+        - path:
+            type: Exact
+            value: /ratelimit-all-traffic
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: http-no-ratelimit
+spec:
+  parentRefs:
+    - name: eg
+  rules:
+    - backendRefs:
+        - name: infra-backend-v1
+          port: 8080
+      matches:
+        - path:
+            type: Exact
+            value: /no-ratelimit
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: BackendTrafficPolicy
+metadata:
+  name: ratelimit-invert-match
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: http-ratelimit-invert-match
+  rateLimit:
+    type: Local
+    local:
+      rules:
+        - clientSelectors:
+            - headers:
+                - name: x-user-id
+                  value: one
+                - name: x-org-id
+                  value: test
+                  invert: true
+          limit:
+            requests: 3
+            unit: Hour
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: http-ratelimit-invert-match
+spec:
+  parentRefs:
+    - name: eg
+  rules:
+    - backendRefs:
+        - name: infra-backend-v1
+          port: 8080
+      matches:
+        - path:
+            type: Exact
+            value: /ratelimit-invert-match
