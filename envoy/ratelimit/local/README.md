@@ -1,5 +1,5 @@
 
-envoy -c envoy/ratelimit/basic.yaml --component-log-level filter:debug,router:debug
+envoy -c envoy/ratelimit/local/basic.yaml --component-log-level filter:debug,router:debug
 
 envoy -c envoy/ratelimit/multi-route.yaml --component-log-level filter:debug,router:debug
 
