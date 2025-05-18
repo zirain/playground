@@ -3,7 +3,7 @@ CLUSTER_NAME 	:= envoy-gateway
 
 .PHNOY: create-cluster
 create-cluster:
-	@k8s/kind/create-cluster.sh
+	@NUM_WORKERS=$(NUM_WORKERS) k8s/kind/create-cluster.sh
 
 .PHNOY: delete-cluster
 delete-cluster:
