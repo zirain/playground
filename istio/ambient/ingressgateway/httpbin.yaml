@@ -27,7 +27,8 @@ metadata:
   labels:
     istio.io/use-waypoint: simple-http-waypoint
     istio.io/use-waypoint-namespace: default
-    # istio.io/ingress-use-waypoint: true
+    # Uncomment following to use waypoint
+    # istio.io/ingress-use-waypoint: "true" 
     app: httpbin
     service: httpbin
 spec:

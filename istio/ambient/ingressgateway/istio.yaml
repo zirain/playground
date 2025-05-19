@@ -1,7 +1,7 @@
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
-  name: httpbin-gateway    
+  name: httpbin-gateway
 spec:
   gatewayClassName: istio
   listeners:
@@ -10,7 +10,7 @@ spec:
       protocol: HTTP
       allowedRoutes:
         namespaces:
-          from: Same
+          from: All
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -23,7 +23,31 @@ spec:
     - matches:
         - path:
             type: PathPrefix
+            value: /get
+      backendRefs:
+        - name: httpbin
+          namespace: not-ambient
+          port: 8000
+    - matches:
+        - path:
+            type: PathPrefix
             value: /
       backendRefs:
         - name: httpbin
           port: 8000
+---
+# it's surprised that we need this in Ingress, and not need in Waypoint.
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: ReferenceGrant
+metadata:
+  name: allow-service
+  namespace: not-ambient
+spec:
+  from:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      namespace: default
+  to:
+    - group: ""
+      kind: Service
+      name: httpbin

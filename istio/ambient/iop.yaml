@@ -4,7 +4,7 @@ spec:
   profile: ambient
   values:
     global:
-      variant: distroless
+      variant: ""
     cni:
       # do not install CNI on control plane
       affinity:
