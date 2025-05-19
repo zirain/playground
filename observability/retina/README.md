@@ -13,7 +13,7 @@ curl -sL https://api.github.com/repos/microsoft/retina/releases/latest | jq -r .
 
 ```shell
 helm upgrade --install retina oci://ghcr.io/microsoft/retina/charts/retina \
-    --version v0.0.32 \
+    --version v0.0.33 \
     --namespace kube-system \
     -f retina.values.yaml
 ```
@@ -24,7 +24,7 @@ helm upgrade --install retina oci://ghcr.io/microsoft/retina/charts/retina \
 
 ```shell
 helm upgrade --install retina oci://ghcr.io/microsoft/retina/charts/retina-hubble \
-    --version v0.0.32 \
+    --version v0.0.33 \
     --namespace kube-system \
     -f retina-hubble.values.yaml
 ```

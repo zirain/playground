@@ -1,17 +1,17 @@
 image:
-  tag: v0.0.32
+  tag: 1e26c4d
 operator:
   enabled: true
   repository: ghcr.io/microsoft/retina/retina-operator
-  tag: v0.0.32
+  tag: 1e26c4d
 agent:
   enabled: true
   repository: ghcr.io/microsoft/retina/retina-agent
-  tag: v0.0.32
+  tag: 1e26c4d
   init:
     enabled: true
     repository: ghcr.io/microsoft/retina/retina-init
-    tag: v0.0.32
+    tag: 1e26c4d
 os:
   windows: true
 logLevel: info

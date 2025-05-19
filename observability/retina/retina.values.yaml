@@ -1,6 +1,6 @@
 image:
-  tag: v0.0.32
+  tag: 1e26c4d
 operator:
-  tag: v0.0.32
+  tag: 1e26c4d  # support arm64
 logLevel: info
 enabledPlugin_linux: dropreason,packetforward,linuxutil,dns
