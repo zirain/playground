@@ -13,6 +13,17 @@ for imageName in ${istioImages[@]} ; do
     crane cp "docker.io/istio/${imageName}:${ISTIO_VERSION}-distroless" "${MIRROR_REGISTRY}/istio/${imageName}:${ISTIO_VERSION}-distroless"
 done
 
+bookinfoTag=${BOOKINFO_IMAGE_TAG:-""}
+bookinfoImages=(istio/examples-bookinfo-productpage-v1
+                 istio/examples-bookinfo-details-v1
+                 istio/examples-bookinfo-ratings-v1
+                 istio/examples-bookinfo-reviews-v1
+                 istio/examples-bookinfo-reviews-v2
+                 istio/examples-bookinfo-reviews-v3)
+for imageName in ${bookinfoImages[@]} ; do
+    crane cp "docker.io/${imageName}" "${MIRROR_REGISTRY}/${imageName}:${bookinfoTag}"
+done
+
 golangImages=(golang:1.23.1 golang:1.22.6)
 for imageName in ${golangImages[@]} ; do
     # https://github.com/google/go-containerregistry/issues/2016
