@@ -68,6 +68,10 @@ EOM
 echo "KIND config:"
 echo "${KIND_CFG}"
 
+## Check if kind cluster already exists.
+if kind get clusters | grep -q "${CLUSTER_NAME}"; then
+  echo "Cluster ${CLUSTER_NAME} already exists."
+else
 ## Create kind cluster.
 if [[ -z "${KIND_NODE_TAG}" ]]; then
   cat << EOF | kind create cluster --name "${CLUSTER_NAME}" --config -
@@ -77,6 +81,7 @@ else
   cat << EOF | kind create cluster --image "kindest/node:${KIND_NODE_TAG}" --name "${CLUSTER_NAME}" --config -
 ${KIND_CFG}
 EOF
+fi
 fi
 
 ## Install MetalLB.
