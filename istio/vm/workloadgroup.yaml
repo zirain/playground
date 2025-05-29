@@ -9,4 +9,4 @@ spec:
       app: vm-app
   template:
     serviceAccount: default
-    network: network1
+    network: vm-network

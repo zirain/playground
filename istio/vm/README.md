@@ -12,7 +12,9 @@ cat /var/log/istio/istio.log
 journalctl -u istio -n 10
 
 # Make sure that pod id is accesable from VM.
-curl httpbin.sample.svc:8000/get --resolve "httpbin.sample.svc:80:10.96.220.115"
+curl httpbin.sample.svc:8000/get
+
+curl localhost:15000/config_dump?include_eds > out/dump.json
 ```
 
 

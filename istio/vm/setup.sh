@@ -9,27 +9,28 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 VM_APP=${VM_APP:-"vm-app"}
 VM_NAMESPACE=${VM_NAMESPACE:-"vm-namespace"}
+VM_SERVICE_ACCOUNT=${VM_SERVICE_ACCOUNT:-"default"}
+VM_NETWORK=${VM_NETWORK:-"vm-network"}
 WORK_DIR=${WORK_DIR:-"$(mktemp -d)"}
-SERVICE_ACCOUNT=${SERVICE_ACCOUNT:-"default"}
 CLUSTER_NETWORK=${CLUSTER_NETWORK:-"network1"}
-VM_NETWORK=${VM_NETWORK:-"network1"}
-CLUSTER=${CLUSTER:-"Kubernetes"}
+VM_CLUSTER=${VM_CLUSTER:-"vm-cluster"}
 
 
 # Install Istio
 istioctl install -f "${SCRIPT_DIR}/iop.yaml" -y
 # Install East-West Gateway
 istioctl install -y -f "${SCRIPT_DIR}/eastwest.yaml"
+kubectl label namespace istio-system topology.istio.io/network=${CLUSTER_NETWORK}
 # Expose Istiod service
-kubectl apply -f "${SCRIPT_DIR}/expose-istiod.yaml"
+kubectl apply -f "${SCRIPT_DIR}/expose-istiod.yaml" -n istio-system
 # Create VM namespace
 kubectl create namespace "${VM_NAMESPACE}" || true
-kubectl create serviceaccount "${SERVICE_ACCOUNT}" -n "${VM_NAMESPACE}" || true
+kubectl create serviceaccount "${VM_SERVICE_ACCOUNT}" -n "${VM_NAMESPACE}" || true
 
 
 WORKLOAD_DIR="${SCRIPT_DIR}/out"
 
-istioctl x workload entry configure -f ${SCRIPT_DIR}/workloadgroup.yaml -o "${WORKLOAD_DIR}/" --clusterID "${CLUSTER}"
+istioctl x workload entry configure -f ${SCRIPT_DIR}/workloadgroup.yaml -o "${WORKLOAD_DIR}/" --clusterID "${VM_CLUSTER}"
 
 sudo mkdir -p /etc/certs
 sudo cp "${WORKLOAD_DIR}"/root-cert.pem /etc/certs/root-cert.pem
