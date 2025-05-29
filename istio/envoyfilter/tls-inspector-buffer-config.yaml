@@ -1,0 +1,20 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: tls-inspector-buffer-config
+  namespace: istio-system
+spec:
+  configPatches:
+    - applyTo: LISTENER_FILTER
+      match:
+        context: GATEWAY
+        listener:
+          listenerFilter: envoy.filters.listener.tls_inspector
+          portNumber: 15017
+      patch:
+        operation: REPLACE # MERGE does not work with LISTENER_FILTER
+        value:
+          name: envoy.filters.listener.tls_inspector
+          typed_config:
+            "@type": type.googleapis.com/envoy.extensions.filters.listener.tls_inspector.v3.TlsInspector
+            initialReadBufferSize: 8192
