@@ -1,0 +1,5 @@
+*.env
+*.pem
+istio-token
+out/
+*.deb

@@ -1,0 +1,17 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  name: istio
+spec:
+  meshConfig:
+    accessLogFile: /dev/stdout
+  values:
+    pilot:
+      env:
+        PILOT_ENABLE_WORKLOAD_ENTRY_AUTOREGISTRATION: "true"
+        PILOT_ENABLE_WORKLOAD_ENTRY_HEALTHCHECKS: "true"
+    global:
+      meshID: mesh1
+      multiCluster:
+        clusterName: "Kubernetes"
+      network: "network1"
