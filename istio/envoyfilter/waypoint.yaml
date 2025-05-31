@@ -1,0 +1,50 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: inbound
+spec:
+  # workloadSelector:
+  #   labels:
+  #     gateway.networking.k8s.io/gateway-name: waypoint
+  targetRefs:
+    - name: waypoint
+      kind: Gateway
+      group: gateway.networking.k8s.io
+  configPatches:
+    - applyTo: HTTP_FILTER
+      match:
+        context: SIDECAR_INBOUND
+        listener:
+          filterChain:
+            filter:
+              name: "envoy.filters.network.http_connection_manager"
+              subFilter:
+                name: "envoy.filters.http.router"
+      patch:
+        operation: INSERT_BEFORE
+        value:
+          name: envoy.lua
+          typed_config:
+            "@type": "type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua"
+            inlineCode: |
+              function envoy_on_request(request_handle)
+                request_handle:headers():add("x-lua-inbound", "hello world")
+              end
+    - applyTo: VIRTUAL_HOST
+      match:
+        context: SIDECAR_INBOUND
+      patch:
+        operation: MERGE
+        value:
+          request_headers_to_add:
+            - header:
+                key: x-vhost-inbound
+                value: "hello world"
+    - applyTo: CLUSTER
+      match:
+        context: SIDECAR_INBOUND
+        cluster: {}
+      patch:
+        operation: MERGE
+        value:
+          http2_protocol_options: {}
