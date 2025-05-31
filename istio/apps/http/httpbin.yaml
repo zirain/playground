@@ -50,6 +50,8 @@ spec:
       annotations:
         # sidecar.istio.io/componentLogLevel: filter:trace,misc:error
         # sidecar.istio.io/proxyImage: docker.io/istio/proxyv2:1.24.3
+        # proxy.istio.io/config: |-
+        #   terminationDrainDuration: 15s
       labels:
         app: httpbin
         version: v1

@@ -8,12 +8,16 @@ spec:
   components:
     ingressGateways:
       - name: istio-ingressgateway
-        namespace: istio-ingress
+        namespace: default
         enabled: true
         label:
           # Set a unique label for the gateway. This is required to ensure Gateways
           # can select this workload
           istio: ingressgateway
+        k8s:
+          podAnnotations:
+            proxy.istio.io/config: |
+              terminationDrainDuration: 15s
   values:
     gateways:
       istio-ingressgateway:
