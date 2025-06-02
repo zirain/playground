@@ -1,0 +1,14 @@
+services:
+  encap:
+    image: envoyproxy/envoy-dev:latest
+    ports:
+      - "10000:10000"
+    volumes:
+      - ./encap.yaml:/etc/envoy/envoy.yaml
+  
+  decap:
+    image: envoyproxy/envoy-dev:latest
+    ports:
+      - "10001:10001"
+    volumes:
+      - ./decap.yaml:/etc/envoy/envoy.yaml
