@@ -57,8 +57,9 @@ static_resources:
                       "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
                 http2_protocol_options:
                   allow_connect: true
-                upgrade_configs:
-                  - upgrade_type: CONNECT
+                # we didn't need to configure on HCM
+                # upgrade_configs:
+                #   - upgrade_type: CONNECT
     - name: decap
       internal_listener: {}
       filter_chains:
