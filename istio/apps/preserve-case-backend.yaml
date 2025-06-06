@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: preserve-case
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: preserve-case
+  template:
+    metadata:
+      labels:
+        app: preserve-case
+    spec:
+      containers:
+        - name: preserve-case
+          image: envoyproxy/gateway-preserve-case-backend
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: preserve-case
+spec:
+  selector:
+    app: preserve-case
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000

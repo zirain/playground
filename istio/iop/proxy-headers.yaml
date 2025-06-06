@@ -1,0 +1,8 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+spec:
+  meshConfig:
+    accessLogFile: /dev/stdout
+    defaultConfig:
+      proxyHeaders:
+        preserveHttp1HeaderCase: true
