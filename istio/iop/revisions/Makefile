@@ -1,5 +1,3 @@
-.PHONY: setup cleanup
-
 ISTIOCTL_HOME ?= ~/Codes/istioctl
 
 install-istio:
@@ -9,12 +7,15 @@ install-istio:
 setup-ns:
 	kubectl create ns blue
 	kubectl create ns green
-	kubectl label ns blue istio-discovery=enabled istio.io/rev=blue
-	kubectl label ns green istio-discovery=enabled istio.io/rev=green
+	kubectl label ns blue istio-discovery=blue istio.io/rev=blue
+	kubectl label ns green istio-discovery=green istio.io/rev=green
 
-purge:
+purge-istio:
 	istioctl uninstall --purge -y
 
-cleanup-ns:
-	kubectl delete ns blue
-	kubectl delete ns green
+purge-ns:
+	kubectl delete ns blue --ignore-not-found
+	kubectl delete ns green --ignore-not-found
+
+.PHONY: cleanup
+cleanup: purge-istio purge-ns

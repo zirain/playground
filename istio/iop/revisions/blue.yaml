@@ -9,7 +9,7 @@ spec:
     accessLogFile: /dev/stdout
     discoverySelectors:
       - matchLabels:
-          istio-discovery: enabled
+          istio-discovery: blue
   values:
     pilot:
       env:
