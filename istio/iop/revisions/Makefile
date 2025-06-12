@@ -1,10 +1,10 @@
 ISTIOCTL_HOME ?= ~/Codes/istioctl
 
 install-istio:
-	$(ISTIOCTL_HOME)/istio-1.25.2/bin/istioctl install -f blue.yaml -y
+	$(ISTIOCTL_HOME)/istio-1.25.0/bin/istioctl install -f blue.yaml -y
 	istioctl install -f green.yaml -y
 
-setup-ns:
+install-ns:
 	kubectl create ns blue
 	kubectl create ns green
 	kubectl label ns blue istio-discovery=blue istio.io/rev=blue
@@ -16,6 +16,7 @@ purge-istio:
 purge-ns:
 	kubectl delete ns blue --ignore-not-found
 	kubectl delete ns green --ignore-not-found
+	kubectl delete ns istio-system
 
 .PHONY: cleanup
 cleanup: purge-istio purge-ns
