@@ -4,6 +4,10 @@ install-istio:
 	$(ISTIOCTL_HOME)/istio-1.25.0/bin/istioctl install -f blue.yaml -y
 	istioctl install -f green.yaml -y
 
+install-istio-dev:
+	istioctl-dev install -f blue.yaml -y --set tag=zirain-dev
+	istioctl-dev install -f green.yaml -y --set tag=zirain-dev
+
 install-ns:
 	kubectl create ns blue
 	kubectl create ns green
