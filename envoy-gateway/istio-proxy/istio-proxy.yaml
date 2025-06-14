@@ -33,26 +33,46 @@ spec:
       envoyDeployment:
         container:
           # use the proxy image from Istio
-          image: istio/proxyv2:1.25.2
+          image: istio/proxyv2:1.26.0
 ---
-# apiVersion: gateway.envoyproxy.io/v1alpha1
-# kind: EnvoyPatchPolicy
-# metadata:
-#   name: istio-stats-filter
-# spec:
-#   targetRef:
-#     group: gateway.networking.k8s.io
-#     kind: Gateway
-#     name: eg
-#   type: JSONPatch
-#   jsonPatches:
-#     - type: "type.googleapis.com/envoy.config.listener.v3.Listener"
-#       # The listener name is of the form <GatewayNamespace>/<GatewayName>/<GatewayListenerName>
-#       name: default/eg/http
-#       operation:
-#         op: add
-#         path: "/default_filter_chain/filters/0/typed_config/http_filters/0"
-#         value:
-#           name: "istio.stats"
-#           typed_config:
-#             "@type": "type.googleapis.com/stats.PluginConfig"
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: httpbin
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: eg
+  rules:
+    - backendRefs:
+        - kind: Service
+          name: httpbin
+          port: 8000
+      matches:
+        - path:
+            type: PathPrefix
+            value: /
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyPatchPolicy
+metadata:
+  name: istio-stats-filter
+spec:
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: eg
+  type: JSONPatch
+  jsonPatches:
+    - type: "type.googleapis.com/envoy.config.listener.v3.Listener"
+      # The listener name is of the form <GatewayNamespace>/<GatewayName>/<GatewayListenerName>
+      name: default/eg/http
+      operation:
+        op: add
+        path: "/default_filter_chain/filters/0/typed_config/http_filters/0"
+        value:
+          name: "envoy.filters.http.istio_stats"
+          typedConfig:
+            "@type": "type.googleapis.com/udpa.type.v1.TypedStruct"
+            "type_url": type.googleapis.com/stats.PluginConfig
