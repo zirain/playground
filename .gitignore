@@ -123,3 +123,6 @@ vendor
 
 .bin
 build-log.txt
+
+
+*.pem
