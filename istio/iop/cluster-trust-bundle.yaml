@@ -1,0 +1,12 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+spec:
+  values:
+    pilot:
+      env:
+        ENABLE_CLUSTER_TRUST_BUNDLE_API: true
+  meshConfig:
+    accessLogFile: /dev/stdout
+    defaultConfig:
+      tracing: {}
+    enableTracing: false

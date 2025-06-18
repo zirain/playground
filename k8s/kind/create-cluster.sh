@@ -55,6 +55,11 @@ fi
 KIND_CFG=$(cat <<-EOM
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
+runtimeConfig:
+  "certificates.k8s.io/v1alpha1/clustertrustbundles": "true"
+featureGates:
+  "ClusterTrustBundle": true
+  "ClusterTrustBundleProjection": true
 networking:
   ipFamily: ${IP_FAMILY}
   ${API_SERVER_ADDRESS}
@@ -65,6 +70,7 @@ containerdConfigPatches:
 EOM
 )
 
+echo "$(kind version)"
 echo "KIND config:"
 echo "${KIND_CFG}"
 
