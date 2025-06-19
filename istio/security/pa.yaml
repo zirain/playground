@@ -1,11 +1,7 @@
 apiVersion: security.istio.io/v1beta1
 kind: PeerAuthentication
 metadata:
-  name: httpbin
-  namespace: default
+  name: mtls-strict
 spec:
-  selector:
-    matchLabels:
-      app: httpbin
   mtls:
     mode: STRICT
