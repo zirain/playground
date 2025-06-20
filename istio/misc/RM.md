@@ -1,10 +1,10 @@
-Modified version of https://github.com/istio/istio/issues/54707 (1.25)
+Modified version of https://github.com/istio/istio/issues/55908 (1.26)
 
 ---
 
 ## Introduction
 
-This issue tracks all steps needed to prepare the 1.26 release branches/builds.
+This issue tracks all steps needed to prepare the 1.27 release branches/builds.
 
 This issue was created to help document the automation steps as well as any ordering changes, etc. Please update/add additional steps taken here so we can document for future releases.
 
@@ -71,25 +71,25 @@ git push --force
 
 ## Manual / Pre-req steps
 ### When to start: 2 weeks before branch cut date
-- [x] Set up release manager team - Ensure the new team has write access to the repositories. (see [teams.yaml](https://github.com/istio/community/blob/master/org/teams.yaml)) 
-  - https://github.com/istio/community/pull/1597
-- [x] Create a slack channel for the [1.26 release](). Edit the description/topic of the channel to include RM's for the release, expected release date, etc.
-- [x] Add new label: cherrypick/release-1.26 PR
-- [x] Create a 1.27 milestone:
-- [x] Send an announcement on [GitHub Discussions](https://github.com/istio/istio/discussions) pre-announcing branch cut
-    - https://github.com/istio/istio/discussions/55912
-- [x] Send an announcement on [GitHub Discussions](https://github.com/istio/istio/discussions) announcing the start of branch cut and to stop merging of PRs
-- [x] Fork (and update) istio repos mentioned in Step2. Example of forking a single repo from cli
+- [ ] Set up release manager team - Ensure the new team has write access to the repositories. (see [teams.yaml](https://github.com/istio/community/blob/master/org/teams.yaml)) 
+  - ~~https://github.com/istio/community/pull/1597~~
+- [ ] Create a slack channel for the [1.27 release](). Edit the description/topic of the channel to include RM's for the release, expected release date, etc.
+- [ ] Add new label: cherrypick/release-1.27 PR
+- [ ] Create a 1.28 milestone:
+- [ ] Send an announcement on [GitHub Discussions](https://github.com/istio/istio/discussions) pre-announcing branch cut
+    - ~~https://github.com/istio/istio/discussions/55912~~
+- [ ] Send an announcement on [GitHub Discussions](https://github.com/istio/istio/discussions) announcing the start of branch cut and to stop merging of PRs
+- [ ] Fork (and update) istio repos mentioned in Step2. Example of forking a single repo from cli
 ```
 gh repo fork --clone --default-branch-only https://github.com/istio/common-files --fork-name istio-common-files
 ```
 
 ## Step 0 - Alpha build
 
-Build and release 1.26-alpha.0 from master branch.
-- [x] https://github.com/istio/release-builder/pull/2082
-- [x] Find the triggered [`build-release_release-builder_postsubmit`](https://prow.istio.io/view/gs/istio-prow/logs/build-release_release-builder_postsubmit/1881824336185135104) job on https://prow.istio.io/ and wait for it to complete successfully.
-- [x] https://github.com/istio/release-builder/pull/2083
+Build and release 1.27-alpha.0 from master branch.
+- [ ] ~~https://github.com/istio/release-builder/pull/2082~~
+- [ ] Find the triggered [`build-release_release-builder_postsubmit`](https://prow.istio.io/view/gs/istio-prow/logs/build-release_release-builder_postsubmit/1881824336185135104) job on https://prow.istio.io/ and wait for it to complete successfully.
+- [ ] ~~https://github.com/istio/release-builder/pull/2083~~
 
 **Because the alpha build is tagged from the master branch, merging these PRs requires approval from [WG - Test and Release Maintainers](https://github.com/orgs/istio/teams/wg-test-and-release-maintainers), not just leads for the specific release.**
 
@@ -103,42 +103,42 @@ This step updates dependencies in master prior to the release branch being cut
 CONDITIONAL_HOST_MOUNTS=" --mount type=bind,source=${HOME}/.ssh,destination=/home/ubuntu/.ssh,readonly " GITHUB_TOKEN=$(gh auth token) make shell
 REPO_ORG=istio STEP=1 ./release/branch.sh
 ```
-- [x] PR after the automation step 1, legacy manual steps should generate the same (https://github.com/istio/istio/pull/55972)
+- [ ] PR after the automation step 1, legacy manual steps should generate the same (~~https://github.com/istio/istio/pull/55972~~)
 
 ### Legacy Manual Steps
 - (**Automation step=1**) Update dependencies. This must be done **before branching** so that PRs can be easily backported later. [PR](https://github.com/istio/istio/pull/44436)
   - Run `go get github.com/envoyproxy/go-control-plane@main` to update (Added in 1.17 in https://github.com/istio/release-builder/pull/1332).
   - Run the following command in istio/istio `UPDATE_BRANCH=master ./bin/update_deps.sh; make gen` ([example](https://github.com/istio/istio/pull/36812))
   - [ ] Merge PR in istio/istio. Wait for it to complete. 
-  - [ ] _Need to verify git code to allow commits and pulls to work for upcoming 1.26 branch cut._
+  - [ ] _Need to verify git code to allow commits and pulls to work for upcoming 1.27 branch cut._
 
 ## Automation Step 2 - Create The Release Branches
 ### When to start: 1 week before branch cut date
 
-This step creates release-1.26 branches in the necessary repos. Please run it against the istio org since there are no PRs for this step 
+This step creates release-1.27 branches in the necessary repos. Please run it against the istio org since there are no PRs for this step 
 
 ### Command to run
 ```
 make shell
-REPO_ORG=(myorg|istio) VERSION=1.26 STEP=2 ./release/branch.sh
+REPO_ORG=(myorg|istio) VERSION=1.27 STEP=2 ./release/branch.sh
 ```
 
 ### Legacy Manual Steps
-- (**Automation step=2**)  (new step because we are waiting on prior change to master before branching) Create a `release-1.26` branch in every Istio repo - run commands `export org=xyz ; export repo=xyz ; (git clone git@github.com:${org}/${repo}.git && cd $repo && git checkout -b release-1.26 && git push --set-upstream origin release-1.26)`.
-  - [x] istio/istio
-  - [x] istio/api
-  - [x] istio/ztunnel
-  - [x] istio/proxy
-  - [x] istio/client-go
-  - [x] istio/tools
-  - [x] istio/common-files
-  - [x] istio/release-builder
-  - [x] istio/enhancements
+- (**Automation step=2**)  (new step because we are waiting on prior change to master before branching) Create a `release-1.27` branch in every Istio repo - run commands `export org=xyz ; export repo=xyz ; (git clone git@github.com:${org}/${repo}.git && cd $repo && git checkout -b release-1.27 && git push --set-upstream origin release-1.27)`.
+  - [ ] istio/istio
+  - [ ] istio/api
+  - [ ] istio/ztunnel
+  - [ ] istio/proxy
+  - [ ] istio/client-go
+  - [ ] istio/tools
+  - [ ] istio/common-files
+  - [ ] istio/release-builder
+  - [ ] istio/enhancements
   - **Explicitly skipped:** istio-releases/pipeline, istio/tests, istio/istio.io, istio/test-infra
   - No PRs to merge
 
 ### Post-automation steps
-- [x] Set up branch protection. Modify prow/config.yaml in test-infra to add release managers as owners for a branch. (https://github.com/istio/test-infra/pull/5646)
+- [ ] Set up branch protection. Modify prow/config.yaml in test-infra to add release managers as owners for a branch. (https://github.com/istio/test-infra/pull/5646)
 
 ## Automation Step 3 - Set Up Prow On Release Branches
 
@@ -147,14 +147,14 @@ REPO_ORG=(myorg|istio) VERSION=1.26 STEP=2 ./release/branch.sh
 ### Command to run
 ```
 make shell
-REPO_ORG=myorg VERSION=1.26 STEP=3 ./release/branch.sh
+REPO_ORG=myorg VERSION=1.27 STEP=3 ./release/branch.sh
 ```
 Running this command with `DRY_RUN=false` will open a PR like https://github.com/istio/test-infra/pull/5598, **but because this automation is still incomplete, a few additional manual steps will be needed.**
 
 The output logs will tell you the necessary commands for retagging image and should look something like as follows:
 ```
-2025/02/06 17:24:01 Please find a maintainer with sufficient permissions and have them run `gcloud container image add-tag gcr.io/istio-testing/build-tools:master-6de2ce5813071b34e0ca033dbac7f79ffc1644be gcr.io/istio-testing/build-tools:release-1.26-6de2ce5813071b34e0ca033dbac7f79ffc1644be`
-2025/02/06 17:24:01 Please find a maintainer with sufficient permissions and have them run `gcloud container image add-tag gcr.io/istio-testing/build-tools-proxy:master-6de2ce5813071b34e0ca033dbac7f79ffc1644be gcr.io/istio-testing/build-tools-proxy:release-1.26-6de2ce5813071b34e0ca033dbac7f79ffc1644be`
+2025/02/06 17:24:01 Please find a maintainer with sufficient permissions and have them run `gcloud container image add-tag gcr.io/istio-testing/build-tools:master-6de2ce5813071b34e0ca033dbac7f79ffc1644be gcr.io/istio-testing/build-tools:release-1.27-6de2ce5813071b34e0ca033dbac7f79ffc1644be`
+2025/02/06 17:24:01 Please find a maintainer with sufficient permissions and have them run `gcloud container image add-tag gcr.io/istio-testing/build-tools-proxy:master-6de2ce5813071b34e0ca033dbac7f79ffc1644be gcr.io/istio-testing/build-tools-proxy:release-1.27-6de2ce5813071b34e0ca033dbac7f79ffc1644be`
 ```
 
 You can query tag like this:
@@ -163,19 +163,19 @@ gcloud container images list-tags gcr.io/istio-testing/build-tools | grep master
 ```
 
 Checkout your fork of the test-infra project, make sure its up to date with `master`, then create a new branch and do the following:
-- [x] Manually update [testgrid/config.yaml](https://github.com/istio/test-infra/blob/master/testgrid/config.yaml) by adding in the relevant entries for 1.26.  Its pretty obvious once you see the file what you have to do.
-- [x] Manually update [prow/config/private-presets.yaml](https://github.com/istio/test-infra/blob/master/prow/config/private-presets.yaml). Again, this should be pretty obvious, just add new entries similar to the last release but for the new branch.
-- [x] Cherry-pick the commit from the automation into this branch, **close the automation PR** - CI checks depend on the manual changes you'll need to add to pass.
-- [x] Remove duplicated `env` entries of the following in the configs
+- [ ] Manually update [testgrid/config.yaml](https://github.com/istio/test-infra/blob/master/testgrid/config.yaml) by adding in the relevant entries for 1.27.  Its pretty obvious once you see the file what you have to do.
+- [ ] Manually update [prow/config/private-presets.yaml](https://github.com/istio/test-infra/blob/master/prow/config/private-presets.yaml). Again, this should be pretty obvious, just add new entries similar to the last release but for the new branch.
+- [ ] Cherry-pick the commit from the automation into this branch, **close the automation PR** - CI checks depend on the manual changes you'll need to add to pass.
+- [ ] Remove duplicated `env` entries of the following in the configs
     ```
     - name: BUILD_WITH_CONTAINER
       value: "0"
     ```
   - **TODO:** I believe this should be harmless and is _mostly_ automated for the generated output files in `prow/cluster` after https://github.com/istio/test-infra/pull/5592, but similar env var filtering should likely be added to `tools/prowtrans/cmd/prowtrans/main.go` to rewrite the source configs too to make this step unnecessary.
-- [x] Manually update the `VERSION` env var in `prow/config/jobs/release-builder-1.26.yaml` from `master` to `"1.26"`
+- [ ] Manually update the `VERSION` env var in `prow/config/jobs/release-builder-1.27.yaml` from `master` to `"1.27"`
   - **TODO:** This could likely be automated too, quotes are necessary to unmarshal as string type.
-- [x] Run `make gen`
-- [x] Merge PR in istio/test-infra. Wait for all postsubmit jobs (visible at https://prow.istio.io/) to complete. (https://github.com/istio/test-infra/pull/5647)
+- [ ] Run `make gen`
+- [ ] Merge PR in istio/test-infra. Wait for all postsubmit jobs (visible at https://prow.istio.io/) to complete. (https://github.com/istio/test-infra/pull/5647)
 
 ## Automation Step 4
 
@@ -184,15 +184,15 @@ Checkout your fork of the test-infra project, make sure its up to date with `mas
 This step has a two steps:
 
 * Run the automation
-* Merge the PRs created by it, EXCEPT FOR ONE! As part of the istio/istio pull request post-submits, a new PR will be created in the istio/common-files repo with a title like: `Automator: update build-tools image@release-1.26 in istio/common-files@release-1.26`. The work in this PR is only a portion of Step 5, and merging it will cause issues with reverting the repos to the main branch common-files. **CLOSE THIS PR**.
+* Merge the PRs created by it, EXCEPT FOR ONE! As part of the istio/istio pull request post-submits, a new PR will be created in the istio/common-files repo with a title like: `Automator: update build-tools image@release-1.27 in istio/common-files@release-1.27`. The work in this PR is only a portion of Step 5, and merging it will cause issues with reverting the repos to the main branch common-files. **CLOSE THIS PR**.
 
 ### Command To Run
 ```
 make shell
-REPO_ORG=istio VERSION=1.26 STEP=4 ./release/branch.sh
+REPO_ORG=istio VERSION=1.27 STEP=4 ./release/branch.sh
 ```
 
-These are the PRs created by the automation for 1.26:
+These are the PRs created by the automation for 1.27:
 
 - https://github.com/istio/proxy/pull/6245
 - https://github.com/istio/release-builder/pull/2087
@@ -205,7 +205,7 @@ These are the PRs created by the automation for 1.26:
 
 ### Legacy Manual Instructions
 - (**Automation step=4**) (new step since we want the automation from prior step to actually create the image after PR merges) PRS: 
-  - Updates istio/tools to build new release-1.26 build image (update BRANCH in docker/build-tools/build-and-push.sh. PR postsubmit will create new container images who's name will be used in the next step)  
+  - Updates istio/tools to build new release-1.27 build image (update BRANCH in docker/build-tools/build-and-push.sh. PR postsubmit will create new container images who's name will be used in the next step)  
   - Update common-files in _new release_. You first have to manually update the _common/Makefile.common.mk_ *update-common* target to point to the _new release_  (but not in common-files). In Step=5, the prow automation will actually call `make update-common` in these repos to do the actual `make update-common` against the new common-files release branch
     - istio/common-files - skipped. Covered in next step
     - istio/istio 
@@ -215,7 +215,7 @@ These are the PRs created by the automation for 1.26:
     - istio/proxy 
     - istio/release-builder 
     - istio/tools 
-  - Update `CODEOWNERS` to contain only the release managers for this release. Command: `export org=xyz ; export repo=xyz ; (git clone git@github.com:${org}/${repo}.git && cd $repo && git checkout release-1.26 && git checkout -b release-1.26-codeowners && echo '* @istio/release-managers-1.26' > CODEOWNERS && git add CODEOWNERS && git commit -m 'Set release managers as CODEOWNERS for release-1.26' && git push --set-upstream origin release-1.26-codeowners)`.
+  - Update `CODEOWNERS` to contain only the release managers for this release. Command: `export org=xyz ; export repo=xyz ; (git clone git@github.com:${org}/${repo}.git && cd $repo && git checkout release-1.27 && git checkout -b release-1.27-codeowners && echo '* @istio/release-managers-1.27' > CODEOWNERS && git add CODEOWNERS && git commit -m 'Set release managers as CODEOWNERS for release-1.27' && git push --set-upstream origin release-1.27-codeowners)`.
     - istio/common-files  - skipped. Covered in next step
     - istio/istio 
     - istio/pkg 
@@ -228,8 +228,8 @@ These are the PRs created by the automation for 1.26:
   - Stop publishing `latest` tags
   - Update istio/release-builder branch changes from `master` to new release in build.sh, publish.sh and manifests. 
   
- - [x] Merge PRs from STEP 4. Wait for the new build images to be created at https://gcr.io/istio-testing/build-tools.
-**WARNING -- DO NOT MERGE** Merge the PRs created by it, EXCEPT FOR ONE! As part of the istio/istio pull request post-submits, a new PR will be created in the istio/common-files repo with a title like: `Automator: update build-tools image@release-1.26 in istio/common-files@release-1.26`. The work in this PR is only a portion of Step 5, and merging it will cause issues with reverting the repos to the main branch common-files. **CLOSE THIS PR**. (Closed https://github.com/istio/common-files/pull/1174)
+ - [ ] Merge PRs from STEP 4. Wait for the new build images to be created at https://gcr.io/istio-testing/build-tools.
+**WARNING -- DO NOT MERGE** Merge the PRs created by it, EXCEPT FOR ONE! As part of the istio/istio pull request post-submits, a new PR will be created in the istio/common-files repo with a title like: `Automator: update build-tools image@release-1.27 in istio/common-files@release-1.27`. The work in this PR is only a portion of Step 5, and merging it will cause issues with reverting the repos to the main branch common-files. **CLOSE THIS PR**. (Closed https://github.com/istio/common-files/pull/1174)
 
 ## Automation Step 5
 
@@ -239,7 +239,7 @@ These are the PRs created by the automation for 1.26:
 
 ```
 make shell
-REPO_ORG=istio VERSION=1.26 STEP=5 ./release/branch.sh
+REPO_ORG=istio VERSION=1.27 STEP=5 ./release/branch.sh
 ```
 
 - https://github.com/istio/common-files/pull/1175
@@ -248,53 +248,53 @@ REPO_ORG=istio VERSION=1.26 STEP=5 ./release/branch.sh
 
 ### Legacy Manual Steps
 - (**Automation step=5**) (new step since we need image from prior step)
-  - Update istio/common-files to set release-1.26 build image (Update the UPDATE_BRANCH in files/common/Makefile.common.mk to be the new release name
+  - Update istio/common-files to set release-1.27 build image (Update the UPDATE_BRANCH in files/common/Makefile.common.mk to be the new release name
   - Update IMAGE_VERSION in files/common/scripts/setup_env.sh  to be the new build image from prior step (found at https://gcr.io/istio-testing/build-tools).
   - Also Update `CODEOWNERS` to contain only the release managers for this release. 
- - [x] Merge PR from STEP 5. Wait until step 5 PR merges and all the postsubmit generated PRs (to update common files in repos) merge.
+ - [ ] Merge PR from STEP 5. Wait until step 5 PR merges and all the postsubmit generated PRs (to update common files in repos) merge.
 
 ## Remaining Manual Steps
 
 After the automation is complete, there are some manual steps that need to be completed to finish the branch cut.
 
-- [x] Fix up test-infra proxy automated job to pull from most recent stable Envoy release branch if (set `UPDATE_BRANCH`)
+- [ ] Fix up test-infra proxy automated job to pull from most recent stable Envoy release branch if (set `UPDATE_BRANCH`)
   - Check https://www.envoyproxy.io/docs/envoy/latest/version_history/version_history to find the latest stable minor version of Envoy.
   - https://github.com/istio/test-infra/pull/5649
-- [x] Verify that the github.com/envoyproxy/go-control-plane Go module dependencies match the latest commit before github.com/envoyproxy/envoy was branched.
+- [ ] Verify that the github.com/envoyproxy/go-control-plane Go module dependencies match the latest commit before github.com/envoyproxy/envoy was branched.
   - Find the new Envoy branch in GitHub (https://github.com/envoyproxy/envoy/tree/release/v1.34 in this case) and click on `commits behind main` to find the commit where the branch happened (it should appear first in in the chronologically-sorted commit list).
   - Click the sha to view the commit (which should look similar to https://github.com/envoyproxy/envoy/commit/a5cf609225dfd223ec734cdc2d9a2cb33e58cacc), then click the sha next to `1 parent` (or manually search the commit history on the main branch), which should take you to the last commit before the branch, which should look similar to https://github.com/envoyproxy/envoy/commit/b0f43d67aa25c1b03c97186a200cc187f4c22db3).
   - Find this commit on the Envoy release branch commit history (https://github.com/envoyproxy/envoy/commits/release/v1.33 in this case), then search https://github.com/envoyproxy/go-control-plane/commits/main for either this commit or the most recent before it - not all commits will have a corresponding mirror commit). In this example, https://github.com/envoyproxy/go-control-plane/commit/4eb1955954fa7607752b3957a1885ce9fe6cf7e8 is the go-control-plane commit we've chosen, which corresponds to https://github.com/envoyproxy/envoy/commit/078dae3549912e632c3776a5e9a4679226093276.
   - Update the istio/istio and istio/proxy repos to use this commit for the github.com/envoyproxy/go-control-plane Go module dependency with `go get github.com/envoyproxy/go-control-plane@GITSHA` where GITSHA is the go-control-plane commit you've selected.
   - (https://github.com/istio/istio/pull/56001)
   - (https://github.com/istio/proxy/pull/6249)
-- [x] Update UPDATE_BRANCH in `bin/update_deps.sh` and `bin/update_ztunnel.sh` on release branch, then run those scripts and commit the changes.
+- [ ] Update UPDATE_BRANCH in `bin/update_deps.sh` and `bin/update_ztunnel.sh` on release branch, then run those scripts and commit the changes.
   - (https://github.com/istio/istio/pull/56001)
-- [x] Bump 1.26 to 1.27 in the `master` branch
-  - Updates 1.26.0 to 1.27.0, 1.26-dev to 1.27-dev, etc
+- [ ] Bump 1.27 to 1.28 in the `master` branch
+  - Updates 1.27.0 to 1.28.0, 1.27-dev to 1.28-dev, etc
   - https://github.com/istio/istio/pull/56000
-- [x] Post on [GitHub Discussions](https://github.com/istio/istio/discussions) announcing branch cut complete and PRs can be merged again.
-- [x] Ask istio.io team to run job to update to use the 1.26 branch (probably Daniel Hawton). Verify the EOL date for the n-2 release as 6 weeks after the planned release date.
-  - The `make` command documented at https://github.com/istio/istio.io/?tab=readme-ov-file#when-istio-source-code-is-branched can generate a PR similar to below. `make prepare-1.26.0`
+- [ ] Post on [GitHub Discussions](https://github.com/istio/istio/discussions) announcing branch cut complete and PRs can be merged again.
+- [ ] Ask istio.io team to run job to update to use the 1.27 branch (probably Daniel Hawton). Verify the EOL date for the n-2 release as 6 weeks after the planned release date.
+  - The `make` command documented at https://github.com/istio/istio.io/?tab=readme-ov-file#when-istio-source-code-is-branched can generate a PR similar to below. `make prepare-1.27.0`
   - https://github.com/istio/istio.io/pull/16420
 
 ## Publishing a release
 The next step is to publish a release.  You will need to follow these steps for each beta and release candidate and finally for the final release build.
 
-- [x] Run `make shell` then `./bin/update_deps.sh` on the release branch in istio/istio. PR and merge the resulting diff.
-- [x] Trigger a beta or release candidate build
-- [x] Some verification to verify build is good
+- [ ] Run `make shell` then `./bin/update_deps.sh` on the release branch in istio/istio. PR and merge the resulting diff.
+- [ ] Trigger a beta or release candidate build
+- [ ] Some verification to verify build is good
   - You can download the build tar from the appropriate directory here: https://gcsweb.istio.io/gcs/istio-prerelease/prerelease/
   - untar the file and install, specifying the image repository. (ex: `./bin/istioctl install --set profile=demo -y --set hub=gcr.io/istio-prerelease-testing`).
   - Run bookinfo from within the untar'd directory
-- [x] Publish the beta or release candidate
-- [x] Post on [GitHub Discussions](https://github.com/istio/istio/discussions) announcing availability of beta or release candidate. Release managers may not have permission to post in the Announcements category on GitHub Discussions, get a TOC or Steering member to change the category after posting.
-  - [x] Share this post in the #announcements and #release-1.26 channels on Istio Slack
+- [ ] Publish the beta or release candidate
+- [ ] Post on [GitHub Discussions](https://github.com/istio/istio/discussions) announcing availability of beta or release candidate. Release managers may not have permission to post in the Announcements category on GitHub Discussions, get a TOC or Steering member to change the category after posting.
+  - [ ] Share this post in the #announcements and #release-1.27 channels on Istio Slack
 
 ## Generating a release candidate
 
 ### When to start: 10-14 days before the release date
 
-- [x] Verify and update the min K8s version supported for the release.
+- [ ] Verify and update the min K8s version supported for the release.
   - RMs usually determine the range of k8s versions and it appears on the TOC agenda at times. The max version is usually is the current K8s version and the min version includes 3 past versions, so for a 1.32 max version, the min version would be 1.29 as an example.
 
 Use the Publishing a Release instructions above to update_deps, trigger the build, do verification and publish the release
@@ -304,8 +304,8 @@ Next, contact Sergii Shapar on Istio Slack and ask him to run the long running t
 ## Preparing for final release
 
 ### Generating the release notes
-- [x] Prepare the release notes for the release.
-- [x] Update istio.io docs to new version following steps at https://github.com/istio/istio.io?tab=readme-ov-file#creating-a-majorminor-release
+- [ ] Prepare the release notes for the release.
+- [ ] Update istio.io docs to new version following steps at https://github.com/istio/istio.io?tab=readme-ov-file#creating-a-majorminor-release
 
 Preparing the release notes for a major release is time-consuming; allow 4-5 hours across several days to factor in time for reviews. **Publishing requires approval from [istio/wg-docs-maintainers-infra](https://github.com/orgs/istio/teams/wg-docs-maintainers-infra), _not_ release managers, a maintainer with admin privileges to handle the GitHub branch switch, and someone with Netlify and Google Custom Search Engine privileges (currently Craig Box) to cut over the release branch.** An example PR for the 1.18 release notes is [here](https://github.com/istio/istio.io/pull/13269)
 
@@ -315,9 +315,9 @@ To generate release notes, run the command `./gen-release-notes --notes ../../..
 
 The output of the tool will fail linting.  Once you've copied the content into the right place in you're fork of the isio.io repo, run `make lint` than go get a cup of coffee.  Five to ten minutes later, you'll have a list of things that are wrong with the automatically generated content that you'll need to work through.  The biggest source of errors is that there cannot be more then one blank line between any line in the file, headers must be surrounded by blank lines, all istio.io links must be relative and that there will be trailing whitespace that will need removing.  To fix the last of these, run `sed -i 's/[[:space:]]*$//' file.txt`; this will clean up the trailing whitespace that will otherwise drive you slightly mad trying to find (since its not always quite on the line indicated by the tool)
 
-- [x] Each time you publish a beta/rc/official release build, make sure that the build/helm charts/images are published correctly to:
+- [ ] Each time you publish a beta/rc/official release build, make sure that the build/helm charts/images are published correctly to:
   - GitHub releases https://github.com/istio/istio/releases
   - Helm repo https://gcr.io/istio-release/charts/base
   - Google Container Registry repo https://console.cloud.google.com/gcr/images/istio-release
-- [x] After official release, send out an announcement on `announcement` and release slack channel for Istio. Currently Craig Box handles all the twitter announcements related to Istio and he usually sends release related announcements on twitter. Coordinate with him. [discuss](https://discuss.istio.io/t/istio-1-17-is-out/14951), [twitter](https://twitter.com/IstioMesh/status/1625654199336968197?cxt=HHwWioDR8bL4vY8tAAAA)
-- [x] Update the description in the release slack channel to reflect the official release date.   
+- [ ] After official release, send out an announcement on `announcement` and release slack channel for Istio. Currently Craig Box handles all the twitter announcements related to Istio and he usually sends release related announcements on twitter. Coordinate with him. [discuss](https://discuss.istio.io/t/istio-1-17-is-out/14951), [twitter](https://twitter.com/IstioMesh/status/1625654199336968197?cxt=HHwWioDR8bL4vY8tAAAA)
+- [ ] Update the description in the release slack channel to reflect the official release date.   
