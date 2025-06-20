@@ -1,7 +1,7 @@
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
-  name: zipkin-tracing
+  name: datadog-tracing
 spec:
   gatewayClassName: eg
   listeners:
@@ -15,30 +15,61 @@ spec:
     parametersRef:
       group: gateway.envoyproxy.io
       kind: EnvoyProxy
-      name: zipkin-tracing
+      name: datadog-tracing
 ---
-#  This is a EnvoyProxy used for Zipkin tracing and will
-#  target to the all-namespaces Gateway
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: tracing-datadog
+spec:
+  parentRefs:
+    - name: datadog-tracing
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /datadog
+      backendRefs:
+        - name: infra-backend-v2
+          port: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: datadog-agent
+  namespace: monitoring
+spec:
+  selector:
+    app.kubernetes.io/instance: eg-addons
+    app.kubernetes.io/name: opentelemetry-collector
+    component: standalone-collector
+  ports:
+    - protocol: TCP
+      port: 8126
+      targetPort: 8126
+---
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: EnvoyProxy
 metadata:
-  name: zipkin-tracing
+  name: datadog-tracing
 spec:
+  ipFamily: IPv4
+  logging:
+    level:
+      default: debug
   telemetry:
     tracing:
       provider:
-        type: Zipkin
+        type: Datadog
         backendRefs:
-          - name: otel-collector
+          - name: datadog-agent
             namespace: monitoring
-            port: 9411
-        zipkin:
-          enable128BitTraceId: true
+            port: 8126
       customTags:
         "provider":
           type: Literal
           literal:
-            value: "zipkin"
+            value: "datadog"
         "k8s.cluster.name":
           type: Literal
           literal:
@@ -51,24 +82,8 @@ spec:
         "k8s.namespace.name":
           type: Environment
           environment:
-            name: ENVOY_GATEWAY_NAMESPACE
+            name: ENVOY_POD_NAMESPACE
             defaultValue: "envoy-gateway-system"
   shutdown:
     drainTimeout: 5s
     minDrainDuration: 1s
----
-apiVersion: gateway.networking.k8s.io/v1
-kind: HTTPRoute
-metadata:
-  name: tracing-zipkin
-spec:
-  parentRefs:
-    - name: zipkin-tracing
-  rules:
-    - matches:
-        - path:
-            type: PathPrefix
-            value: /zipkin
-      backendRefs:
-        - name: infra-backend-v2
-          port: 8080
