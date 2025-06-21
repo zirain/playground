@@ -31,7 +31,8 @@ spec:
                   - endpoint:
                       address:
                         pipe:
-                          path: /var/run/envoy-uds/apm.socket
+                          # path: /var/run/envoy-uds/apm.socket
+                          path: /var/run/datadog/apm.socket # default value
                     loadBalancingWeight: 1
                 loadBalancingWeight: 1
                 locality:

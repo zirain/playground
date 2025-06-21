@@ -4,16 +4,26 @@ metadata:
   name: datadog
   namespace: dg
 spec:
+  override:
+    nodeAgent:
+      env:
+        - name: DD_HOSTNAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
   global:
+    kubelet:
+      tlsVerify: false
     logLevel: debug
     credentials:
+      apiKey: <API_KEY>
       apiSecret:
         secretName: datadog-secret
         keyName: api-key
   features:
     admissionController:
       enabled: true
-      # mutateUnlabelled: false
-      # agentSidecarInjection:
-      #   enabled: true
-      #   provider: fargate
+      mutateUnlabelled: false
+      agentSidecarInjection:
+        enabled: true
+        provider: fargate

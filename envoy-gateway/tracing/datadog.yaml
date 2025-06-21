@@ -13,7 +13,8 @@ spec:
           from: All
   infrastructure:
     labels:
-      admission.datadoghq.com/enabled: "true"
+      # admission.datadoghq.com/enabled: "true"
+      # agent.datadoghq.com/sidecar: fargate
     parametersRef:
       group: gateway.envoyproxy.io
       kind: EnvoyProxy
@@ -89,3 +90,25 @@ spec:
   shutdown:
     drainTimeout: 5s
     minDrainDuration: 1s
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: tracing-datadog
+  namespace: default
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: datadog-tracing
+  rules:
+    - backendRefs:
+        - group: ""
+          kind: Service
+          name: backend
+          port: 3000
+          weight: 1
+      matches:
+        - path:
+            type: PathPrefix
+            value: /datadog
