@@ -1,22 +1,19 @@
-apiVersion: datadoghq.com/v1alpha1
+apiVersion: datadoghq.com/v2alpha1
 kind: DatadogAgent
 metadata:
   name: datadog
+  namespace: dg
 spec:
-  credentials:
-    apiSecret:
-      secretName: datadog-secret
-      keyName: api-key
-    appSecret:
-      secretName: datadog-secret
-      keyName: app-key
-  agent:
-    config:
-      logLevel: trace
-    image:
-      name: "gcr.io/datadoghq/agent:latest"
-    apm:
+  global:
+    logLevel: debug
+    credentials:
+      apiSecret:
+        secretName: datadog-secret
+        keyName: api-key
+  features:
+    admissionController:
       enabled: true
-  clusterAgent:
-    image:
-      name: "gcr.io/datadoghq/cluster-agent:latest"
+      # mutateUnlabelled: false
+      # agentSidecarInjection:
+      #   enabled: true
+      #   provider: fargate

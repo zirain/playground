@@ -12,6 +12,8 @@ spec:
         namespaces:
           from: All
   infrastructure:
+    labels:
+      admission.datadoghq.com/enabled: "true"
     parametersRef:
       group: gateway.envoyproxy.io
       kind: EnvoyProxy
