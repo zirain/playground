@@ -1,7 +1,7 @@
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
-  name: datadog-tracing
+  name: datadog-uds
 spec:
   gatewayClassName: eg
   listeners:
@@ -18,7 +18,7 @@ spec:
     parametersRef:
       group: gateway.envoyproxy.io
       kind: EnvoyProxy
-      name: datadog-tracing
+      name: datadog-uds
 ---
 apiVersion: v1
 kind: Service
@@ -38,7 +38,7 @@ spec:
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: EnvoyProxy
 metadata:
-  name: datadog-tracing
+  name: datadog-uds
 spec:
   ipFamily: IPv4
   logging:
@@ -49,8 +49,9 @@ spec:
       provider:
         type: Datadog
         backendRefs:
-          - name: datadog-agent
-            namespace: monitoring
+          - group: gateway.envoyproxy.io
+            kind: Backend
+            name: datadog-svc
             port: 8126
       customTags:
         "provider":
@@ -71,20 +72,26 @@ spec:
           environment:
             name: ENVOY_POD_NAMESPACE
             defaultValue: "envoy-gateway-system"
-  shutdown:
-    drainTimeout: 5s
-    minDrainDuration: 1s
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: Backend
+metadata:
+  name: datadog-svc
+spec:
+  endpoints:
+    - unix:
+        path: /var/run/envoy-uds/dsd.socket
+  type: Endpoints
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
-  name: tracing-datadog
-  namespace: default
+  name: datadog
 spec:
   parentRefs:
     - group: gateway.networking.k8s.io
       kind: Gateway
-      name: datadog-tracing
+      name: datadog-uds
   rules:
     - backendRefs:
         - group: ""
