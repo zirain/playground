@@ -1,0 +1,80 @@
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: Gateway
+metadata:
+  name: httpbin-gateway
+  namespace: istio-system
+spec:
+  gatewayClassName: istio
+  listeners:
+    - name: http
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: All
+---
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: HTTPRoute
+metadata:
+  name: mirror
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: httpbin-gateway
+      namespace: istio-system
+  rules:
+    - backendRefs:
+        - group: ""
+          kind: Service
+          name: httpbin
+          namespace: sidecar
+          port: 8000
+          weight: 1
+      filters:
+        - requestMirror:
+            backendRef:
+              group: networking.istio.io
+              kind: Hostname
+              name: httpbin.local
+              port: 8080
+          type: RequestMirror
+      matches:
+        - path:
+            type: PathPrefix
+            value: /
+---
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: ReferenceGrant
+metadata:
+  name: allow-service
+  namespace: sidecar
+spec:
+  from:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      namespace: default
+  to:
+    - group: ""
+      kind: Service
+      name: httpbin
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: ServiceEntry
+metadata:
+  name: httpbin-local
+spec:
+  endpoints:
+    - address: 10.244.3.52 # pod ip of httpbin
+      ports:
+        http: 8080
+  exportTo:
+    - "*"
+  hosts:
+    - httpbin.local
+  location: MESH_EXTERNAL
+  ports:
+    - name: http
+      number: 8080
+      protocol: HTTP
+  resolution: DNS
