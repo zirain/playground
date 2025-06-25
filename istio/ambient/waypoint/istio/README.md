@@ -33,7 +33,6 @@ apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
   name: simple-http-waypoint
-  namespace: default
 spec:
   gatewayClassName: istio-waypoint
   listeners:
@@ -45,18 +44,29 @@ spec:
     protocol: HBONE
 ```
 
+## Ambient
 
-```console
-kubectl create ns not-ambient
-kubectl apply -f httpbin.yaml -n not-ambient
+```shell
+kubectl create ns ambient
+kubectl apply -f httpbin.yaml -n ambient
+kubectl label namespace ambient istio.io/dataplane-mode=ambient
+kubectl apply -f waypoint.yaml -n ambient
 ```
 
-```console
+## Not Ambient
+
+```shell
+kubectl create ns not-ambient
+kubectl apply -f httpbin.yaml -n not-ambient
+kubectl apply -f networking/not-ambient.yaml -n ambient
+```
+
+```shell
 kubectl apply -f networking/not-ambient.yaml
 ```
 
 
-```console
+```shell
 kubectl exec -it deploy/sleep -- curl httpbin:8000/get
 kubectl exec -it deploy/sleep -- curl httpbin.not-ambient:8000/get
 ```

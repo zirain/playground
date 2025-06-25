@@ -26,7 +26,7 @@ metadata:
   name: httpbin
   labels:
     istio.io/use-waypoint: simple-http-waypoint
-    istio.io/use-waypoint-namespace: default
+    istio.io/use-waypoint-namespace: ambient
     # istio.io/ingress-use-waypoint: true
     app: httpbin
     service: httpbin

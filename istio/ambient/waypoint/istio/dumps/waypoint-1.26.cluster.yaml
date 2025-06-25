@@ -1,0 +1,288 @@
+- altStatName: agent;
+  connectTimeout: 0.250s
+  loadAssignment:
+    clusterName: agent
+    endpoints:
+    - lbEndpoints:
+      - endpoint:
+          address:
+            socketAddress:
+              address: 127.0.0.1
+              portValue: 15020
+  name: agent
+  type: STATIC
+- altStatName: connect_originate;
+  circuitBreakers:
+    thresholds:
+    - maxConnections: 4294967295
+      maxPendingRequests: 4294967295
+      maxRequests: 4294967295
+      maxRetries: 4294967295
+      trackRemaining: true
+  cleanupInterval: 60s
+  connectTimeout: 10s
+  lbPolicy: CLUSTER_PROVIDED
+  name: connect_originate
+  originalDstLbConfig:
+    metadataKey:
+      key: envoy.filters.listener.original_dst
+      path:
+      - key: waypoint
+    upstreamPortOverride: 15008
+  transportSocket:
+    name: tls
+    typedConfig:
+      '@type': type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
+      commonTlsContext:
+        alpnProtocols:
+        - h2
+        combinedValidationContext:
+          defaultValidationContext:
+            matchTypedSubjectAltNames:
+            - matcher:
+                prefix: spiffe://cluster.local/
+              sanType: URI
+            - matcher:
+                prefix: spiffe://cluster.local/ns/ambient/sa/
+              sanType: URI
+          validationContextSdsSecretConfig:
+            name: ROOTCA
+            sdsConfig:
+              apiConfigSource:
+                apiType: GRPC
+                grpcServices:
+                - envoyGrpc:
+                    clusterName: sds-grpc
+                setNodeOnFirstMessageOnly: true
+                transportApiVersion: V3
+              initialFetchTimeout: 0s
+              resourceApiVersion: V3
+        tlsCertificateSdsSecretConfigs:
+        - name: default
+          sdsConfig:
+            apiConfigSource:
+              apiType: GRPC
+              grpcServices:
+              - envoyGrpc:
+                  clusterName: sds-grpc
+              setNodeOnFirstMessageOnly: true
+              transportApiVersion: V3
+            initialFetchTimeout: 0s
+            resourceApiVersion: V3
+        tlsParams:
+          tlsMaximumProtocolVersion: TLSv1_3
+          tlsMinimumProtocolVersion: TLSv1_3
+  type: ORIGINAL_DST
+  typedExtensionProtocolOptions:
+    envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+      '@type': type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+      explicitHttpConfig:
+        http2ProtocolOptions:
+          allowConnect: true
+- altStatName: encap;
+  circuitBreakers:
+    thresholds:
+    - maxConnections: 4294967295
+      maxPendingRequests: 4294967295
+      maxRequests: 4294967295
+      maxRetries: 4294967295
+      trackRemaining: true
+  loadAssignment:
+    clusterName: encap
+    endpoints:
+    - lbEndpoints:
+      - endpoint:
+          address:
+            envoyInternalAddress:
+              serverListenerName: connect_originate
+  name: encap
+  transportSocket:
+    name: internal_upstream
+    typedConfig:
+      '@type': type.googleapis.com/envoy.extensions.transport_sockets.internal_upstream.v3.InternalUpstreamTransport
+      transportSocket:
+        name: raw_buffer
+        typedConfig:
+          '@type': type.googleapis.com/envoy.extensions.transport_sockets.raw_buffer.v3.RawBuffer
+  type: STATIC
+  typedExtensionProtocolOptions:
+    envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+      '@type': type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+      commonHttpProtocolOptions:
+        idleTimeout: 300s
+      useDownstreamProtocolConfig:
+        http2ProtocolOptions: {}
+        httpProtocolOptions: {}
+- altStatName: inbound-vip|8000|http|httpbin.ambient.svc.cluster.local;
+  circuitBreakers:
+    thresholds:
+    - maxConnections: 4294967295
+      maxPendingRequests: 4294967295
+      maxRequests: 4294967295
+      maxRetries: 4294967295
+      trackRemaining: true
+  commonLbConfig: {}
+  connectTimeout: 10s
+  edsClusterConfig:
+    edsConfig:
+      ads: {}
+      initialFetchTimeout: 0s
+      resourceApiVersion: V3
+    serviceName: inbound-vip|8000|http|httpbin.ambient.svc.cluster.local
+  lbPolicy: LEAST_REQUEST
+  metadata:
+    filterMetadata:
+      istio:
+        services:
+        - host: httpbin.ambient.svc.cluster.local
+          name: httpbin
+          namespace: ambient
+        subset: http
+  name: inbound-vip|8000|http|httpbin.ambient.svc.cluster.local
+  transportSocket:
+    name: internal_upstream
+    typedConfig:
+      '@type': type.googleapis.com/envoy.extensions.transport_sockets.internal_upstream.v3.InternalUpstreamTransport
+      passthroughMetadata:
+      - kind:
+          host: {}
+        name: envoy.filters.listener.original_dst
+      transportSocket:
+        name: raw_buffer
+        typedConfig:
+          '@type': type.googleapis.com/envoy.extensions.transport_sockets.raw_buffer.v3.RawBuffer
+  type: EDS
+- altStatName: inbound-vip|8000|http|httpbin.not-ambient.svc.cluster.local;
+  circuitBreakers:
+    thresholds:
+    - maxConnections: 4294967295
+      maxPendingRequests: 4294967295
+      maxRequests: 4294967295
+      maxRetries: 4294967295
+      trackRemaining: true
+  commonLbConfig: {}
+  connectTimeout: 10s
+  edsClusterConfig:
+    edsConfig:
+      ads: {}
+      initialFetchTimeout: 0s
+      resourceApiVersion: V3
+    serviceName: inbound-vip|8000|http|httpbin.not-ambient.svc.cluster.local
+  lbPolicy: LEAST_REQUEST
+  metadata:
+    filterMetadata:
+      istio:
+        services:
+        - host: httpbin.not-ambient.svc.cluster.local
+          name: httpbin
+          namespace: not-ambient
+        subset: http
+  name: inbound-vip|8000|http|httpbin.not-ambient.svc.cluster.local
+  transportSocket:
+    name: internal_upstream
+    typedConfig:
+      '@type': type.googleapis.com/envoy.extensions.transport_sockets.internal_upstream.v3.InternalUpstreamTransport
+      passthroughMetadata:
+      - kind:
+          host: {}
+        name: envoy.filters.listener.original_dst
+      transportSocket:
+        name: raw_buffer
+        typedConfig:
+          '@type': type.googleapis.com/envoy.extensions.transport_sockets.raw_buffer.v3.RawBuffer
+  type: EDS
+- altStatName: main_internal;
+  circuitBreakers:
+    thresholds:
+    - maxConnections: 4294967295
+      maxPendingRequests: 4294967295
+      maxRequests: 4294967295
+      maxRetries: 4294967295
+      trackRemaining: true
+  loadAssignment:
+    clusterName: main_internal
+    endpoints:
+    - lbEndpoints:
+      - endpoint:
+          address:
+            envoyInternalAddress:
+              serverListenerName: main_internal
+  name: main_internal
+  transportSocket:
+    name: internal_upstream
+    typedConfig:
+      '@type': type.googleapis.com/envoy.extensions.transport_sockets.internal_upstream.v3.InternalUpstreamTransport
+      transportSocket:
+        name: raw_buffer
+        typedConfig:
+          '@type': type.googleapis.com/envoy.extensions.transport_sockets.raw_buffer.v3.RawBuffer
+  type: STATIC
+  typedExtensionProtocolOptions:
+    envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+      '@type': type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+      commonHttpProtocolOptions:
+        idleTimeout: 300s
+      useDownstreamProtocolConfig:
+        http2ProtocolOptions: {}
+        httpProtocolOptions: {}
+- altStatName: prometheus_stats;
+  connectTimeout: 0.250s
+  loadAssignment:
+    clusterName: prometheus_stats
+    endpoints:
+    - lbEndpoints:
+      - endpoint:
+          address:
+            socketAddress:
+              address: 127.0.0.1
+              portValue: 15000
+  name: prometheus_stats
+  type: STATIC
+- altStatName: sds-grpc;
+  connectTimeout: 1s
+  loadAssignment:
+    clusterName: sds-grpc
+    endpoints:
+    - lbEndpoints:
+      - endpoint:
+          address:
+            pipe:
+              path: ./var/run/secrets/workload-spiffe-uds/socket
+  name: sds-grpc
+  type: STATIC
+  typedExtensionProtocolOptions:
+    envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+      '@type': type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+      explicitHttpConfig:
+        http2ProtocolOptions: {}
+- altStatName: xds-grpc;
+  circuitBreakers:
+    thresholds:
+    - maxConnections: 100000
+      maxPendingRequests: 100000
+      maxRequests: 100000
+    - maxConnections: 100000
+      maxPendingRequests: 100000
+      maxRequests: 100000
+      priority: HIGH
+  connectTimeout: 1s
+  loadAssignment:
+    clusterName: xds-grpc
+    endpoints:
+    - lbEndpoints:
+      - endpoint:
+          address:
+            pipe:
+              path: ./etc/istio/proxy/XDS
+  maxRequestsPerConnection: 1
+  name: xds-grpc
+  type: STATIC
+  typedExtensionProtocolOptions:
+    envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+      '@type': type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+      explicitHttpConfig:
+        http2ProtocolOptions: {}
+  upstreamConnectionOptions:
+    tcpKeepalive:
+      keepaliveTime: 300
+
