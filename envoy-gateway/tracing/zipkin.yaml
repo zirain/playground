@@ -17,8 +17,6 @@ spec:
       kind: EnvoyProxy
       name: zipkin-tracing
 ---
-#  This is a EnvoyProxy used for Zipkin tracing and will
-#  target to the all-namespaces Gateway
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: EnvoyProxy
 metadata:
@@ -26,6 +24,7 @@ metadata:
 spec:
   telemetry:
     tracing:
+      # samplingRate: 1
       provider:
         type: Zipkin
         backendRefs:
@@ -70,5 +69,5 @@ spec:
             type: PathPrefix
             value: /zipkin
       backendRefs:
-        - name: infra-backend-v2
-          port: 8080
+        - name: backend
+          port: 3000

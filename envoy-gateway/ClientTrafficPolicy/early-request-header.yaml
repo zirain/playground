@@ -1,0 +1,14 @@
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: ClientTrafficPolicy
+metadata:
+  name: client-trace-id
+spec:
+  headers:
+    earlyRequestHeaders:
+      add:
+        - name: x-client-trace-id
+          value: "%REQ(some-key)%"
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: zipkin-tracing
