@@ -3,8 +3,8 @@ admin:
   address:
     socket_address:
       protocol: TCP
-      address: 127.0.0.1
-      port_value: 9901
+      address: 0.0.0.0
+      port_value: 19000
 
 static_resources:
   listeners:
@@ -48,7 +48,26 @@ static_resources:
                             literal:
                               value: "binary"
                 stat_prefix: ingress_http
+                earlyHeaderMutationExtensions:
+                  - name: envoy.http.early_header_mutation.header_mutation
+                    typedConfig:
+                      "@type": type.googleapis.com/envoy.extensions.http.early_header_mutation.header_mutation.v3.HeaderMutation
+                      mutations:
+                        - append:
+                            header:
+                              key: x-client-trace-id
+                              value: "%REQ(some-key)%"
+                http_filters:
+                  - name: envoy.filters.http.router
+                    typedConfig:
+                      "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
                 tracing:
+                  client_sampling:
+                    value: 100
+                  overall_sampling:
+                    value: 100
+                  random_sampling:
+                    value: 1
                   provider:
                     name: envoy.tracers.zipkin
                     typed_config:
@@ -58,24 +77,6 @@ static_resources:
                       collector_endpoint_version: "HTTP_JSON"
                       shared_span_context: false
                       # trace_id_128bit: true
-                http_filters:
-                  - name: envoy.filters.http.ratelimit
-                    typed_config:
-                      "@type": type.googleapis.com/envoy.extensions.filters.http.ratelimit.v3.RateLimit
-                      domain: httpbin-ratelimit # must match domain in ratelimit ConfigMap
-                      failure_mode_deny: false # run plugin in fail-open mode, no limiting happens if ratelimit is unavailable
-                      rate_limit_service:
-                        grpc_service:
-                          envoy_grpc:
-                            cluster_name: rate_limit_service
-                        transport_api_version: V3
-                      response_headers_to_add:
-                        - header:
-                            key: x-global-ratelimit
-                            value: rate_limit_service
-                  - name: envoy.filters.http.router
-                    typedConfig:
-                      "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
                 route_config:
                   name: local_route
                   virtual_hosts:
@@ -193,6 +194,7 @@ static_resources:
                       port_value: 9081
 
     - name: otel-collector
+      type: LOGICAL_DNS
       connect_timeout: 0.25s
       http2_protocol_options: {}
       lb_policy: round_robin
@@ -203,10 +205,11 @@ static_resources:
               - endpoint:
                   address:
                     socket_address:
-                      address: 127.0.0.1
+                      address: otel-collector
                       port_value: 4317
 
     - name: zipkin
+      type: LOGICAL_DNS
       connect_timeout: 0.25s
       lb_policy: round_robin
       load_assignment:
@@ -216,5 +219,5 @@ static_resources:
               - endpoint:
                   address:
                     socket_address:
-                      address: 127.0.0.1
+                      address: otel-collector
                       port_value: 9411

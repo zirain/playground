@@ -3,15 +3,15 @@ admin:
   address:
     socket_address:
       protocol: TCP
-      address: 127.0.0.1
-      port_value: 9901
+      address: 0.0.0.0
+      port_value: 19002
 
 static_resources:
   listeners:
     - address:
         socket_address:
           address: 0.0.0.0
-          port_value: 18000
+          port_value: 18002
       filter_chains:
         - filters:
             - name: envoy.filters.network.http_connection_manager
@@ -58,31 +58,7 @@ static_resources:
                           cluster_name: otel-collector
                         timeout: 0.250s
                       service_name: envoy-1
-                  # randomSampling:
-                  #   value: 0.05
-                # tracing:
-                #   provider:
-                #     name: envoy.tracers.zipkin
-                #     typed_config:
-                #       "@type": type.googleapis.com/envoy.config.trace.v3.ZipkinConfig
-                #       collector_cluster: zipkin
-                #       collector_endpoint: "/api/v2/spans"
-                #       collector_endpoint_version: HTTP_JSON
                 http_filters:
-                  - name: envoy.filters.http.ratelimit
-                    typed_config:
-                      "@type": type.googleapis.com/envoy.extensions.filters.http.ratelimit.v3.RateLimit
-                      domain: httpbin-ratelimit # must match domain in ratelimit ConfigMap
-                      failure_mode_deny: false # run plugin in fail-open mode, no limiting happens if ratelimit is unavailable
-                      rate_limit_service:
-                        grpc_service:
-                          envoy_grpc:
-                            cluster_name: rate_limit_service
-                        transport_api_version: V3
-                      response_headers_to_add:
-                        - header:
-                            key: x-global-ratelimit
-                            value: rate_limit_service
                   - name: envoy.filters.http.router
                     typedConfig:
                       "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
@@ -165,21 +141,6 @@ static_resources:
                       "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
 
   clusters:
-    - name: rate_limit_service
-      type: STRICT_DNS
-      lb_policy: ROUND_ROBIN
-      http2_protocol_options: {}
-      connect_timeout: 10s
-      load_assignment:
-        cluster_name: rate_limit_cluster
-        endpoints:
-          - lb_endpoints:
-              - endpoint:
-                  address:
-                    socket_address:
-                      address: 127.0.0.1
-                      port_value: 8081
-
     - name: default_service
       load_assignment:
         cluster_name: default_service
@@ -203,6 +164,7 @@ static_resources:
                       port_value: 9081
 
     - name: otel-collector
+      type: STRICT_DNS
       connect_timeout: 0.25s
       http2_protocol_options: {}
       lb_policy: round_robin
@@ -213,17 +175,5 @@ static_resources:
               - endpoint:
                   address:
                     socket_address:
-                      address: 127.0.0.1
+                      address: otel-collector
                       port_value: 4317
-    - name: zipkin
-      connect_timeout: 0.25s
-      lb_policy: round_robin
-      load_assignment:
-        cluster_name: zipkin
-        endpoints:
-          - lb_endpoints:
-              - endpoint:
-                  address:
-                    socket_address:
-                      address: 127.0.0.1
-                      port_value: 9411

@@ -1,5 +1,30 @@
-version: '3'
 services:
+  skywalking:
+    image: envoyproxy/envoy-dev:latest
+    ports:
+      - "19001:19001"
+      - "18001:18001"
+    volumes:
+      - ./skywalking.yaml:/etc/envoy/envoy.yaml
+  zipkin:
+    image: envoyproxy/envoy-dev:latest
+    command:
+     - -c
+     - "/etc/envoy/envoy.yaml"
+    #  - --log-level
+    #  - debug
+    ports:
+      - "19000:19000"
+      - "18000:18000"
+    volumes:
+      - ./zipkin.yaml:/etc/envoy/envoy.yaml
+  otel:
+    image: envoyproxy/envoy-dev:latest
+    ports:
+      - "19002:19002"
+      - "18002:18002"
+    volumes:
+      - ./otel.yaml:/etc/envoy/envoy.yaml
   otel-collector:
     image: otel/opentelemetry-collector-contrib
     restart: always
