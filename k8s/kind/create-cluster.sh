@@ -6,7 +6,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Setup default values
 CLUSTER_NAME=${CLUSTER_NAME:-"envoy-gateway"}
-KIND_NODE_TAG=${KIND_NODE_TAG:-"v1.32.0"}
+KIND_NODE_TAG=${KIND_NODE_TAG:-"v1.33.0"}
 RESITRY_MIRROR=${RESITRY_MIRROR:-"192.168.4.146:5000"}
 ENABLE_RESITRY_MIRROR=${ENABLE_RESITRY_MIRROR:-"true"}
 IP_FAMILY=${IP_FAMILY:-"ipv4"}
@@ -56,7 +56,7 @@ KIND_CFG=$(cat <<-EOM
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
 runtimeConfig:
-  "certificates.k8s.io/v1alpha1/clustertrustbundles": "true"
+  "certificates.k8s.io/v1beta1/clustertrustbundles": "true"
 featureGates:
   "ClusterTrustBundle": true
   "ClusterTrustBundleProjection": true
