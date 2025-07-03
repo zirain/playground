@@ -1,4 +1,11 @@
 apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: eg
+spec:
+  controllerName: gateway.envoyproxy.io/gatewayclass-controller
+---
+apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
   name: eg
@@ -18,7 +25,6 @@ apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: EnvoyProxy
 metadata:
   name: eg-gtw-config
-  namespace: envoy-gateway-system
 spec:
   telemetry:
     accessLog:
@@ -34,6 +40,7 @@ spec:
               response_flags: "%RESPONSE_FLAGS%"
               response_code_details: "%RESPONSE_CODE_DETAILS%"
               upstream_transport_failure_reason: "%UPSTREAM_TRANSPORT_FAILURE_REASON%"
+              request_headers_bytes: "%REQUEST_HEADERS_BYTES%"
               bytes_received: "%BYTES_RECEIVED%"
               bytes_sent: "%BYTES_SENT%"
               duration: "%DURATION%"
@@ -61,3 +68,21 @@ spec:
                 port: 4317
                 resources:
                   k8s.cluster.name: "cluster1"
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: backend
+spec:
+  parentRefs:
+    - name: eg
+  rules:
+    - backendRefs:
+        - group: ""
+          kind: Service
+          name: httpbin
+          port: 8000
+      matches:
+        - path:
+            type: PathPrefix
+            value: /
