@@ -9,8 +9,8 @@ spec:
       sinks:
         - type: OpenTelemetry
           openTelemetry:
-            backendRef:
-              name: otel-collector
+            backendRefs:
+            - name: otel-collector
               namespace: monitoring
               port: 4317
     accessLog:
@@ -25,16 +25,16 @@ spec:
                 path: /dev/stdout
             - type: OpenTelemetry
               openTelemetry:
-                backendRef:
-                  name: otel-collector
+                backendRefs:
+                - name: otel-collector
                   namespace: monitoring
                   port: 4317
                 resources:
                   k8s.cluster.name: "envoy-gateway"
     tracing:
       provider:
-        backendRef:
-          name: otel-collector
+        backendRefs:
+        - name: otel-collector
           namespace: monitoring
           port: 4317
       customTags:
