@@ -6,12 +6,7 @@ https://artifacthub.io/packages/helm/cert-manager/cert-manager
 
 ``` bash
 # install cert-manager; this might take a little time
-helm install cert-manager cert-manager \
-	--repo https://charts.jetstack.io \
-	--namespace cert-manager \
-	--set installCRDs=true \
-	--create-namespace \
-	--version v1.8.0
+helm upgrade -i --repo https://charts.jetstack.io  -n cert-manager cert-manager cert-manager --set installCRDs=true --create-namespace
 
 # We need this namespace to exist since our cert will be placed there
 kubectl create namespace istio-system

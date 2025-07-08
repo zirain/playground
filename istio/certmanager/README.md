@@ -5,10 +5,7 @@
 ### Install cert-manager
 
 ```shell
-helm repo add jetstack https://charts.jetstack.io
-helm repo update
-kubectl create namespace cert-manager
-helm install -n cert-manager cert-manager jetstack/cert-manager --set installCRDs=true
+helm upgrade -i --repo https://charts.jetstack.io  -n cert-manager cert-manager cert-manager --set installCRDs=true --create-namespace
 ```
 
 ### Create Self-Signed Issuer
