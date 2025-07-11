@@ -26,74 +26,93 @@ static_resources:
                           inline_string: |
                             [%START_TIME%] "%TRACE_ID%" "%REQ(x-b3-traceid)%" "%REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)% %PROTOCOL%" %RESPONSE_CODE% %RESPONSE_FLAGS% %RESPONSE_CODE_DETAILS% %CONNECTION_TERMINATION_DETAILS% "%UPSTREAM_TRANSPORT_FAILURE_REASON%" %BYTES_RECEIVED% %BYTES_SENT% %DURATION% %REQUEST_TX_DURATION% %RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)% "%REQ(X-FORWARDED-FOR)%" "%REQ(USER-AGENT)%" "%REQ(X-REQUEST-ID)%" "%REQ(:AUTHORITY)%" "%UPSTREAM_HOST%" %UPSTREAM_CLUSTER% %UPSTREAM_LOCAL_ADDRESS% %DOWNSTREAM_LOCAL_ADDRESS% %DOWNSTREAM_REMOTE_ADDRESS% %REQUESTED_SERVER_NAME% %ROUTE_NAME%
                       path: /dev/stdout
-                  - name: envoy.access_loggers.open_telemetry
-                    typedConfig:
-                      "@type": type.googleapis.com/envoy.extensions.access_loggers.open_telemetry.v3.OpenTelemetryAccessLogConfig
-                      body:
-                        stringValue: |
-                          [%START_TIME%] "%REQ(x-b3-traceid)%" "%REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)% %PROTOCOL%" %RESPONSE_CODE% %RESPONSE_FLAGS% %RESPONSE_CODE_DETAILS% %CONNECTION_TERMINATION_DETAILS% "%UPSTREAM_TRANSPORT_FAILURE_REASON%" %BYTES_RECEIVED% %BYTES_SENT% %DURATION% %RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)% "%REQ(X-FORWARDED-FOR)%" "%REQ(USER-AGENT)%" "%REQ(X-REQUEST-ID)%" "%REQ(:AUTHORITY)%" "%UPSTREAM_HOST%" %UPSTREAM_CLUSTER% %UPSTREAM_LOCAL_ADDRESS% %DOWNSTREAM_LOCAL_ADDRESS% %DOWNSTREAM_REMOTE_ADDRESS% %REQUESTED_SERVER_NAME% %ROUTE_NAME%
-                      attributes:
-                        values:
-                          - key: "spanId"
-                            value:
-                              string_value: "%REQ(x-b3-spanid)%"
-                      commonConfig:
-                        grpcService:
-                          envoyGrpc:
-                            clusterName: otel-collector
-                        logName: otel_envoy_accesslog
-                        transportApiVersion: V3
-                        customTags:
-                          - tag: "deploy_type"
-                            literal:
-                              value: "binary"
+                  # - name: envoy.access_loggers.open_telemetry
+                  #   typedConfig:
+                  #     "@type": type.googleapis.com/envoy.extensions.access_loggers.open_telemetry.v3.OpenTelemetryAccessLogConfig
+                  #     body:
+                  #       stringValue: |
+                  #         [%START_TIME%] "%REQ(x-b3-traceid)%" "%REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)% %PROTOCOL%" %RESPONSE_CODE% %RESPONSE_FLAGS% %RESPONSE_CODE_DETAILS% %CONNECTION_TERMINATION_DETAILS% "%UPSTREAM_TRANSPORT_FAILURE_REASON%" %BYTES_RECEIVED% %BYTES_SENT% %DURATION% %RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)% "%REQ(X-FORWARDED-FOR)%" "%REQ(USER-AGENT)%" "%REQ(X-REQUEST-ID)%" "%REQ(:AUTHORITY)%" "%UPSTREAM_HOST%" %UPSTREAM_CLUSTER% %UPSTREAM_LOCAL_ADDRESS% %DOWNSTREAM_LOCAL_ADDRESS% %DOWNSTREAM_REMOTE_ADDRESS% %REQUESTED_SERVER_NAME% %ROUTE_NAME%
+                  #     attributes:
+                  #       values:
+                  #         - key: "spanId"
+                  #           value:
+                  #             string_value: "%REQ(x-b3-spanid)%"
+                  #     commonConfig:
+                  #       grpcService:
+                  #         envoyGrpc:
+                  #           clusterName: otel-collector
+                  #       logName: otel_envoy_accesslog
+                  #       transportApiVersion: V3
+                  #       customTags:
+                  #         - tag: "deploy_type"
+                  #           literal:
+                  #             value: "binary"
                 stat_prefix: ingress_http
-                earlyHeaderMutationExtensions:
-                  - name: envoy.http.early_header_mutation.header_mutation
-                    typedConfig:
-                      "@type": type.googleapis.com/envoy.extensions.http.early_header_mutation.header_mutation.v3.HeaderMutation
-                      mutations:
-                        - append:
-                            header:
-                              key: x-client-trace-id
-                              value: "%REQ(some-key)%"
+                # earlyHeaderMutationExtensions:
+                #   - name: envoy.http.early_header_mutation.header_mutation
+                #     typedConfig:
+                #       "@type": type.googleapis.com/envoy.extensions.http.early_header_mutation.header_mutation.v3.HeaderMutation
+                #       mutations:
+                #         - append:
+                #             header:
+                #               key: x-client-trace-id
+                #               value: "%REQ(some-key)%"
                 http_filters:
+                  - name: envoy.filters.http.lua
+                    typedConfig:
+                      "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua
+                      inlineCode: |
+                        function envoy_on_request(request_handle)
+                          request_handle:headers():add("x-some-id", "some-value")
+                          request_handle:clearRouteCache()
+                        end
                   - name: envoy.filters.http.router
                     typedConfig:
                       "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
                 tracing:
-                  client_sampling:
+                  customTags:
+                    - literal:
+                        value: zipkin
+                      tag: provider
+                  overallSampling:
                     value: 100
-                  overall_sampling:
+                  clientSampling:
                     value: 100
-                  random_sampling:
+                  randomSampling:
                     value: 1
+                  spawnUpstreamSpan: true
                   provider:
                     name: envoy.tracers.zipkin
                     typed_config:
                       "@type": type.googleapis.com/envoy.config.trace.v3.ZipkinConfig
-                      collector_cluster: zipkin
-                      collector_endpoint: "/api/v2/spans"
-                      collector_endpoint_version: "HTTP_JSON"
-                      shared_span_context: false
-                      # trace_id_128bit: true
+                      collectorCluster: zipkin
+                      collectorEndpoint: "/api/v2/spans"
+                      collectorEndpointVersion: "HTTP_JSON"
+                      sharedSpanContext: false
+                      traceId128bit: true
                 route_config:
                   name: local_route
                   virtual_hosts:
                     - name: local_service
                       domains: ["*"]
                       routes:
-                        - match: { prefix: "/" }
-                          name: "rl-test"
+                        - match:
+                            prefix: "/foo"
+                            headers:
+                              - name: x-some-id
+                                stringMatch:
+                                  exact: some-value
+                          name: "foo"
                           route:
-                            cluster: service_protected_by_rate_limit
-                            rate_limits:
-                              - actions:
-                                  - request_headers:
-                                      header_name: ":path"
-                                      descriptor_key: "PATH"
-                        - match: { prefix: "/foo2" }
-                          route: { cluster: default_service }
+                            cluster: cluster_9080
+                          tracing:
+                            randomSampling:
+                              numerator: 100
+                        - match:
+                            prefix: "/"
+                          name: "match-all"
+                          route:
+                            cluster: cluster_9081
 
     - name: staticreply-9080
       address:
@@ -119,7 +138,7 @@ static_resources:
                           direct_response:
                             status: 200
                             body:
-                              inline_string: "example body\n"
+                              inline_string: "hello from 9080\n"
                 http_filters:
                   - name: envoy.filters.http.router
                     typedConfig:
@@ -149,7 +168,7 @@ static_resources:
                           direct_response:
                             status: 200
                             body:
-                              inline_string: "example body\n"
+                              inline_string: "hello from 9081\n"
                 http_filters:
                   - name: envoy.filters.http.router
                     typedConfig:
@@ -171,9 +190,9 @@ static_resources:
                       address: 127.0.0.1
                       port_value: 8081
 
-    - name: default_service
+    - name: cluster_9080
       load_assignment:
-        cluster_name: default_service
+        cluster_name: cluster_9080
         endpoints:
           - lb_endpoints:
               - endpoint:
@@ -182,9 +201,9 @@ static_resources:
                       address: 127.0.0.1
                       port_value: 9080
 
-    - name: service_protected_by_rate_limit
+    - name: cluster_9081
       load_assignment:
-        cluster_name: service_protected_by_rate_limit
+        cluster_name: cluster_9081
         endpoints:
           - lb_endpoints:
               - endpoint:
