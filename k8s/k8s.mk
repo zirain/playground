@@ -1,4 +1,4 @@
-NUM_WORKERS 	:= 3
+NUM_WORKERS 	:= 2
 CLUSTER_NAME 	:= envoy-gateway
 
 .PHNOY: create-cluster
