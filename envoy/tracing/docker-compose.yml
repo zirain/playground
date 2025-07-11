@@ -18,6 +18,18 @@ services:
       - "18000:18000"
     volumes:
       - ./zipkin.yaml:/etc/envoy/envoy.yaml
+  zipkin2:
+    image: envoyproxy/envoy-dev:latest
+    command:
+     - -c
+     - "/etc/envoy/envoy.yaml"
+    #  - --log-level
+    #  - debug
+    ports:
+      - "19003:19003"
+      - "18003:18003"
+    volumes:
+      - ./zipkin-internal.yaml:/etc/envoy/envoy.yaml
   otel:
     image: envoyproxy/envoy-dev:latest
     ports:
