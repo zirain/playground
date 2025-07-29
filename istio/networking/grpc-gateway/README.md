@@ -1,5 +1,7 @@
 # gRPC gateway demo
 
-```
-grpcurl -plaintext 172.25.255.200:80 yages.Echo/Ping
+```shell
+fortio grpcping 172.18.0.201:80
+
+fortio load -a -grpc -ping -c 2 -s 4 172.18.0.201:80
 ```
