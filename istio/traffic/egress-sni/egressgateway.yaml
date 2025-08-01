@@ -1,0 +1,47 @@
+# New k8s cluster service to put egressgateway into the Service Registry,
+# so application sidecars can route traffic towards it within the mesh.
+apiVersion: v1
+kind: Service
+metadata:
+  name: egressgateway
+  namespace: istio-egress
+spec:
+  type: ClusterIP
+  selector:
+    istio: egressgateway
+  ports:
+    - port: 443
+      name: tls-egress
+      targetPort: 8443
+
+---
+# Gateway deployment with injection method
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: istio-egressgateway
+  namespace: istio-egress
+spec:
+  selector:
+    matchLabels:
+      istio: egressgateway
+  template:
+    metadata:
+      annotations:
+        inject.istio.io/templates: gateway
+      labels:
+        istio: egressgateway
+        sidecar.istio.io/inject: "true"
+    spec:
+      containers:
+        - name: istio-proxy
+          image: auto # The image will automatically update each time the pod starts.
+          securityContext:
+            capabilities:
+              drop:
+                - ALL
+            runAsUser: 1337
+            runAsGroup: 1337
+
+---
+
