@@ -29,6 +29,7 @@ metadata:
   namespace: istio-system
 spec:
   hosts:
+    - "*.baidu.com"
     - "*.wikipedia.org"
   gateways:
     - mesh
@@ -39,6 +40,7 @@ spec:
             - mesh
           # port: 443
           sniHosts:
+            - "*.baidu.com"
             - "*.wikipedia.org"
       route:
         - destination:
@@ -80,6 +82,7 @@ metadata:
   namespace: istio-system
 spec:
   hosts:
+    - "*.baidu.com"
     - "*.wikipedia.org"
   ports:
     - number: 443
@@ -157,46 +160,21 @@ spec:
           filter_chains:
             - filter_chain_match:
                 server_names:
+                  - "*.baidu.com"
                   - "*.wikipedia.org"
-                # destination_port: 443
-                source_ports:
-                  - 443
               filters:
-                - name: envoy.filters.network.sni_dynamic_forward_proxy
+                - name: envoy.filters.set_filter_state
                   typed_config:
-                    "@type": type.googleapis.com/envoy.extensions.filters.network.sni_dynamic_forward_proxy.v3.FilterConfig
-                    port_value: 443
-                    dns_cache_config:
-                      name: dynamic_forward_proxy_cache_config
-                      dns_lookup_family: V4_ONLY
-                - name: envoy.tcp_proxy
-                  typed_config:
-                    "@type": type.googleapis.com/envoy.extensions.filters.network.tcp_proxy.v3.TcpProxy
-                    stat_prefix: tcp
-                    cluster: dynamic_forward_proxy_cluster
-                    access_log:
-                      - name: envoy.access_loggers.file
-                        typed_config:
-                          "@type": type.googleapis.com/envoy.extensions.access_loggers.file.v3.FileAccessLog
-                          path: "/dev/stdout"
-                          log_format:
-                            text_format_source:
-                              inline_string:
-                                '[443] [%START_TIME%] "%REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)%
-                                %PROTOCOL%" %RESPONSE_CODE% %RESPONSE_FLAGS% %RESPONSE_CODE_DETAILS% %CONNECTION_TERMINATION_DETAILS%
-                                "%UPSTREAM_TRANSPORT_FAILURE_REASON%" %BYTES_RECEIVED% %BYTES_SENT% %DURATION%
-                                %RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)% "%REQ(X-FORWARDED-FOR)%" "%REQ(USER-AGENT)%"
-                                "%REQ(X-REQUEST-ID)%" "%REQ(:AUTHORITY)%" "%UPSTREAM_HOST%" %UPSTREAM_CLUSTER%
-                                %UPSTREAM_LOCAL_ADDRESS% %DOWNSTREAM_LOCAL_ADDRESS% %DOWNSTREAM_REMOTE_ADDRESS%
-                                %REQUESTED_SERVER_NAME% %ROUTE_NAME%
-                                '
-
-            - filter_chain_match:
-                server_names:
-                  - "*.wikipedia.org"
-                source_ports:
-                  - 8443
-              filters:
+                    "@type": type.googleapis.com/envoy.extensions.filters.network.set_filter_state.v3.Config
+                    on_new_connection:
+                      # - object_key: envoy.upstream.dynamic_host
+                      #   format_string:
+                      #     text_format_source:
+                      #       inline_string: "google.com"
+                      - object_key: envoy.upstream.dynamic_port
+                        format_string:
+                          text_format_source:
+                            inline_string: "%CEL(source.port)%"
                 - name: envoy.filters.network.sni_dynamic_forward_proxy
                   typed_config:
                     "@type": type.googleapis.com/envoy.extensions.filters.network.sni_dynamic_forward_proxy.v3.FilterConfig
@@ -217,40 +195,7 @@ spec:
                           log_format:
                             text_format_source:
                               inline_string:
-                                '[8443] [%START_TIME%] "%REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)%
-                                %PROTOCOL%" %RESPONSE_CODE% %RESPONSE_FLAGS% %RESPONSE_CODE_DETAILS% %CONNECTION_TERMINATION_DETAILS%
-                                "%UPSTREAM_TRANSPORT_FAILURE_REASON%" %BYTES_RECEIVED% %BYTES_SENT% %DURATION%
-                                %RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)% "%REQ(X-FORWARDED-FOR)%" "%REQ(USER-AGENT)%"
-                                "%REQ(X-REQUEST-ID)%" "%REQ(:AUTHORITY)%" "%UPSTREAM_HOST%" "UPSTREAM_REMOTE_PORT" %UPSTREAM_CLUSTER%
-                                %UPSTREAM_LOCAL_ADDRESS% %DOWNSTREAM_LOCAL_ADDRESS% %DOWNSTREAM_REMOTE_ADDRESS%
-                                %REQUESTED_SERVER_NAME% %ROUTE_NAME%
-                                '
-
-            - filter_chain_match:
-                server_names:
-                  - "*.wikipedia.org"
-              filters:
-                - name: envoy.filters.network.sni_dynamic_forward_proxy
-                  typed_config:
-                    "@type": type.googleapis.com/envoy.extensions.filters.network.sni_dynamic_forward_proxy.v3.FilterConfig
-                    port_value: 443
-                    dns_cache_config:
-                      name: dynamic_forward_proxy_cache_config
-                      dns_lookup_family: V4_ONLY
-                - name: envoy.tcp_proxy
-                  typed_config:
-                    "@type": type.googleapis.com/envoy.extensions.filters.network.tcp_proxy.v3.TcpProxy
-                    stat_prefix: tcp
-                    cluster: dynamic_forward_proxy_cluster
-                    access_log:
-                      - name: envoy.access_loggers.file
-                        typed_config:
-                          "@type": type.googleapis.com/envoy.extensions.access_loggers.file.v3.FileAccessLog
-                          path: "/dev/stdout"
-                          log_format:
-                            text_format_source:
-                              inline_string:
-                                '[all] [%START_TIME%] "%REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)%
+                                '[all] [%CEL(source.port)%] [%HOSTNAME%] [%START_TIME%] "%REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)%
                                 %PROTOCOL%" %RESPONSE_CODE% %RESPONSE_FLAGS% %RESPONSE_CODE_DETAILS% %CONNECTION_TERMINATION_DETAILS%
                                 "%UPSTREAM_TRANSPORT_FAILURE_REASON%" %BYTES_RECEIVED% %BYTES_SENT% %DURATION%
                                 %RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)% "%REQ(X-FORWARDED-FOR)%" "%REQ(USER-AGENT)%"
