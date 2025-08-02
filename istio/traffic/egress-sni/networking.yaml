@@ -163,22 +163,11 @@ spec:
                   - "*.baidu.com"
                   - "*.wikipedia.org"
               filters:
-                - name: envoy.filters.set_filter_state
-                  typed_config:
-                    "@type": type.googleapis.com/envoy.extensions.filters.network.set_filter_state.v3.Config
-                    on_new_connection:
-                      # - object_key: envoy.upstream.dynamic_host
-                      #   format_string:
-                      #     text_format_source:
-                      #       inline_string: "google.com"
-                      - object_key: envoy.upstream.dynamic_port
-                        format_string:
-                          text_format_source:
-                            inline_string: "%CEL(source.port)%"
                 - name: envoy.filters.network.sni_dynamic_forward_proxy
                   typed_config:
                     "@type": type.googleapis.com/envoy.extensions.filters.network.sni_dynamic_forward_proxy.v3.FilterConfig
-                    port_value: 8443
+                    port_value: 443
+                    # save_upstream_address: true
                     dns_cache_config:
                       name: dynamic_forward_proxy_cache_config
                       dns_lookup_family: V4_ONLY
