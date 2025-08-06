@@ -52,3 +52,9 @@ queryImages=(prometheus-operator/prometheus-config-reloader:v0.73.2
 for imageName in ${queryImages[@]} ; do
     crane cp "quay.io/${imageName}" "${MIRROR_REGISTRY}/${imageName}"
 done
+
+# sync image from ghcr.io
+ghcrImages=(projectcontour/yages:v0.1.0)
+for imageName in ${ghcrImages[@]} ; do
+    crane cp "ghcr.io/${imageName}" "${MIRROR_REGISTRY}/${imageName}"
+done
