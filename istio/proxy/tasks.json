@@ -1,0 +1,99 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "refresh compdb",
+            "type": "shell",
+            "command": "tools/vscode/refresh_compdb.sh",
+            "group": {
+                "kind": "build"
+            }
+        },
+        {
+            "label": "clang-format",
+            "type": "shell",
+            "command": "clang-format -i $(git ls-tree -r HEAD --name-only | grep -E '\\.(h|c|cc|proto)$')",
+            "group": {
+                "kind": "build"
+            }
+        },
+        {
+            "label": "sha256sum",
+            "type": "shell",
+            "command": "sha256sum bazel-bin/envoy",
+            "group": {
+                "kind": "build"
+            }
+        },
+        {
+            "label": "Build with container SHA",
+            "type": "shell",
+            "command": "make build && sha256sum bazel-bin/envoy",
+            "options": {
+                "env": {
+                    "BUILD_WITH_CONTAINER": "1"
+                }
+            },
+            "group": {
+                "kind": "build"
+            }
+        },
+        {
+            "label": "Build and SHA",
+            "type": "shell",
+            "command": "make build && sha256sum bazel-bin/envoy",
+            "options": {
+                "env": {
+                    "BUILD_WITH_CONTAINER": "0",
+                    "BAZEL_TARGETS": "envoy",
+                    "BAZEL_BUILD_ARGS": "--define=wasm=disabled"
+                    // "BAZEL_BUILD_ARGS": "--override_repository=envoy=/root/codes/envoy"
+                }
+            },
+            "group": {
+                "kind": "build"
+            }
+        },
+        {
+            "label": "Build and COPY",
+            "type": "shell",
+            "command": "cp bazel-bin/envoy ~/codes/istio/out/linux_amd64/release/envoy",
+            "options": {
+                "env": {
+                    // "BAZEL_BUILD_ARGS": "--override_repository=envoy=/root/codes/envoy"
+                }
+            },
+            "group": {
+                "kind": "build"
+            }
+        },
+        {
+            "label": "Run envoy",
+            "type": "shell",
+            "command": "bazel-bin/envoy -c .vscode/envoy.yaml --component-log-level filter:debug",
+            "options": {
+                "env": {
+                    // "BAZEL_BUILD_ARGS": "--override_repository=envoy=/root/codes/envoy"
+                }
+            },
+            "group": {
+                "kind": "build"
+            }
+        },
+        {
+            "label": "Run test",
+            "type": "shell",
+            "command": "make test",
+            "options": {
+                "env": {
+                    "TEST_ENVOY_DEBUG": "error"
+                }
+            },
+            "group": {
+                "kind": "build"
+            }
+        },
+    ]
+}
