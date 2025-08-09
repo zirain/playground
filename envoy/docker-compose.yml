@@ -1,8 +1,6 @@
-version: '3'
 services:
   envoy:
-    network_mode: "host"
-    image: envoyproxy/envoy:dev-874f7f5e9d7b5136ec1e82b7c42502d367fe25d9
+    image: envoyproxy/envoy:dev
     ports:
       - "3000:3000"
       - "9901:9901"
