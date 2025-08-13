@@ -1,0 +1,117 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: zipkin-tracing
+spec:
+  gatewayClassName: eg
+  listeners:
+    - name: http
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: All
+  infrastructure:
+    parametersRef:
+      group: gateway.envoyproxy.io
+      kind: EnvoyProxy
+      name: zipkin-tracing
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyProxy
+metadata:
+  name: zipkin-tracing
+spec:
+  telemetry:
+    accessLog:
+      settings:
+        - format:
+            type: JSON
+            json:
+              start_time: "%START_TIME%"
+              method: "%REQ(:METHOD)%"
+              "x-envoy-origin-path": "%REQ(X-ENVOY-ORIGINAL-PATH?:PATH)%"
+              protocol: "%PROTOCOL%"
+              response_code: "%RESPONSE_CODE%"
+              response_flags: "%RESPONSE_FLAGS%"
+              response_code_details: "%RESPONSE_CODE_DETAILS%"
+              upstream_transport_failure_reason: "%UPSTREAM_TRANSPORT_FAILURE_REASON%"
+              request_headers_bytes: "%REQUEST_HEADERS_BYTES%"
+              bytes_received: "%BYTES_RECEIVED%"
+              bytes_sent: "%BYTES_SENT%"
+              duration: "%DURATION%"
+              upstream_duration: "%COMMON_DURATION(US_TX_BEG:US_RX_END:ms)%"
+              "x-envoy-upstream-service-time": "%RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)%"
+              "x-forwarded-for": "%REQ(X-FORWARDED-FOR)%"
+              "user-agent": "%REQ(USER-AGENT)%"
+              "x-request-id": "%REQ(X-REQUEST-ID)%"
+              ":authority": "%REQ(:AUTHORITY)%"
+              authorization: "%REQ(AUTHORIZATION)%"
+              upstream_host: "%UPSTREAM_HOST%"
+              upstream_cluster: "%UPSTREAM_CLUSTER%"
+              upstream_local_address: "%UPSTREAM_LOCAL_ADDRESS%"
+              downstream_local_address: "%DOWNSTREAM_LOCAL_ADDRESS%"
+              downstream_remote_address: "%DOWNSTREAM_REMOTE_ADDRESS%"
+              requested_server_name: "%REQUESTED_SERVER_NAME%"
+              route_name: "%ROUTE_NAME%"
+              trace-id: "%TRACE_ID%"
+          sinks:
+            - type: File
+              file:
+                path: /dev/stdout
+    tracing:
+      # samplingRate: 1
+      provider:
+        type: Zipkin
+        backendRefs:
+          - name: otel-collector
+            namespace: monitoring
+            port: 9411
+        zipkin:
+          enable128BitTraceId: true
+      customTags:
+        "provider":
+          type: Literal
+          literal:
+            value: "zipkin"
+        "k8s.cluster.name":
+          type: Literal
+          literal:
+            value: "envoy-gateway"
+        "k8s.pod.name":
+          type: Environment
+          environment:
+            name: ENVOY_POD_NAME
+            defaultValue: "-"
+        "k8s.namespace.name":
+          type: Environment
+          environment:
+            name: ENVOY_GATEWAY_NAMESPACE
+            defaultValue: "envoy-gateway-system"
+  shutdown:
+    drainTimeout: 5s
+    minDrainDuration: 1s
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: tracing-zipkin
+spec:
+  parentRefs:
+    - name: zipkin-tracing
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /zipkin
+      filters:
+        - responseHeaderModifier:
+            add:
+              - name: request-id
+                value: "%REQ(x-request-id)%"
+              - name: trace-id
+                value: "%TRACE_ID%"
+          type: ResponseHeaderModifier
+      backendRefs:
+        - name: backend
+          port: 3000
