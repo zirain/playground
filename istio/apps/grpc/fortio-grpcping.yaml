@@ -1,0 +1,106 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: echo
+  name: echo
+  namespace: echo-grpc
+spec:
+  selector:
+    app: echo
+  type: ClusterIP
+  ports:
+    - name: grpc
+      port: 50051
+      targetPort: 50051
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: echo-v1
+  namespace: echo-grpc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: echo
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: echo
+        version: v1
+    spec:
+      containers:
+        - name: fortio
+          image: fortio/fortio:latest_release
+          args:
+            - server
+            - -grpc-port=50051
+          ports:
+            - containerPort: 50051
+              name: grpc-ping
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: echo-v2
+  namespace: echo-grpc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: echo
+      version: v2
+  template:
+    metadata:
+      labels:
+        app: echo
+        version: v2
+    spec:
+      containers:
+        - name: fortio
+          image: fortio/fortio:latest_release
+          args:
+            - server
+            - -grpc-port=50051
+          ports:
+            - containerPort: 50051
+              name: grpc-ping
+---
+# grpcurl -plaintext -d '{"message": "Hello, World!"}' 172.18.0.201:80 proto.EchoTestService/ForwardEcho
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: echo-grpc
+  namespace: echo-grpc
+spec:
+  gateways:
+    - echo-grpc
+  hosts:
+    - "*"
+  http:
+    - match:
+        - uri:
+            prefix: /
+      route:
+        - destination:
+            host: echo
+            port:
+              number: 50051
+---
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: echo-grpc
+  namespace: echo-grpc
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    - hosts:
+        - "*"
+      port:
+        name: grpc
+        number: 80
+        protocol: GRPC

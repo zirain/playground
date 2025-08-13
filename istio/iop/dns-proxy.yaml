@@ -1,0 +1,9 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+spec:
+  meshConfig:
+    accessLogFile: /dev/stdout
+    defaultConfig:
+      proxyMetadata:
+        # Enable basic DNS proxying
+        ISTIO_META_DNS_CAPTURE: "true"
