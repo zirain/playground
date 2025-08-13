@@ -1,0 +1,34 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: Kafka
+metadata:
+  name: kafka-cluster
+  namespace: kafka
+spec:
+  kafka:
+    version: 3.9.0
+    replicas: 3
+    listeners:
+      - name: plain
+        port: 9092
+        type: internal
+        tls: false
+      - name: external
+        port: 9094
+        type: nodeport
+        tls: false
+    storage:
+      type: ephemeral
+  zookeeper:
+    replicas: 3
+    storage:
+      type: ephemeral
+    template:
+      pod:
+        metadata:
+          annotations:
+            sidecar.istio.io/inject: "false"
+    #         traffic.sidecar.istio.io/excludeInboundPorts: 2888,3888
+    #         traffic.sidecar.istio.io/excludeOutboundPorts: 2888,3888
+  entityOperator:
+    topicOperator: {}
+    userOperator: {}
