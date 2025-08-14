@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: socat
+spec:
+  selector:
+    matchLabels:
+      app: socat
+  template:
+    metadata:
+      labels:
+        app: socat
+    spec:
+      serviceAccountName: socat
+      containers:
+        - name: socat
+          image: alpine/socat:1.8.0.3
+          command:
+            - socat
+            - TCP-LISTEN:8080,fork,reuseaddr
+            - TCP:httpbin.org:80
+            # - TCP:www.httpbin.org:443 # why this cause 400
+          imagePullPolicy: IfNotPresent
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: socat
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: socat
+  labels:
+    app: socat
+spec:
+  ports:
+    - port: 8080
+      name: http
+  selector:
+    app: socat
+---
+
