@@ -21,8 +21,8 @@
 1. Update service label with `istio.io/persistent-session-header: x-session-header`
 1. Check the configuration
    ```shell
-   istioctl pc l istio-ingressgateway-7d89c996bd-kwgmk -n istio-system --port 8080 -oyaml | grep envoy.filters.http.stateful_session -A 3
-   istioctl pc r istio-ingressgateway-7d89c996bd-kwgmk.istio-system -oyaml | grep envoy.filters.http.stateful_session -A 10
+   istioctl pc l deploy/istio-ingressgateway -n istio-system --port 8080 -oyaml | grep envoy.filters.http.stateful_session -A 3
+   istioctl pc r deploy/istio-ingressgateway -m istio-system -oyaml | grep envoy.filters.http.stateful_session -A 10
    ```
 2. Verify traffic, the destination should be always same.
    ```shell
