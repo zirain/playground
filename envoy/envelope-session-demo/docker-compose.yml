@@ -1,0 +1,22 @@
+
+services:
+  backend:
+    image: backend:latest
+    ports:
+      - "8000:8000"
+    networks:
+      - envoy-network
+
+  envoy:
+    image: envoyproxy/envoy:v1.35-latest
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./envoy.yaml:/etc/envoy/envoy.yaml:ro
+    networks:
+      - envoy-network
+    command: envoy -c /etc/envoy/envoy.yaml
+
+networks:
+  envoy-network:
+    driver: bridge
