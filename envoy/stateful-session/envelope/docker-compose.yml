@@ -1,7 +1,9 @@
-
 services:
   backend:
-    image: backend:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: backend-go:latest
     ports:
       - "8000:8000"
     networks:
