@@ -6,24 +6,15 @@ spec:
   selector:
     app: echo
   ports:
-    - name: http
+    - name: http-3000
       protocol: TCP
       port: 3000
       targetPort: 3000
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: echo-headless
-spec:
-  clusterIP: None
-  selector:
-    app: echo
-  ports:
-    - name: http
+    - name: http-3001
       protocol: TCP
-      port: 3000
-      targetPort: 3000
+      appProtocol: kubernetes.io/h2c
+      port: 3001
+      targetPort: 3001
 ---
 apiVersion: apps/v1
 kind: Deployment

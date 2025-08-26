@@ -1,0 +1,18 @@
+# serviceentry-extend-redis.yaml
+apiVersion: networking.istio.io/v1beta1
+kind: ServiceEntry
+metadata:
+  name: echo
+spec:
+  hosts:
+    - echo.default.svc.cluster.local # The EXACT FQDN of the K8s Service
+  ports:
+    - number: 3000
+      name: http-3000
+      protocol: TCP
+  location: MESH_EXTERNAL
+  resolution: STATIC # Because we are providing static IPs below
+  endpoints:
+    - address: 172.19.0.3 # The IP of the external VM
+      ports:
+        http-3000: 3000

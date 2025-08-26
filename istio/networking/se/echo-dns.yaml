@@ -1,0 +1,18 @@
+apiVersion: networking.istio.io/v1beta1
+kind: ServiceEntry
+metadata:
+  name: echo
+  namespace: sample
+spec:
+  exportTo:
+    - sample
+  hosts:
+    - echo.default.svc.cluster.local # The EXACT FQDN of the K8s Service
+  ports:
+    - number: 3000
+      name: http-3000
+      protocol: TCP
+    - number: 3001
+      name: http-3001
+      protocol: TCP
+  resolution: DNS
