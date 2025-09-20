@@ -40,6 +40,7 @@ function install_primary_remote() {
         --set values.global.remotePilotAddress="${DISCOVER_ADDRESS}" \
         --set profile=remote
     if [ "${ISTIO_NETWORK_MODE}" = "non-flat" ]; then
+      echo "Install east-west gateway on remote2"
       istioctl install -y -f "${IOP_CFG_PREFIX}/remote2-eastwest.yaml" --kubeconfig "${KUBECONFIG_BASE}/remote2"
     fi
 }

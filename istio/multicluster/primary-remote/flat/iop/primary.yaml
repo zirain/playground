@@ -30,13 +30,6 @@ spec:
               - name: tls-webhook
                 port: 15017
                 targetPort: 15017
-    pilot:
-      k8s:
-        env:
-          - name: "EXTERNAL_ISTIOD"
-            value: "true"
-          - name: "ISTIOD_CUSTOM_HOST"
-            value: "172.18.255.155"
   values:
     gateways:
       istio-ingressgateway:
@@ -46,3 +39,4 @@ spec:
       multiCluster:
         clusterName: primary
       network: network1
+      externalIstiod: true

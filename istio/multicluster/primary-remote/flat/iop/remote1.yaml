@@ -1,10 +1,13 @@
 apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 spec:
+  meshConfig:
+    accessLogFile: /dev/stdout
   values:
+    istiodRemote:
+      injectionPath: /inject/cluster/remote1/net/network1
     global:
       meshID: mesh1
       multiCluster:
         clusterName: remote1
       network: network1
-      remotePilotAddress: ${DISCOVERY_ADDRESS}
