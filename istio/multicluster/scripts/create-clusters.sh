@@ -20,32 +20,13 @@ KIND_CFG_FILES=$(ls ${KIND_CFG_PREFIX})
 KUBECONFIG_BASE=${KUBECONFIG_BASE:-".kube"}
 mkdir -p "${KUBECONFIG_BASE}"
 
-# Apply config with addresses based on docker network IPAM.
-address_ranges=""
-
-if [ "${IP_FAMILY}" = "ipv4" ] || [ "${IP_FAMILY}" = "dual" ]; then
-    subnet_v4=$(docker network inspect kind | jq -r '.[].IPAM.Config[] | select(.Subnet | contains(":") | not) | .Subnet')
-    address_prefix_v4=$(echo "${subnet_v4}" | awk -F. '{print $1"."$2"."$3}')
-    address_range_v4="${address_prefix_v4}.200-${address_prefix_v4}.250"
-    echo "IPv4 address range: ${address_range_v4}"
-    address_ranges+="- ${address_range_v4}"
-fi
-
-if [ "${IP_FAMILY}" = "ipv6" ] || [ "${IP_FAMILY}" = "dual" ]; then
-    subnet_v6=$(docker network inspect kind | jq -r '.[].IPAM.Config[] | select(.Subnet | contains(":")) | .Subnet')
-    ipv6_prefix="${subnet_v6%::*}"
-    address_range_v6="${ipv6_prefix}::c8-${ipv6_prefix}::fa"
-    echo "IPv6 address range: ${address_range_v6}"
-    [ -n "${address_ranges}" ] && address_ranges+="\n"
-    address_ranges+="- ${address_range_v6}"
-fi
-
 function check_cluster_ready(){
   CLUSTER_NAME=$1
   CONTAINER_IP=$(docker inspect "${CLUSTER_NAME}-control-plane" --format "{{ .NetworkSettings.Networks.kind.IPAddress }}")
   (kind get kubeconfig --name "${CLUSTER_NAME}" --internal | sed "s/${CLUSTER_NAME}-control-plane/${CONTAINER_IP}/g") > "${KUBECONFIG_BASE}/${CLUSTER_NAME}"
 }
 
+ipv4_address_start_at=100
 for file in ${KIND_CFG_FILES[@]}; do
   file_name=$(basename ${file})
   file_full_path="${KIND_CFG_PREFIX}/${file}"
@@ -58,6 +39,27 @@ for file in ${KIND_CFG_FILES[@]}; do
     fi
     sleep 3s
   done
+
+  # Apply config with addresses based on docker network IPAM.
+  address_ranges=""
+  if [ "${IP_FAMILY}" = "ipv4" ] || [ "${IP_FAMILY}" = "dual" ]; then
+      subnet_v4=$(docker network inspect kind | jq -r '.[].IPAM.Config[] | select(.Subnet | contains(":") | not) | .Subnet')
+      address_prefix_v4=$(echo "${subnet_v4}" | awk -F. '{print $1"."$2"."$3}')
+      address_range_v4="${address_prefix_v4}.${ipv4_address_start_at}-${address_prefix_v4}.250"
+      echo "IPv4 address range: ${address_range_v4}"
+      address_ranges+="- ${address_range_v4}"
+  fi
+  # plus 50 to ipv4_address_start_at
+  ipv4_address_start_at=$((ipv4_address_start_at + 50))
+
+  if [ "${IP_FAMILY}" = "ipv6" ] || [ "${IP_FAMILY}" = "dual" ]; then
+      subnet_v6=$(docker network inspect kind | jq -r '.[].IPAM.Config[] | select(.Subnet | contains(":")) | .Subnet')
+      ipv6_prefix="${subnet_v6%::*}"
+      address_range_v6="${ipv6_prefix}::c8-${ipv6_prefix}::fa"
+      echo "IPv6 address range: ${address_range_v6}"
+      [ -n "${address_ranges}" ] && address_ranges+="\n"
+      address_ranges+="- ${address_range_v6}"
+  fi
 
   echo "Starting metallb deployment in cluster ${cluster_name}"
   kubectl apply -f "${BASE_DIR}/addons/metallb-native.yaml" --kubeconfig "${KUBECONFIG_BASE}/${CLUSTER_NAME}"

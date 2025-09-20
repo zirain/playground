@@ -25,14 +25,23 @@ function install_primary_remote() {
     echo "Install Istio on remote1"
     istioctl create-remote-secret --kubeconfig "${KUBECONFIG_BASE}/remote1" --name=remote1 | kubectl apply -f - --kubeconfig "${KUBECONFIG_BASE}/primary"
     # sync root ca
-    kubectl get secret -n istio-system istio-ca-secret -oyaml --kubeconfig "${KUBECONFIG_BASE}/primary" | kubectl apply --kubeconfig "${KUBECONFIG_BASE}/remote1" -f -
-    istioctl install -y -f "${IOP_CFG_PREFIX}/remote1.yaml" --kubeconfig "${KUBECONFIG_BASE}/remote1" --set values.global.remotePilotAddress="${DISCOVER_ADDRESS}"
+    kubectl --kubeconfig="${KUBECONFIG_BASE}/remote1" create namespace istio-system || true
+    kubectl --kubeconfig="${KUBECONFIG_BASE}/remote1" annotate namespace istio-system topology.istio.io/controlPlaneClusters=primary
+    istioctl install -y -f "${IOP_CFG_PREFIX}/remote1.yaml" --kubeconfig "${KUBECONFIG_BASE}/remote1" \
+        --set values.global.remotePilotAddress="${DISCOVER_ADDRESS}" \
+        --set profile=remote
 
     echo "Install Istio on remote2"
     istioctl create-remote-secret --kubeconfig "${KUBECONFIG_BASE}/remote2" --name=remote2 | kubectl apply -f - --kubeconfig "${KUBECONFIG_BASE}/primary"
     # sync root ca
-    kubectl get secret -n istio-system istio-ca-secret -oyaml --kubeconfig "${KUBECONFIG_BASE}/primary" | kubectl apply --kubeconfig "${KUBECONFIG_BASE}/remote2" -f -
-    istioctl install -y -f "${IOP_CFG_PREFIX}/remote2.yaml" --kubeconfig "${KUBECONFIG_BASE}/remote2" --set values.global.remotePilotAddress="${DISCOVER_ADDRESS}"
+    kubectl --kubeconfig="${KUBECONFIG_BASE}/remote2" create namespace istio-system || true
+    kubectl --kubeconfig="${KUBECONFIG_BASE}/remote2" annotate namespace istio-system topology.istio.io/controlPlaneClusters=primary
+    istioctl install -y -f "${IOP_CFG_PREFIX}/remote2.yaml" --kubeconfig "${KUBECONFIG_BASE}/remote2" \
+        --set values.global.remotePilotAddress="${DISCOVER_ADDRESS}" \
+        --set profile=remote
+    if [ "${ISTIO_NETWORK_MODE}" = "non-flat" ]; then
+      istioctl install -y -f "${IOP_CFG_PREFIX}/remote2-eastwest.yaml" --kubeconfig "${KUBECONFIG_BASE}/remote2"
+    fi
 }
 
 install_primary_remote

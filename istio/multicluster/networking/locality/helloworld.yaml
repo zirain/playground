@@ -1,0 +1,15 @@
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: helloworld
+  namespace: sidecar
+spec:
+  host: helloworld
+  trafficPolicy:
+    loadBalancer:
+      localityLbSetting:
+        enabled: true
+    outlierDetection:
+      consecutive5xxErrors: 100
+      interval: 1s
+      baseEjectionTime: 1m
