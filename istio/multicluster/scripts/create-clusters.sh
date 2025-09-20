@@ -9,7 +9,7 @@ SCRIPT_DIR=$(dirname $(realpath "$0"))
 BASE_DIR="${SCRIPT_DIR}/.."
 
 IP_FAMILY="${IP_FAMILY:-"ipv4"}"
-KIND_NODE_TAG="${KIND_NODE_TAG:-"v1.32.0"}"
+KIND_NODE_TAG="${KIND_NODE_TAG:-"v1.33.0"}"
 ISTIO_MC_MODE=${ISTIO_MC_MODE:-"primary-remote"}
 ISTIO_NETWORK_MODE=${ISTIO_NETWORK_MODE:-"flat"}
 OS="$(uname)"
