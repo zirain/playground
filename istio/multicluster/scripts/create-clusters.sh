@@ -63,7 +63,7 @@ for file in ${KIND_CFG_FILES[@]}; do
 
   echo "Starting metallb deployment in cluster ${cluster_name}"
   kubectl apply -f "${BASE_DIR}/addons/metallb-native.yaml" --kubeconfig "${KUBECONFIG_BASE}/${CLUSTER_NAME}"
-  kubectl wait --for=condition=available --timeout=90s deployment/controller -n metallb-system --kubeconfig "${KUBECONFIG_BASE}/${CLUSTER_NAME}"
+  kubectl wait --for=condition=available --timeout=5m deployment/controller -n metallb-system --kubeconfig "${KUBECONFIG_BASE}/${CLUSTER_NAME}"
   kubectl apply --kubeconfig "${KUBECONFIG_BASE}/${CLUSTER_NAME}" -f - <<EOF >/dev/null 2>&1
 apiVersion: metallb.io/v1beta1
 kind: IPAddressPool
