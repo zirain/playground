@@ -23,22 +23,28 @@ function install_primary_remote() {
     DISCOVER_ADDRESS=$(kubectl get --kubeconfig "${KUBECONFIG_BASE}/primary" svc -nistio-system istio-eastwestgateway  -o jsonpath="{.status.loadBalancer.ingress[0].ip}")
 
     echo "Install Istio on remote1"
-    istioctl create-remote-secret --kubeconfig "${KUBECONFIG_BASE}/remote1" --name=remote1 | kubectl apply -f - --kubeconfig "${KUBECONFIG_BASE}/primary"
-    # sync root ca
     kubectl --kubeconfig="${KUBECONFIG_BASE}/remote1" create namespace istio-system || true
     kubectl --kubeconfig="${KUBECONFIG_BASE}/remote1" annotate namespace istio-system topology.istio.io/controlPlaneClusters=primary
+    kubectl --kubeconfig="${KUBECONFIG_BASE}/remote1" label namespace istio-system topology.istio.io/network=network1 --overwrite
     istioctl install -y -f "${IOP_CFG_PREFIX}/remote1.yaml" --kubeconfig "${KUBECONFIG_BASE}/remote1" \
         --set values.global.remotePilotAddress="${DISCOVER_ADDRESS}" \
         --set profile=remote
+    # attach remote1 as a remote cluster of primary
+    istioctl create-remote-secret --kubeconfig "${KUBECONFIG_BASE}/remote1" --name=remote1 | kubectl apply -f - --kubeconfig "${KUBECONFIG_BASE}/primary"
 
     echo "Install Istio on remote2"
-    istioctl create-remote-secret --kubeconfig "${KUBECONFIG_BASE}/remote2" --name=remote2 | kubectl apply -f - --kubeconfig "${KUBECONFIG_BASE}/primary"
-    # sync root ca
     kubectl --kubeconfig="${KUBECONFIG_BASE}/remote2" create namespace istio-system || true
     kubectl --kubeconfig="${KUBECONFIG_BASE}/remote2" annotate namespace istio-system topology.istio.io/controlPlaneClusters=primary
+    kubectl --kubeconfig="${KUBECONFIG_BASE}/remote2" label namespace istio-system topology.istio.io/network=network1 --overwrite
+    if [ "${ISTIO_NETWORK_MODE}" = "non-flat" ]; then
+        kubectl --kubeconfig="${KUBECONFIG_BASE}/remote2" label namespace istio-system topology.istio.io/network=network2 --overwrite
+    fi
     istioctl install -y -f "${IOP_CFG_PREFIX}/remote2.yaml" --kubeconfig "${KUBECONFIG_BASE}/remote2" \
         --set values.global.remotePilotAddress="${DISCOVER_ADDRESS}" \
         --set profile=remote
+
+    # attach remote2 as a remote cluster of primary
+    istioctl create-remote-secret --kubeconfig "${KUBECONFIG_BASE}/remote2" --name=remote2 | kubectl apply -f - --kubeconfig "${KUBECONFIG_BASE}/primary"
     if [ "${ISTIO_NETWORK_MODE}" = "non-flat" ]; then
       echo "Install east-west gateway on remote2"
       istioctl install -y -f "${IOP_CFG_PREFIX}/remote2-eastwest.yaml" --kubeconfig "${KUBECONFIG_BASE}/remote2"
