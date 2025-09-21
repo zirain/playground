@@ -14,6 +14,7 @@ KUBECONFIG_BASE=${KUBECONFIG_BASE:-".kube"}
 kubectl apply -f "${BASE_DIR}/addons/sidecar.yaml" --kubeconfig "${KUBECONFIG_BASE}/primary"
 kubectl apply -n sidecar -f "${BASE_DIR}/addons/helloworld/helloworld-svc.yaml" --kubeconfig "${KUBECONFIG_BASE}/primary"
 kubectl apply -n sidecar -f "${BASE_DIR}/addons/sleep/sleep.yaml" --kubeconfig "${KUBECONFIG_BASE}/primary"
+kubectl apply -n sidecar -f "${BASE_DIR}/addons/helloworld/helloworld-v1.yaml" --kubeconfig "${KUBECONFIG_BASE}/primary"
 
 echo "Install helloworld-v1 in remote1"
 kubectl apply -f "${BASE_DIR}/addons/sidecar.yaml" --kubeconfig "${KUBECONFIG_BASE}/remote1"
