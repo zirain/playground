@@ -1,11 +1,11 @@
 # Istio Ambient Mode
 
 ```shell
-istioctl -f iop.yaml -y
+istioctl install -f iop.yaml -y
 
 kubectl apply -f ../apps/http
 
-kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.2.1/standard-install.yaml
+kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.3.0/standard-install.yaml
 
 ```
 
