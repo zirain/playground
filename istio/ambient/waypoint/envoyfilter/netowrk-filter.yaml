@@ -1,0 +1,21 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: max-request-headers-kb
+spec:
+  targetRefs:
+    - kind: Service
+      name: httpbin
+  configPatches:
+    - applyTo: NETWORK_FILTER
+      match:
+        context: WAYPOINT
+        waypoint:
+          filter:
+            name: "envoy.filters.network.http_connection_manager"
+      patch:
+        operation: MERGE
+        value:
+          typed_config:
+            "@type": "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager"
+            max_request_headers_kb: 96

@@ -1,0 +1,21 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: filter-ratelimit-svc
+spec:
+  targetRefs:
+    - kind: Service
+      name: httpbin
+  configPatches:
+    - applyTo: VIRTUAL_HOST
+      match:
+        context: WAYPOINT
+        waypoint: {}
+      patch:
+        operation: MERGE
+        value:
+          rate_limits:
+            - actions:
+                - request_headers:
+                    header_name: ":path"
+                    descriptor_key: "PATH"

@@ -1,0 +1,27 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: filter-ratelimit-svc-api
+spec:
+  targetRefs:
+    - kind: Service
+      name: httpbin
+  configPatches:
+    - applyTo: HTTP_ROUTE
+      match:
+        context: WAYPOINT
+        waypoint: {}
+      patch:
+        operation: MERGE
+        value:
+          route:
+            rate_limits:
+              - actions:
+                  - header_value_match:
+                      descriptor_key: "PATH"
+                      descriptor_value: "api"
+                      headers:
+                        - name: ":path"
+                          safe_regex_match:
+                            google_re2: {}
+                            regex: "/api/v1/products/[1-9]{1,2}"
