@@ -7,6 +7,20 @@ MIRROR_REGISTRY=${MIRROR_REGISTRY:-"192.168.4.146:5000"}
 IMAGE_TAG=${IMAGE_TAG:-"latest"}
 REPO_NAME=${REPO_NAME:-"envoyproxy"}
 RMI_SOURCE=${RMI_SOURCE:-""}
+SYNC_EXAMPLES=${SYNC_EXAMPLES:-"false"}
+
+
+EG_VERSION=${EG_VERSION:-$(egctl version --remote=false | cut -d ':' -f2 | xargs)}
+echo "EG_VERSION: ${EG_VERSION}"
+
+egImages=(envoyproxy/gateway)
+for imageName in ${egImages[@]} ; do
+    crane cp "docker.io/${imageName}:v${EG_VERSION}" "${MIRROR_REGISTRY}/${imageName}:${EG_VERSION}"
+done
+
+if [[ "${SYNC_EXAMPLES}" != "true" ]]; then
+    exit 0
+fi
 
 exampleImages=(gateway-static-file-server
                gateway-preserve-case-backend
