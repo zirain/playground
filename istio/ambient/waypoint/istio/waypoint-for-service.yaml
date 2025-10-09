@@ -1,0 +1,47 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: waypoint-for-service
+  labels:
+    istio.io/waypoint-for: service
+spec:
+  gatewayClassName: istio-waypoint
+  listeners:
+    - allowedRoutes:
+        namespaces:
+          from: All # change this
+      name: mesh
+      port: 15008
+      protocol: HBONE
+---
+apiVersion: networking.istio.io/v1
+kind: DestinationRule
+metadata:
+  name: helloworld
+spec:
+  host: helloworld
+  subsets:
+    - name: v1
+      labels:
+        version: v1
+    - name: v2
+      labels:
+        version: v2
+---
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: helloworld
+spec:
+  hosts:
+    - "helloworld"
+  http:
+    - match:
+        - uri:
+            exact: /hello
+      route:
+        - destination:
+            host: helloworld
+            port:
+              number: 5000
+            subset: v1
