@@ -24,7 +24,7 @@ for imageName in ${bookinfoImages[@]} ; do
     crane cp "docker.io/${imageName}" "${MIRROR_REGISTRY}/${imageName}:${bookinfoTag}"
 done
 
-golangImages=(golang:1.23.1 golang:1.22.6)
+golangImages=(golang:1.23.1 golang:1.22.6 curlimages/curl:latest)
 for imageName in ${golangImages[@]} ; do
     # https://github.com/google/go-containerregistry/issues/2016
     crane index filter "${imageName}" --platform linux/amd64 --platform linux/arm64 -t "${MIRROR_REGISTRY}/${imageName}"
@@ -32,10 +32,10 @@ done
 
 # sync image from docker.io
 images=(redis:6.0.6
+        kindest/node:v1.33.0
         otel/opentelemetry-collector-contrib:0.121.0
         mccutchen/go-httpbin:v2.5.0
         kong/httpbin:latest
-        curlimages/curl:latest
         grafana/alloy:v1.4.3
         grafana/grafana:11.0.0
         prom/prometheus:v2.52.0
@@ -57,4 +57,13 @@ done
 ghcrImages=(projectcontour/yages:v0.1.0)
 for imageName in ${ghcrImages[@]} ; do
     crane cp "ghcr.io/${imageName}" "${MIRROR_REGISTRY}/${imageName}"
+done
+
+# sync Envoy Gateway images
+EG_VERSION=${EG_VERSION:-$(egctl version --remote=false | cut -d ':' -f2 | xargs)}
+echo "EG_VERSION: ${EG_VERSION}"
+
+egImages=(envoyproxy/gateway)
+for imageName in ${egImages[@]} ; do
+    crane cp "docker.io/${imageName}:v${EG_VERSION}" "${MIRROR_REGISTRY}/${imageName}:${EG_VERSION}"
 done
