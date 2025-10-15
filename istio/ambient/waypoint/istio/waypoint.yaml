@@ -26,7 +26,7 @@ spec:
     - matches:
         - path:
             type: PathPrefix
-            value: /get
+            value: /
       backendRefs:
         - name: httpbin
           port: 8000
