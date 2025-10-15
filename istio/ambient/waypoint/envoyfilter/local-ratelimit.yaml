@@ -1,7 +1,7 @@
 apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
-  name: local-rate-limit
+  name: waypoint-local-rate-limit
 spec:
   targetRefs:
     - kind: Service
