@@ -30,6 +30,7 @@ spec:
       labels:
         app: helloworld
         version: v2
+        custom-locality: b
     spec:
       containers:
         - name: helloworld

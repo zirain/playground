@@ -30,6 +30,7 @@ spec:
     metadata:
       labels:
         app: sleep
+        custom-locality: b
     spec:
       terminationGracePeriodSeconds: 0
       serviceAccountName: sleep
