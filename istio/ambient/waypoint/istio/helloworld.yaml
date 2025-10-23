@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: helloworld
   labels:
-    istio.io/use-waypoint: waypoint-for-service
+    istio.io/use-waypoint: simple-http-waypoint
     app: helloworld
     service: helloworld
 spec:
