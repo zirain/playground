@@ -80,7 +80,7 @@ metadata:
 spec:
   endpoints:
     - unix:
-        path: /var/run/envoy-uds/dsd.socket
+        path: /var/run/datadog/apm.socket
   type: Endpoints
 ---
 apiVersion: gateway.networking.k8s.io/v1
