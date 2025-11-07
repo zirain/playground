@@ -9,10 +9,10 @@ spec:
     loadBalancer:
       localityLbSetting:
         enabled: true
-        failoverPriority:
-          - topology.istio.io/network
-          - topology.istio.io/cluster
-          - topology.kubernetes.io/region
+        # failoverPriority:
+        #   - topology.istio.io/network
+        #   - topology.istio.io/cluster
+        #   - topology.kubernetes.io/region
     outlierDetection:
       consecutive5xxErrors: 100
       interval: 1s
