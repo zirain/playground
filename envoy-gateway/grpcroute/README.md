@@ -9,6 +9,8 @@ openssl req -out www.example.com.csr -newkey rsa:2048 -nodes -keyout www.example
 openssl x509 -req -days 365 -CA example.com.crt -CAkey example.com.key -set_serial 0 -in www.example.com.csr -out www.example.com.crt
 
 kubectl create secret tls example-cert --key=www.example.com.key --cert=www.example.com.crt
+
+kubectl create configmap example-ca --from-file=example.com.crt
 ```
 
 

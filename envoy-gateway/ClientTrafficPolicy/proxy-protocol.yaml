@@ -1,0 +1,126 @@
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: proxy-protocol
+spec:
+  gatewayClassName: eg
+  listeners:
+    - allowedRoutes:
+        namespaces:
+          from: All
+      name: http
+      port: 80
+      protocol: HTTP
+    - allowedRoutes:
+        namespaces:
+          from: All
+      name: https
+      port: 443
+      protocol: HTTPS
+      hostname: "www.example.com"
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: example-cert
+            kind: Secret
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: ClientTrafficPolicy
+metadata:
+  name: enable-proxy-protocol-policy
+spec:
+  enableProxyProtocol: true
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: proxy-protocol
+      sectionName: https
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: http
+spec:
+  parentRefs:
+    - kind: Gateway
+      name: proxy-protocol
+      sectionName: http
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            hostname: www.example.com
+      backendRefs:
+        - group: "gateway.envoyproxy.io"
+          kind: Backend
+          name: proxy-protocol-backend
+          port: 443
+        # - group: ""
+        #   kind: Service
+        #   name: backend
+        #   port: 3000
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: proxy-protocol
+spec:
+  hostnames:
+    - www.example.com
+  parentRefs:
+    - kind: Gateway
+      name: proxy-protocol
+      sectionName: https
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - group: ""
+          kind: Service
+          name: backend
+          port: 3000
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: BackendTrafficPolicy
+metadata:
+  name: enable-proxy-protocol
+spec:
+  proxyProtocol:
+    version: V2
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: http
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: Backend
+metadata:
+  name: proxy-protocol-backend
+spec:
+  endpoints:
+    - fqdn:
+        hostname: envoy-default-proxy-protocol-5dd1bd82.envoy-gateway-system.svc # the address of the gateway
+        port: 443
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: BackendTLSPolicy
+metadata:
+  name: btls-proxy-protocol-backend
+spec:
+  targetRefs:
+    - group: gateway.envoyproxy.io
+      kind: Backend
+      name: proxy-protocol-backend
+  validation:
+    caCertificateRefs:
+      - name: example-ca
+        group: ""
+        kind: ConfigMap
+    hostname: www.example.com
