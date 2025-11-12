@@ -9,5 +9,5 @@ spec:
         - name: prometheus
       overrides:
         - tagOverrides:
-            destination_service:
+            fake_dest:
               value: "fake_dest"

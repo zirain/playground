@@ -1,0 +1,51 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: custom-metric
+  namespace: istio-system
+spec:
+  configPatches:
+    - applyTo: HTTP_FILTER
+      match:
+        context: ANY
+        listener:
+          filterChain:
+            filter:
+              name: envoy.filters.network.http_connection_manager
+              subFilter:
+                name: istio.stats
+      patch:
+        operation: MERGE
+        value:
+          name: istio.stats
+          typedConfig:
+            "@type": type.googleapis.com/stats.PluginConfig
+            definitions:
+              - name: custom_metric_total
+                value: "1"
+                type: COUNTER
+            metrics:
+              - dimensions:
+                  fake_dest: fake_dest
+                name: custom_metric_total
+    - applyTo: NETWORK_FILTER
+      match:
+        context: ANY
+        listener:
+          filterChain:
+            filter:
+              name: istio.stats
+      patch:
+        operation: MERGE
+        value:
+          name: istio.stats
+          typedConfig:
+            "@type": type.googleapis.com/stats.PluginConfig
+            definitions:
+              - name: custom_metric_total
+                value: "1"
+                type: COUNTER
+            metrics:
+              - dimensions:
+                  fake_dest: fake_dest
+                name: istio_custom_metric_total
