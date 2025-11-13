@@ -1,3 +1,4 @@
+# curl -ik -v -HHost:www.example.com --resolve "www.example.com:443:172.18.255.202" https://www.example.com:443/zipkin
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
@@ -11,6 +12,16 @@ spec:
       allowedRoutes:
         namespaces:
           from: All
+    - name: https
+      hostname: www.example.com
+      protocol: HTTPS
+      port: 443
+      tls:
+        certificateRefs:
+          - group: ""
+            kind: Secret
+            name: example-cert
+        mode: Terminate
   infrastructure:
     parametersRef:
       group: gateway.envoyproxy.io
@@ -23,42 +34,6 @@ metadata:
   name: zipkin-tracing
 spec:
   telemetry:
-    accessLog:
-      settings:
-        - format:
-            type: JSON
-            json:
-              start_time: "%START_TIME%"
-              method: "%REQ(:METHOD)%"
-              "x-envoy-origin-path": "%REQ(X-ENVOY-ORIGINAL-PATH?:PATH)%"
-              protocol: "%PROTOCOL%"
-              response_code: "%RESPONSE_CODE%"
-              response_flags: "%RESPONSE_FLAGS%"
-              response_code_details: "%RESPONSE_CODE_DETAILS%"
-              upstream_transport_failure_reason: "%UPSTREAM_TRANSPORT_FAILURE_REASON%"
-              request_headers_bytes: "%REQUEST_HEADERS_BYTES%"
-              bytes_received: "%BYTES_RECEIVED%"
-              bytes_sent: "%BYTES_SENT%"
-              duration: "%DURATION%"
-              upstream_duration: "%COMMON_DURATION(US_TX_BEG:US_RX_END:ms)%"
-              "x-envoy-upstream-service-time": "%RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)%"
-              "x-forwarded-for": "%REQ(X-FORWARDED-FOR)%"
-              "user-agent": "%REQ(USER-AGENT)%"
-              "x-request-id": "%REQ(X-REQUEST-ID)%"
-              ":authority": "%REQ(:AUTHORITY)%"
-              authorization: "%REQ(AUTHORIZATION)%"
-              upstream_host: "%UPSTREAM_HOST%"
-              upstream_cluster: "%UPSTREAM_CLUSTER%"
-              upstream_local_address: "%UPSTREAM_LOCAL_ADDRESS%"
-              downstream_local_address: "%DOWNSTREAM_LOCAL_ADDRESS%"
-              downstream_remote_address: "%DOWNSTREAM_REMOTE_ADDRESS%"
-              requested_server_name: "%REQUESTED_SERVER_NAME%"
-              route_name: "%ROUTE_NAME%"
-              trace-id: "%TRACE_ID%"
-          sinks:
-            - type: File
-              file:
-                path: /dev/stdout
     tracing:
       # samplingRate: 1
       provider:
@@ -88,9 +63,10 @@ spec:
           environment:
             name: ENVOY_GATEWAY_NAMESPACE
             defaultValue: "envoy-gateway-system"
-  shutdown:
-    drainTimeout: 5s
-    minDrainDuration: 1s
+        "requestServerName":
+          type: RequestHeader
+          requestHeader:
+            name: x-request-server-name
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -115,3 +91,39 @@ spec:
       backendRefs:
         - name: backend
           port: 3000
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: ClientTrafficPolicy
+metadata:
+  name: zipkin-tracing
+spec:
+  headers:
+    earlyRequestHeaders:
+      add:
+        - name: x-request-server-name
+          value: "%REQUESTED_SERVER_NAME%" # add SNI hostname to request header for tracing tag
+        - name: x-envoy-decorator-operation
+          value: "foo" # set span name with route name for better traceability
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: zipkin-tracing
+---
+# apiVersion: gateway.envoyproxy.io/v1alpha1
+# kind: EnvoyPatchPolicy
+# metadata:
+#   name: add-traffic-direction
+# spec:
+#   targetRef:
+#     group: gateway.networking.k8s.io
+#     kind: Gateway
+#     name: zipkin-tracing
+#   type: JSONPatch
+#   jsonPatches:
+#     - type: "type.googleapis.com/envoy.config.listener.v3.Listener"
+#       # The listener name is of the form <GatewayNamespace>/<GatewayName>/<GatewayListenerName>
+#       name: default/zipkin-tracing/https
+#       operation:
+#         op: add
+#         path: "/trafficDirection"
+#         value: OUTBOUND

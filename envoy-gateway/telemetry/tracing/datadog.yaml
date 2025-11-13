@@ -1,3 +1,4 @@
+# curl -ik -v -HHost:www.example.com -H "x-envoy-decorator-operation: datadog-backend" --resolve "www.example.com:443:172.18.255.201" https://www.example.com:443/datadog
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
@@ -11,6 +12,16 @@ spec:
       allowedRoutes:
         namespaces:
           from: All
+    - name: https
+      hostname: www.example.com
+      protocol: HTTPS
+      port: 443
+      tls:
+        certificateRefs:
+          - group: ""
+            kind: Secret
+            name: example-cert
+        mode: Terminate
   infrastructure:
     labels:
       # admission.datadoghq.com/enabled: "true"
@@ -40,11 +51,9 @@ kind: EnvoyProxy
 metadata:
   name: datadog-tracing
 spec:
-  ipFamily: IPv4
-  logging:
-    level:
-      default: debug
   telemetry:
+    metrics:
+      clusterStatName: "%ROUTE_NAMESPACE%/%ROUTE_NAME%/%BACKEND_REFS%"
     tracing:
       provider:
         type: Datadog
@@ -71,9 +80,10 @@ spec:
           environment:
             name: ENVOY_POD_NAMESPACE
             defaultValue: "envoy-gateway-system"
-  shutdown:
-    drainTimeout: 5s
-    minDrainDuration: 1s
+        "sni":
+          type: RequestHeader
+          requestHeader:
+            name: x-request-server-name
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -96,3 +106,45 @@ spec:
         - path:
             type: PathPrefix
             value: /datadog
+      filters:
+        - type: ResponseHeaderModifier
+          responseHeaderModifier:
+            add:
+              - name: "x-envoy-decorator-operation"
+                value: "%REQUESTED_SERVER_NAME%"
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: ClientTrafficPolicy
+metadata:
+  name: datadog-tracing
+spec:
+  headers:
+    earlyRequestHeaders:
+      add:
+        - name: x-request-server-name
+          value: "%REQUESTED_SERVER_NAME%" # add SNI hostname to request header for tracing tag
+        # - name: x-envoy-decorator-operation
+        #   value: "%REQUESTED_SERVER_NAME%" # set span name with route name for better traceability
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: datadog-tracing
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyPatchPolicy
+metadata:
+  name: add-traffic-direction
+spec:
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: datadog-tracing
+  type: JSONPatch
+  jsonPatches:
+    - type: "type.googleapis.com/envoy.config.listener.v3.Listener"
+      # The listener name is of the form <GatewayNamespace>/<GatewayName>/<GatewayListenerName>
+      name: default/datadog-tracing/https
+      operation:
+        op: add
+        path: "/trafficDirection"
+        value: OUTBOUND
