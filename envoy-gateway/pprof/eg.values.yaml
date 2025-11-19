@@ -1,0 +1,40 @@
+config:
+  envoyGateway:
+    provider:
+      kubernetes:
+        deploy:
+          type: GatewayNamespace
+    admin:
+      address:
+        port: 19000
+        host: 0.0.0.0 # make sure that pyroscope can scrape
+      enablePprof: true
+deployment:
+  pod:
+    annotations:
+      prometheus.io/scrape: "true"
+      prometheus.io/port: "19001"
+      profiles.grafana.com/memory.scrape: "true"
+      profiles.grafana.com/memory.port: "19000"
+      profiles.grafana.com/cpu.scrape: "true"
+      profiles.grafana.com/cpu.port: "19000"
+  ports:
+    - name: http2-profiles
+      port: 19000
+      targetPort: 19000
+    - name: grpc
+      port: 18000
+      targetPort: 18000
+    - name: ratelimit
+      port: 18001
+      targetPort: 18001
+    - name: wasm
+      port: 18002
+      targetPort: 18002
+    - name: metrics
+      port: 19001
+      targetPort: 19001
+  envoyGateway:
+    resources:
+      limits:
+        memory: null
