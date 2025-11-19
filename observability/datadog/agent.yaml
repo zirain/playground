@@ -2,28 +2,37 @@ apiVersion: datadoghq.com/v2alpha1
 kind: DatadogAgent
 metadata:
   name: datadog
-  namespace: dg
+  namespace: datadog-agent
 spec:
   override:
     nodeAgent:
+      # image:
+      #   name: agent
+      #   tag: 7.66.1
       env:
         - name: DD_HOSTNAME
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
+        # - name: HTTPS_PROXY
+        #   value: "http://proxy.zirain.local:7890"
   global:
+    containerStrategy: single
+    site: datadoghq.com
     kubelet:
       tlsVerify: false
-    logLevel: debug
+    # logLevel: debug
     credentials:
-      apiKey: <API_KEY>
+      # apiKey: <API_KEY>
       apiSecret:
         secretName: datadog-secret
-        keyName: api-key
+        keyName: api_key
   features:
-    admissionController:
+    apm:
       enabled: true
-      mutateUnlabelled: false
-      agentSidecarInjection:
-        enabled: true
-        provider: fargate
+    # admissionController:
+    #   enabled: true
+    #   mutateUnlabelled: false
+    #   agentSidecarInjection:
+    #     enabled: true
+    #     provider: fargate
