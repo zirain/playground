@@ -4,6 +4,9 @@ config:
       kubernetes:
         deploy:
           type: GatewayNamespace
+    extensionApis:
+      enableEnvoyPatchPolicy: true
+      enableBackend: true
     admin:
       address:
         port: 19000
