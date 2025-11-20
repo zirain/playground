@@ -136,7 +136,7 @@ spec:
           responseHeaderModifier:
             add:
               - name: "x-envoy-decorator-operation"
-                value: "%REQUESTED_SERVER_NAME%"
+                value: "%REQUESTED_SERVER_NAME%%PATH%"
 ---
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: ClientTrafficPolicy
@@ -147,7 +147,7 @@ spec:
     earlyRequestHeaders:
       add:
         - name: x-request-server-name
-          value: "%REQUESTED_SERVER_NAME%" # add SNI hostname to request header for tracing tag
+          value: "%REQUESTED_SERVER_NAME%%PATH%" # add SNI hostname to request header for tracing tag
         # - name: x-envoy-decorator-operation
         #   value: "%REQUESTED_SERVER_NAME%" # set span name with route name for better traceability
   targetRef:
@@ -166,6 +166,7 @@ spec:
     name: datadog-tracing
   type: JSONPatch
   jsonPatches:
+    # Chage the listener traffic direction to OUTBOUND
     - type: "type.googleapis.com/envoy.config.listener.v3.Listener"
       # The listener name is of the form <GatewayNamespace>/<GatewayName>/<GatewayListenerName>
       name: default/datadog-tracing/https
@@ -173,12 +174,18 @@ spec:
         op: add
         path: "/trafficDirection"
         value: OUTBOUND
-    - type: "type.googleapis.com/envoy.config.route.v3.RouteConfiguration"
-      name: default/datadog-tracing/http
+    - type: "type.googleapis.com/envoy.config.cluster.v3.Cluster"
+      name: httproute/default/tracing-datadog/rule/0
       operation:
         op: add
-        path: "/virtual_hosts/0/routes/0/decorator"
-        value:
-          operation: custom-decrator
+        path: "/altStatName"
+        value: custom-cluster-name
+    # - type: "type.googleapis.com/envoy.config.route.v3.RouteConfiguration"
+    #   name: default/datadog-tracing/http
+    #   operation:
+    #     op: add
+    #     path: "/virtual_hosts/0/routes/0/decorator"
+    #     value:
+    #       operation: custom-decrator
 ---
 
