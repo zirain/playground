@@ -10,4 +10,4 @@ spec:
       overrides:
         - tagOverrides:
             req_header_size:
-              value: size(request.headers) # this's the size of the map not the bytes of request headers
+              value: "request.total_size-request.size"
