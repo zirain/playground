@@ -1,0 +1,13 @@
+apiVersion: telemetry.istio.io/v1alpha1
+kind: Telemetry
+metadata:
+  name: headser-size
+  namespace: istio-system
+spec:
+  metrics:
+    - providers:
+        - name: prometheus
+      overrides:
+        - tagOverrides:
+            req_header_size:
+              value: size(request.headers) # this's the size of the map not the bytes of request headers
