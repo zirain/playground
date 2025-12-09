@@ -61,3 +61,35 @@ spec:
                     - ECDHE-RSA-AES128-GCM-SHA256
                     - ECDHE-ECDSA-AES256-GCM-SHA384
                     - ECDHE-RSA-AES256-GCM-SHA384
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: tls-v1-2-only-helloworld
+spec:
+  targetRefs:
+    - kind: Service
+      name: helloworld
+  configPatches:
+    - applyTo: CLUSTER
+      match:
+        context: WAYPOINT
+        waypoint: {}
+        #   cluster:
+        #     portNumber: 8000
+      patch:
+        operation: MERGE
+        value:
+          transport_socket:
+            name: envoy.transport_sockets.tls
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
+              common_tls_context:
+                tls_params:
+                  tls_maximum_protocol_version: TLSv1_2
+                  tls_minimum_protocol_version: TLSv1_2
+                  cipher_suites:
+                    - ECDHE-ECDSA-AES128-GCM-SHA256
+                    - ECDHE-RSA-AES128-GCM-SHA256
+                    - ECDHE-ECDSA-AES256-GCM-SHA384
+                    - ECDHE-RSA-AES256-GCM-SHA384
