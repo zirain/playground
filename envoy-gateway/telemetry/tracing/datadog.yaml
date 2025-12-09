@@ -76,6 +76,24 @@ spec:
   #               }
   #             }
   #   type: Kubernetes
+  bootstrap:
+    jsonPatches:
+      - op: add
+        path: /stats_config
+        value:
+          stats_tags:
+            - regex: \.zone(\.(([^\.]+)\.))
+              tag_name: from_zone
+            - regex: \.zone\.[^\.]+\.(([^\.]+)\.)
+              tag_name: to_zone
+            - regex: "^cluster(\\..+\\.(.+))\\.total_match_count$"
+              tag_name: match_name
+            - regex: "circuit_breakers\\.((.+?)\\.).+"
+              tag_name: priority
+            - regex: "^sds.((.+?)\\.).+"
+              tag_name: resource_name
+          use_all_default_tags: true
+    type: JSONPatch
   telemetry:
     metrics:
       clusterStatName: "%ROUTE_NAMESPACE%/%ROUTE_NAME%/%BACKEND_REFS%"
@@ -174,12 +192,12 @@ spec:
         op: add
         path: "/trafficDirection"
         value: OUTBOUND
-    - type: "type.googleapis.com/envoy.config.cluster.v3.Cluster"
-      name: httproute/default/tracing-datadog/rule/0
-      operation:
-        op: add
-        path: "/altStatName"
-        value: custom-cluster-name
+    # - type: "type.googleapis.com/envoy.config.cluster.v3.Cluster"
+    #   name: httproute/default/tracing-datadog/rule/0
+    #   operation:
+    #     op: add
+    #     path: "/altStatName"
+    #     value: custom-cluster-name
     # - type: "type.googleapis.com/envoy.config.route.v3.RouteConfiguration"
     #   name: default/datadog-tracing/http
     #   operation:
