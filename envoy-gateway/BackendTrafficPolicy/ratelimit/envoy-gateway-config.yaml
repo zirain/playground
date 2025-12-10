@@ -12,6 +12,11 @@ data:
       kubernetes:
         deploy:
           type: GatewayNamespace
+        rateLimitDeployment:
+          container:
+            env:
+              - name: RESPONSE_DYNAMIC_METADATA
+                value: "true"
     gateway:
       controllerName: gateway.envoyproxy.io/gatewayclass-controller
     extensionApis:
