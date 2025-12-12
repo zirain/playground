@@ -21,6 +21,8 @@ deployment:
       profiles.grafana.com/memory.port: "19000"
       profiles.grafana.com/cpu.scrape: "true"
       profiles.grafana.com/cpu.port: "19000"
+      profiles.grafana.com/goroutine.scrape: "true"
+      profiles.grafana.com/goroutine.port: "19000"
   ports:
     - name: http2-profiles
       port: 19000
