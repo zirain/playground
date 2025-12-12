@@ -1,0 +1,69 @@
+alloy:
+  configMap:
+    create: true
+    content: |
+      discovery.kubernetes "all_pods" {
+        role = "pod"
+        selectors {
+          field = "spec.nodeName=" + sys.env("HOSTNAME")
+          role = "pod"
+        }
+      }
+
+      discovery.relabel "local_pods" {
+        targets = discovery.kubernetes.all_pods.targets
+        rule {
+          action = "drop"
+          regex = "Succeeded|Failed"
+          source_labels = ["__meta_kubernetes_pod_phase"]
+        }
+        rule {
+          action = "replace"
+          regex = "(.*)@(.*)"
+          replacement = "ebpf/${1}/${2}"
+          separator = "@"
+          source_labels = ["__meta_kubernetes_namespace", "__meta_kubernetes_pod_container_name"]
+          target_label = "service_name"
+        }
+        rule {
+          action = "labelmap"
+          regex = "__meta_kubernetes_pod_label_(.+)"
+        }
+        rule {
+          action = "replace"
+          source_labels = ["__meta_kubernetes_namespace"]
+          target_label = "namespace"
+        }
+        rule {
+          action = "replace"
+          source_labels = ["__meta_kubernetes_pod_name"]
+          target_label = "pod"
+        }
+        rule {
+          action = "replace"
+          source_labels = ["__meta_kubernetes_pod_node_name"]
+          target_label = "node"
+        }
+        rule {
+          action = "replace"
+          source_labels = ["__meta_kubernetes_pod_container_name"]
+          target_label = "container"
+        }
+      }
+      pyroscope.ebpf "local_pods" {
+        forward_to = [ pyroscope.write.endpoint.receiver ]
+        targets = discovery.relabel.local_pods.output
+      }
+      pyroscope.write "endpoint" {
+        endpoint {
+          url = "http://pyroscope.monitoring.svc.cluster.local.:4040"
+        }
+      }
+
+  securityContext:
+    privileged: true
+    runAsGroup: 0
+    runAsUser: 0
+
+controller:
+  hostPID: true
