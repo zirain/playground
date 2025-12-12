@@ -10,4 +10,4 @@ spec:
       overrides:
         - tagOverrides:
             req_header_size:
-              value: "request.total_size-request.size"
+              value: "request.total_size-request.size < 1024 ? 'normal' : 'large'"
