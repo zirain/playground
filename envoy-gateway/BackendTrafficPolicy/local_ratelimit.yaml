@@ -62,7 +62,7 @@ spec:
     - name: eg
   rules:
     - backendRefs:
-        - name: infra-backend-v1
+        - name: backend
           port: 8080
       matches:
         - path:
@@ -78,8 +78,8 @@ spec:
     - name: eg
   rules:
     - backendRefs:
-        - name: infra-backend-v1
-          port: 8080
+        - name: backend
+          port: 3000
       matches:
         - path:
             type: Exact
@@ -94,8 +94,8 @@ spec:
     - name: eg
   rules:
     - backendRefs:
-        - name: infra-backend-v1
-          port: 8080
+        - name: backend
+          port: 3000
       matches:
         - path:
             type: Exact
@@ -134,8 +134,8 @@ spec:
     - name: eg
   rules:
     - backendRefs:
-        - name: infra-backend-v1
-          port: 8080
+        - name: backend
+          port: 3000
       matches:
         - path:
             type: Exact
