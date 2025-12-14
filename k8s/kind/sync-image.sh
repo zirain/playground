@@ -68,3 +68,12 @@ egImages=(envoyproxy/gateway)
 for imageName in ${egImages[@]} ; do
     crane cp "docker.io/${imageName}:v${EG_VERSION}" "${MIRROR_REGISTRY}/${imageName}:${EG_VERSION}"
 done
+
+# images for Gateway API conformance tests
+image=(
+    gcr.io/k8s-staging-gateway-api/echo-basic:v20240412-v1.0.0-394-g40c666fd
+    registry.k8s.io/coredns/coredns:v1.12.2
+)
+for img in ${image[@]}; do
+    crane cp "${img}" "${MIRROR_REGISTRY}/${img}"
+done

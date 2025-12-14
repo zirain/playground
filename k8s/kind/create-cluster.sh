@@ -44,6 +44,8 @@ if [[ "${ENABLE_RESITRY_MIRROR}" == "true" ]]; then
     endpoint = [\"http://${RESITRY_MIRROR}\", \"https://quay.io\"]
   [plugins.\"io.containerd.grpc.v1.cri\".registry.mirrors.\"ghcr.io\"]
     endpoint = [\"http://${RESITRY_MIRROR}\", \"https://ghcr.io\"]
+  [plugins.\"io.containerd.grpc.v1.cri\".registry.mirrors.\"registry.k8s.io\"]
+    endpoint = [\"http://${RESITRY_MIRROR}\", \"https://registry.k8s.io\"]
 "
 fi
 
