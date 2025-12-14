@@ -32,13 +32,14 @@ done
 
 # sync image from docker.io
 images=(redis:6.0.6
-        kindest/node:v1.33.0
+        kindest/node:v1.33.1
         otel/opentelemetry-collector-contrib:0.121.0
         mccutchen/go-httpbin:v2.5.0
         kong/httpbin:latest
         grafana/alloy:v1.4.3
         grafana/grafana:11.0.0
         prom/prometheus:v2.52.0
+        prom/prometheus:v3.5.0
         grafana/tempo:2.1.1
         bats/bats:v1.4.1)
 for imageName in ${images[@]} ; do
