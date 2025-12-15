@@ -1,12 +1,5 @@
 # curl -ik -v -HHost:www.example.com --resolve "www.example.com:443:172.18.255.201" https://www.example.com:443/datadog
 apiVersion: gateway.networking.k8s.io/v1
-kind: GatewayClass
-metadata:
-  name: eg
-spec:
-  controllerName: gateway.envoyproxy.io/gatewayclass-controller
----
-apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
   name: datadog-tracing

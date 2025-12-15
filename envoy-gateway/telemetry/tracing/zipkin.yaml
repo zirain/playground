@@ -44,6 +44,9 @@ spec:
             port: 9411
         zipkin:
           enable128BitTraceId: true
+      operation:
+        client: "%REQ(:AUTHORITY)%%PATH%"
+        server: "%UPSTREAM_HOST%"
       customTags:
         "provider":
           type: Literal
@@ -80,50 +83,16 @@ spec:
         - path:
             type: PathPrefix
             value: /zipkin
-      filters:
-        - responseHeaderModifier:
-            add:
-              - name: request-id
-                value: "%REQ(x-request-id)%"
-              - name: trace-id
-                value: "%TRACE_ID%"
-          type: ResponseHeaderModifier
+      # filters:
+      #   - responseHeaderModifier:
+      #       add:
+      #         - name: request-id
+      #           value: "%REQ(x-request-id)%"
+      #         - name: trace-id
+      #           value: "%TRACE_ID%"
+      #     type: ResponseHeaderModifier
       backendRefs:
         - name: backend
           port: 3000
 ---
-apiVersion: gateway.envoyproxy.io/v1alpha1
-kind: ClientTrafficPolicy
-metadata:
-  name: zipkin-tracing
-spec:
-  headers:
-    earlyRequestHeaders:
-      add:
-        - name: x-request-server-name
-          value: "%REQUESTED_SERVER_NAME%" # add SNI hostname to request header for tracing tag
-        - name: x-envoy-decorator-operation
-          value: "foo" # set span name with route name for better traceability
-  targetRef:
-    group: gateway.networking.k8s.io
-    kind: Gateway
-    name: zipkin-tracing
----
-# apiVersion: gateway.envoyproxy.io/v1alpha1
-# kind: EnvoyPatchPolicy
-# metadata:
-#   name: add-traffic-direction
-# spec:
-#   targetRef:
-#     group: gateway.networking.k8s.io
-#     kind: Gateway
-#     name: zipkin-tracing
-#   type: JSONPatch
-#   jsonPatches:
-#     - type: "type.googleapis.com/envoy.config.listener.v3.Listener"
-#       # The listener name is of the form <GatewayNamespace>/<GatewayName>/<GatewayListenerName>
-#       name: default/zipkin-tracing/https
-#       operation:
-#         op: add
-#         path: "/trafficDirection"
-#         value: OUTBOUND
+
