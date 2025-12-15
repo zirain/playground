@@ -35,7 +35,6 @@ metadata:
 spec:
   telemetry:
     tracing:
-      # samplingRate: 1
       provider:
         type: Zipkin
         backendRefs:
@@ -45,8 +44,8 @@ spec:
         zipkin:
           enable128BitTraceId: true
       operation:
-        client: "%REQ(:AUTHORITY)%%PATH%"
-        server: "%UPSTREAM_HOST%"
+        client: "%REQ(X-ENVOY-ORIGINAL-HOST)%%PATH(NQ:ORIG)%"
+        server: "%UPSTREAM_HOST_NAME%%PATH(NQ:PATH)%"
       customTags:
         "provider":
           type: Literal
@@ -98,14 +97,14 @@ spec:
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: ClientTrafficPolicy
 metadata:
-  name: eg
+  name: zipkin-tracing
 spec:
   headers:
     enableEnvoyHeaders: true
   targetRef:
     group: gateway.networking.k8s.io
     kind: Gateway
-    name: eg
+    name: zipkin-tracing
 ---
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: Backend
@@ -114,4 +113,5 @@ metadata:
 spec:
   endpoints:
     - fqdn:
-        address: "www.httpbin.org"
+        hostname: "www.httpbin.org"
+        port: 80
