@@ -83,16 +83,35 @@ spec:
         - path:
             type: PathPrefix
             value: /zipkin
-      # filters:
-      #   - responseHeaderModifier:
-      #       add:
-      #         - name: request-id
-      #           value: "%REQ(x-request-id)%"
-      #         - name: trace-id
-      #           value: "%TRACE_ID%"
-      #     type: ResponseHeaderModifier
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            hostname: www.httpbin.org
+            path:
+              type: ReplaceFullPath
+              replaceFullPath: /headers
       backendRefs:
-        - name: backend
-          port: 3000
+        - group: gateway.envoyproxy.io
+          kind: Backend
+          name: httpbin
 ---
-
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: ClientTrafficPolicy
+metadata:
+  name: eg
+spec:
+  headers:
+    enableEnvoyHeaders: true
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: eg
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: Backend
+metadata:
+  name: httpbin
+spec:
+  endpoints:
+    - fqdn:
+        address: "www.httpbin.org"

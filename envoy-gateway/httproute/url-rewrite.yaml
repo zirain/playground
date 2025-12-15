@@ -1,4 +1,3 @@
-
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
@@ -26,12 +25,14 @@ spec:
       filters:
         - type: URLRewrite
           urlRewrite:
+            hostname: www.httpbin.org
             path:
               type: ReplaceFullPath
               replaceFullPath: /headers
       backendRefs:
-        - name: backend
-          port: 3000
+        - group: gateway.envoyproxy.io
+          kind: Backend
+          name: httpbin
 ---
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: ClientTrafficPolicy
@@ -44,3 +45,12 @@ spec:
     group: gateway.networking.k8s.io
     kind: Gateway
     name: eg
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: Backend
+metadata:
+  name: httpbin
+spec:
+  endpoints:
+    - fqdn:
+        address: "www.httpbin.org"
