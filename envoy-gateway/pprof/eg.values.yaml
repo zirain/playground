@@ -1,5 +1,7 @@
 config:
   envoyGateway:
+    # xdsServer:
+    #   maxConnectionAge: 1m
     provider:
       kubernetes:
         deploy:
