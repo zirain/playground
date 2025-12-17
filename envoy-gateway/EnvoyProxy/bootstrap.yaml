@@ -1,4 +1,9 @@
-
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: eg-with-ep
+spec:
+  controllerName: gateway.envoyproxy.io/gatewayclass-controller
   parametersRef:
     group: gateway.envoyproxy.io
     kind: EnvoyProxy
@@ -10,7 +15,7 @@ kind: Gateway
 metadata:
   name: eg
 spec:
-  gatewayClassName: eg
+  gatewayClassName: eg-with-ep
   listeners:
     - name: http
       protocol: HTTP
@@ -28,14 +33,10 @@ spec:
   bootstrap:
     type: Merge
     value: |
-      # admin:
-      # address:
-      #   socket_address:
-      #     address: 0.0.0.0
-      # stats_config:
-      #   stats_tags:
-      #     - tag_name: route_kind
-      #       regex: '^cluster\.((\w+)/)"
+      admin:
+        address:
+          socket_address:
+            address: 0.0.0.0
       stats_sinks:
         - name: envoy.stat_sinks.metrics_service
           typed_config:
