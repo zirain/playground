@@ -1,0 +1,73 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: eg-with-ep
+spec:
+  controllerName: gateway.envoyproxy.io/gatewayclass-controller
+  parametersRef:
+    group: gateway.envoyproxy.io
+    kind: EnvoyProxy
+    name: proxy-config
+    namespace: envoy-gateway-system
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: eg
+spec:
+  gatewayClassName: eg-with-ep
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyProxy
+metadata:
+  name: proxy-config
+  namespace: envoy-gateway-system
+spec:
+  # logging:
+  #   level:
+  #     default: debug
+  bootstrap:
+    type: Merge
+    value: |
+      admin:
+        address:
+          socket_address:
+            address: 0.0.0.0
+      stats_config:
+        stats_tags:
+          - tag_name: route_kind
+            regex: '^cluster\.((\w+)/)"
+      stats_sinks:
+        - name: envoy.stat_sinks.metrics_service
+          typed_config:
+            "@type": type.googleapis.com/envoy.config.metrics.v3.MetricsServiceConfig
+            transport_api_version: V3
+            grpc_service:
+              envoy_grpc:
+                cluster_name: metrics_cluster
+      static_resources:
+        clusters:
+          - name: metrics_cluster
+            type: STRICT_DNS
+            lb_policy: ROUND_ROBIN
+            typed_extension_protocol_options:
+              "envoy.extensions.upstreams.http.v3.HttpProtocolOptions":
+                "@type": "type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions"
+                explicit_http_config:
+                  http2_protocol_options:
+                    connection_keepalive:
+                      interval: 30s
+                      timeout: 5s
+            load_assignment:
+              cluster_name: metrics_cluster
+              endpoints:
+                - lb_endpoints:
+                    - endpoint:
+                        address:
+                          socket_address:
+                            address: envoy-metrics-service.monitoring.svc.cluster.local
+                            port_value: 8080
