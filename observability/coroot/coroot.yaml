@@ -1,0 +1,28 @@
+apiVersion: coroot.com/v1
+kind: Coroot
+metadata:
+  annotations:
+    meta.helm.sh/release-name: coroot
+    meta.helm.sh/release-namespace: coroot
+  creationTimestamp: "2025-12-19T06:57:41Z"
+  generation: 1
+  labels:
+    app.kubernetes.io/managed-by: Helm
+  name: coroot
+  namespace: coroot
+  resourceVersion: "1766128278305023004"
+  uid: 554ff73d-713b-4d31-a48e-d333e3b60f14
+spec:
+  clickhouse:
+    replicas: 2
+    shards: 2
+    storage:
+      size: 100Gi
+  metricsRefreshInterval: 15s
+  prometheus:
+    storage:
+      size: 10Gi
+  storage:
+    size: 10Gi
+status:
+  status: OK

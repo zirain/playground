@@ -5,3 +5,6 @@ spec:
   components:
     cni:
       enabled: false
+  # values:
+  #   global:
+  #     variant: "distroless"
