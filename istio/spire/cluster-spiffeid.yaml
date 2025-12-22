@@ -1,0 +1,21 @@
+apiVersion: spire.spiffe.io/v1alpha1
+kind: ClusterSPIFFEID
+metadata:
+  name: istio-ingressgateway-reg
+spec:
+  spiffeIDTemplate: "spiffe://{{ .TrustDomain }}/ns/{{ .PodMeta.Namespace }}/sa/{{ .PodSpec.ServiceAccountName }}"
+  workloadSelectorTemplates:
+    - "k8s:ns:istio-system"
+    - "k8s:sa:istio-ingressgateway-service-account"
+---
+apiVersion: spire.spiffe.io/v1alpha1
+kind: ClusterSPIFFEID
+metadata:
+  name: istio-sidecar-reg
+spec:
+  spiffeIDTemplate: "spiffe://{{ .TrustDomain }}/ns/{{ .PodMeta.Namespace }}/sa/{{ .PodSpec.ServiceAccountName }}"
+  podSelector:
+    matchLabels:
+      spiffe.io/spire-managed-identity: "true"
+  workloadSelectorTemplates:
+    - "k8s:ns:default"
