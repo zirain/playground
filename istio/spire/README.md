@@ -16,6 +16,6 @@ istioctl install -f istio/spire/iop.yaml -y
 ## Install curl and httpbin
 
 ```shell
-kubectl apply -f istio/spire/curl.yaml -n sample
-kubectl apply -f istio/spire/httpbin.yaml -n sample
+kubectl apply -f istio/spire/curl.yaml -n spire-sample
+kubectl apply -f istio/spire/httpbin.yaml -n spire-sample
 ```

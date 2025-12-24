@@ -32,7 +32,7 @@ kubectl create secret generic -n cert-manager istio-root-ca --from-file=ca.pem=c
 ### install istio-csr
 
 ```shell
-helm install -n cert-manager cert-manager-istio-csr jetstack/cert-manager-istio-csr \
+helm upgrade -i -n cert-manager cert-manager-istio-csr jetstack/cert-manager-istio-csr \
 	--set "app.tls.rootCAFile=/var/run/secrets/istio-csr/ca.pem" \
 	--set "volumeMounts[0].name=root-ca" \
 	--set "volumeMounts[0].mountPath=/var/run/secrets/istio-csr" \

@@ -32,10 +32,9 @@ kubectl create secret generic -n cert-manager istio-root-ca --from-file=ca.pem=r
 
 ```bash
 # We set a few helm template values so we can point at our static root CA
-helm install cert-manager-istio-csr cert-manager-istio-csr\
+helm upgrade -i cert-manager-istio-csr cert-manager-istio-csr\
 	--repo https://charts.jetstack.io \
-	-n cert-manager -f istio/certmanager/istio-csr/istio-csr.values.yaml \
-	--version v0.9.0
+	-n cert-manager -f istio/certmanager/istio-csr/istio-csr.values.yaml
 
 kubectl rollout status deploy cert-manager-istio-csr -n cert-manager --timeout 5m
 
