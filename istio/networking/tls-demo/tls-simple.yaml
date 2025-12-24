@@ -38,7 +38,7 @@ spec:
   http:
     - route:
         - destination:
-            host: infra-backend-v1
+            host: httpbin
             port:
-              number: 8080
+              number: 8000
 ---
