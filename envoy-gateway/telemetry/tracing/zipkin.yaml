@@ -43,7 +43,7 @@ spec:
             port: 9411
         zipkin:
           enable128BitTraceId: true
-      operation:
+      spanName:
         client: "%REQ(X-ENVOY-ORIGINAL-HOST)%%PATH(NQ:ORIG)%"
         server: "%UPSTREAM_HOST_NAME%%PATH(NQ:PATH)%"
       customTags:

@@ -113,7 +113,7 @@ spec:
           - name: datadog-agent
             namespace: monitoring
             port: 8126
-      operation:
+      spanName:
         client: "%REQ(X-ENVOY-ORIGINAL-HOST)%%PATH(NQ:ORIG)%"
         server: "%UPSTREAM_HOST_NAME%%PATH(NQ:PATH)%"
       customTags:
