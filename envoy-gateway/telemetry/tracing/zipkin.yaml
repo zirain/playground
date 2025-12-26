@@ -43,9 +43,6 @@ spec:
             port: 9411
         zipkin:
           enable128BitTraceId: true
-      spanName:
-        client: "%REQUESTED_SERVER_NAME(HOST_FIRST:ORIG_OR_HOST)%%PATH(NQ:ORIG)%"
-        server: "%REQUESTED_SERVER_NAME(HOST_FIRST:ORIG_OR_HOST)%%PATH(NQ:PATH)%"
       customTags:
         "provider":
           type: Literal
@@ -65,10 +62,6 @@ spec:
           environment:
             name: ENVOY_GATEWAY_NAMESPACE
             defaultValue: "envoy-gateway-system"
-        "requestServerName":
-          type: RequestHeader
-          requestHeader:
-            name: x-request-server-name
 ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -93,18 +86,6 @@ spec:
         - group: gateway.envoyproxy.io
           kind: Backend
           name: httpbin
----
-apiVersion: gateway.envoyproxy.io/v1alpha1
-kind: ClientTrafficPolicy
-metadata:
-  name: zipkin-tracing
-spec:
-  headers:
-    enableEnvoyHeaders: true
-  targetRef:
-    group: gateway.networking.k8s.io
-    kind: Gateway
-    name: zipkin-tracing
 ---
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: Backend
