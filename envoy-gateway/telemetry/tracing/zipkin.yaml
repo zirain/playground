@@ -44,8 +44,8 @@ spec:
         zipkin:
           enable128BitTraceId: true
       spanName:
-        client: "%REQ(X-ENVOY-ORIGINAL-HOST)%%PATH(NQ:ORIG)%"
-        server: "%UPSTREAM_HOST_NAME%%PATH(NQ:PATH)%"
+        client: "%REQUESTED_SERVER_NAME(HOST_FIRST:ORIG_OR_HOST)%%PATH(NQ:ORIG)%"
+        server: "%REQUESTED_SERVER_NAME(HOST_FIRST:ORIG_OR_HOST)%%PATH(NQ:PATH)%"
       customTags:
         "provider":
           type: Literal
