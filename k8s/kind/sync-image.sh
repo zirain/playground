@@ -24,7 +24,7 @@ for imageName in ${bookinfoImages[@]} ; do
     crane cp "docker.io/${imageName}" "${MIRROR_REGISTRY}/${imageName}:${bookinfoTag}"
 done
 
-golangImages=(golang:1.23.1 golang:1.22.6 curlimages/curl:latest)
+golangImages=(golang:1.23.1 golang:1.22.6 curlimages/curl:latest moby/buildkit:buildx-stable-1)
 for imageName in ${golangImages[@]} ; do
     # https://github.com/google/go-containerregistry/issues/2016
     crane index filter "${imageName}" --platform linux/amd64 --platform linux/arm64 -t "${MIRROR_REGISTRY}/${imageName}"
