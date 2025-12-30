@@ -7,6 +7,13 @@ echo $GW_IP
 ```
 
 
+## RateLimit
+
+```shell
+curl http://$GW_IP/echo -H "x-user-id: two"
+```
+
+
 ## Multi listeners
 
 ```shell

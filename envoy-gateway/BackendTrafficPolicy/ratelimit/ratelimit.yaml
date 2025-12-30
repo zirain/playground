@@ -19,9 +19,9 @@ kind: EnvoyProxy
 metadata:
   name: eg-gtw-config
 spec:
-  logging:
-    level:
-      filter: debug
+  # logging:
+  #   level:
+  #     filter: debug
   telemetry:
     accessLog:
       settings:
@@ -55,6 +55,7 @@ spec:
               requested_server_name: "%REQUESTED_SERVER_NAME%"
               route_name: "%ROUTE_NAME%"
               ratelimit: "%DYNAMIC_METADATA(envoy.filters.http.ratelimit)%"
+              policies: "%METADATA(ROUTE:envoy-gateway:policies)%"
           sinks:
             - type: File
               file:
@@ -112,7 +113,7 @@ spec:
         - clientSelectors:
             - headers:
                 - name: x-user-id
-                  value: two
+                  value: one
           limit:
             requests: 3
             unit: Minute
