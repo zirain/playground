@@ -1,0 +1,250 @@
+admin:
+  access_log_path: /tmp/admin_access.log
+  address:
+    socket_address:
+      protocol: TCP
+      address: 0.0.0.0
+      port_value: 19003
+
+bootstrap_extensions:
+  - name: envoy.bootstrap.internal_listener
+    typed_config:
+      "@type": type.googleapis.com/envoy.extensions.bootstrap.internal_listener.v3.InternalListener
+
+static_resources:
+  listeners:
+    - address:
+        socket_address:
+          address: 0.0.0.0
+          port_value: 18003
+      filter_chains:
+        - filters:
+            - name: envoy.filters.network.http_connection_manager
+              typed_config:
+                "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+                stat_prefix: ingress_http
+                http_filters:
+                  - name: envoy.filters.http.lua
+                    typedConfig:
+                      "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua
+                      inlineCode: |
+                        function envoy_on_request(request_handle)
+                          request_handle:headers():add("x-some-id", "some-value")
+                          request_handle:clearRouteCache()
+                        end
+                  - name: envoy.filters.http.router
+                    typedConfig:
+                      "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+                route_config:
+                  name: local_route
+                  virtual_hosts:
+                    - name: local_service
+                      domains: ["*"]
+                      routes:
+                        - match:
+                            prefix: "/"
+                          route:
+                            cluster: internal_18003
+
+    - name: internal-18003
+      internal_listener: {}
+      filter_chains:
+        - filters:
+            - name: envoy.filters.network.http_connection_manager
+              typed_config:
+                "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+                access_log:
+                  - name: envoy.access_loggers.file
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.extensions.access_loggers.file.v3.FileAccessLog
+                      log_format:
+                        text_format_source:
+                          inline_string: |
+                            [%START_TIME%] "%TRACE_ID%" "%REQ(x-b3-traceid)%" "%REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)% %PROTOCOL%" %RESPONSE_CODE% %RESPONSE_FLAGS% %RESPONSE_CODE_DETAILS% %CONNECTION_TERMINATION_DETAILS% "%UPSTREAM_TRANSPORT_FAILURE_REASON%" %BYTES_RECEIVED% %BYTES_SENT% %DURATION% %REQUEST_TX_DURATION% %RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)% "%REQ(X-FORWARDED-FOR)%" "%REQ(USER-AGENT)%" "%REQ(X-REQUEST-ID)%" "%REQ(:AUTHORITY)%" "%UPSTREAM_HOST%" %UPSTREAM_CLUSTER% %UPSTREAM_LOCAL_ADDRESS% %DOWNSTREAM_LOCAL_ADDRESS% %DOWNSTREAM_REMOTE_ADDRESS% %REQUESTED_SERVER_NAME% %ROUTE_NAME%
+                      path: /dev/stdout
+                stat_prefix: internal_18003
+                http_filters:
+                  - name: envoy.filters.http.router
+                    typedConfig:
+                      "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+                tracing:
+                  customTags:
+                    - literal:
+                        value: zipkin
+                      tag: provider
+                  overallSampling:
+                    value: 100
+                  clientSampling:
+                    value: 100
+                  randomSampling:
+                    value: 1
+                  spawnUpstreamSpan: true
+                  provider:
+                    name: envoy.tracers.zipkin
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.config.trace.v3.ZipkinConfig
+                      collectorCluster: zipkin
+                      collectorEndpoint: "/api/v2/spans"
+                      collectorEndpointVersion: "HTTP_JSON"
+                      sharedSpanContext: false
+                      traceId128bit: true
+                route_config:
+                  name: local_route
+                  virtual_hosts:
+                    - name: local_service
+                      domains: ["*"]
+                      routes:
+                        - match:
+                            prefix: "/foo"
+                            headers:
+                              - name: x-some-id
+                                stringMatch:
+                                  exact: some-value
+                          name: "foo"
+                          route:
+                            cluster: cluster_9080
+                          tracing:
+                            randomSampling:
+                              numerator: 100
+                        - match:
+                            prefix: "/"
+                          name: "match-all"
+                          route:
+                            cluster: cluster_9081
+
+    - name: staticreply-9080
+      address:
+        socket_address:
+          address: 127.0.0.1
+          port_value: 9080
+      filter_chains:
+        - filters:
+            - name: envoy.http_connection_manager
+              typed_config:
+                "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+                stat_prefix: ingress_http
+                codec_type: auto
+                route_config:
+                  name: local_route
+                  virtual_hosts:
+                    - name: local_service
+                      domains:
+                        - "*"
+                      routes:
+                        - match:
+                            prefix: "/"
+                          direct_response:
+                            status: 200
+                            body:
+                              inline_string: "hello from 9080\n"
+                http_filters:
+                  - name: envoy.filters.http.router
+                    typedConfig:
+                      "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+
+    - name: staticreply-9081
+      address:
+        socket_address:
+          address: 127.0.0.1
+          port_value: 9081
+      filter_chains:
+        - filters:
+            - name: envoy.http_connection_manager
+              typed_config:
+                "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+                stat_prefix: ingress_http
+                codec_type: auto
+                route_config:
+                  name: local_route
+                  virtual_hosts:
+                    - name: local_service
+                      domains:
+                        - "*"
+                      routes:
+                        - match:
+                            prefix: "/"
+                          direct_response:
+                            status: 200
+                            body:
+                              inline_string: "hello from 9081\n"
+                http_filters:
+                  - name: envoy.filters.http.router
+                    typedConfig:
+                      "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+
+  clusters:
+    - name: internal_18003
+      load_assignment:
+        cluster_name: internal_18003
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    envoy_internal_address:
+                      server_listener_name: internal-18003
+
+    - name: rate_limit_service
+      type: STRICT_DNS
+      lb_policy: ROUND_ROBIN
+      http2_protocol_options: {}
+      connect_timeout: 10s
+      load_assignment:
+        cluster_name: rate_limit_cluster
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: 127.0.0.1
+                      port_value: 8081
+
+    - name: cluster_9080
+      load_assignment:
+        cluster_name: cluster_9080
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: 127.0.0.1
+                      port_value: 9080
+
+    - name: cluster_9081
+      load_assignment:
+        cluster_name: cluster_9081
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: 127.0.0.1
+                      port_value: 9081
+
+    - name: otel-collector
+      type: LOGICAL_DNS
+      connect_timeout: 0.25s
+      http2_protocol_options: {}
+      lb_policy: round_robin
+      load_assignment:
+        cluster_name: otel-collector
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: otel-collector
+                      port_value: 4317
+
+    - name: zipkin
+      type: LOGICAL_DNS
+      connect_timeout: 0.25s
+      lb_policy: round_robin
+      load_assignment:
+        cluster_name: zipkin
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: otel-collector
+                      port_value: 9411
