@@ -1,11 +1,10 @@
 domain: httpbin-ratelimit
 descriptors:
   - key: PATH
-    value: "/"
     rate_limit:
       unit: minute
       requests_per_unit: 1
-  - key: PATH
+  - key: HEADER_USER
     rate_limit:
       unit: minute
-      requests_per_unit: 100
+      requests_per_unit: 1
