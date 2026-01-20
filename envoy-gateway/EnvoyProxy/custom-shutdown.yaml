@@ -39,6 +39,10 @@ spec:
                 spec:
                   containers:
                     - name: shutdown-manager
-                      env:
-                        - name: "USE_SERVER_CONNECTIONS"
-                          value: "true"
+                      resources:
+                        requests:
+                          cpu: 10m
+                          memory: 32Mi
+                        limits:
+                          cpu: 50m
+                          memory: 64Mi
