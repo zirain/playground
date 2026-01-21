@@ -18,12 +18,28 @@ spec:
   selector:
     app: backend
 ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-headless
+  labels:
+    app: backend
+    service: backend
+spec:
+  clusterIP: None
+  ports:
+    - name: http
+      port: 3000
+      targetPort: 3000
+  selector:
+    app: backend
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: backend
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: backend
