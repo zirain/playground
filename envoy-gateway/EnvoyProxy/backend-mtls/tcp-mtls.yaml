@@ -1,0 +1,54 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: eg-with-ep
+spec:
+  controllerName: gateway.envoyproxy.io/gatewayclass-controller
+  parametersRef:
+    group: gateway.envoyproxy.io
+    kind: EnvoyProxy
+    name: custom-proxy-config
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: eg
+spec:
+  gatewayClassName: eg-with-ep
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+      allowedRoutes:
+        namespaces:
+          from: All
+    - name: tcp
+      protocol: TCP
+      port: 8080
+      allowedRoutes:
+        namespaces:
+          from: All
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyProxy
+metadata:
+  name: custom-proxy-configg
+spec:
+  backendTLS:
+    clientCertificateRef:
+      kind: Secret
+      name: example-client-cert
+---
+apiVersion: gateway.networking.k8s.io/v1alpha2
+kind: TCPRoute
+metadata:
+  name: backend
+spec:
+  parentRefs:
+    - name: eg
+  rules:
+    - backendRefs:
+        - group: ""
+          kind: Service
+          name: tls-backend
+          port: 443
