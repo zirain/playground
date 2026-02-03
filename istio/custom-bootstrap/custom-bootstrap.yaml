@@ -6,12 +6,18 @@ data:
   custom_bootstrap.json: |
     "statsConfig": {
       "statsMatcher": {
-        "exclusionList": {
+        "inclusionList": {
           "patterns": [
-            { "prefix": "tcp"}
+            { "safe_regex": {"regex":".*ssl.*expiration_unix_time_seconds"} }
           ]
         }
-      }
+      },
+      "statsTags": [
+        {
+          "tag_name": "secret_name",
+          "regex": "\\.ssl\\.certificate(\\.(.*))\\.expiration_unix_time_seconds"
+        }
+      ]
     }
 ---
 apiVersion: apps/v1
@@ -54,7 +60,7 @@ metadata:
     service: helloworld
 spec:
   ports:
-  - port: 5000
-    name: http
+    - port: 5000
+      name: http
   selector:
     app: helloworld
