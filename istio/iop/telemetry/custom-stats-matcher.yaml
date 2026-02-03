@@ -7,15 +7,11 @@ spec:
   meshConfig:
     accessLogFile: /dev/stdout
     defaultConfig:
-      # unneeded from v1.17.0
-      # extraStatTags:
-      #   - source_x
-      #   - destination_x
       proxyStatsMatcher:
         inclusionRegexps:
-          - ".*circuit_breakers.*"
-          - ".*upstream_rq_xx.*"
-          - ".*ssl.*"
-        inclusionPrefixes:
-          - "upstream_rq_retry"
-          - "upstream_cx"
+          # - ".*circuit_breakers.*"
+          # - ".*upstream_rq_xx.*"
+          - ".*ssl.*expiration_unix_time_seconds"
+        # inclusionPrefixes:
+        #   - "upstream_rq_retry"
+        #   - "upstream_cx"
