@@ -1,0 +1,34 @@
+# kubectl label nodes envoy-gateway-worker topology.kubernetes.io/region=us-west-1
+# kubectl label nodes envoy-gateway-worker topology.kubernetes.io/zone=us-west-1a
+# kubectl label nodes envoy-gateway-worker2 topology.kubernetes.io/region=us-east-1
+# kubectl label nodes envoy-gateway-worker2 topology.kubernetes.io/zone=us-east-1a
+
+apiVersion: telemetry.istio.io/v1alpha1
+kind: Telemetry
+metadata:
+  name: custom-tags
+  namespace: istio-system
+spec:
+  metrics:
+    - overrides:
+        - match:
+            metric: ALL_METRICS
+            mode: CLIENT
+          tagOverrides:
+            # For TCP, upstream_peer is not available in `filter_state`, so we use `upstream_filter_state`
+            upstream_region:
+              value: |
+                has(filter_state.upstream_peer) ? filter_state.upstream_peer.region : upstream_filter_state.upstream_peer.region
+            upstream_zone:
+              value: |
+                has(filter_state.upstream_peer) ? filter_state.upstream_peer.zone : upstream_filter_state.upstream_peer.zone
+        - match:
+            metric: ALL_METRICS
+            mode: SERVER
+          tagOverrides:
+            downstream_region:
+              value: filter_state.downstream_peer.region
+            downstream_zone:
+              value: filter_state.downstream_peer.zone
+      providers:
+        - name: prometheus
