@@ -6,11 +6,7 @@ data:
   custom_bootstrap.json: |
     "statsConfig": {
       "statsMatcher": {
-        "inclusionList": {
-          "patterns": [
-            { "safe_regex": {"regex":".*ssl.*expiration_unix_time_seconds"} }
-          ]
-        }
+        "useAllDefaultTags": true,
       },
       "statsTags": [
         {
