@@ -26,13 +26,17 @@ metadata:
 spec:
   telemetry:
     tracing:
-      samplingRate: 1
+      samplingFraction:
+        numerator: 100
       provider:
         type: Zipkin
         backendRefs:
-          - name: otel-collector
-            namespace: monitoring
+          - name: zipkin
+            namespace: istio-system
             port: 9411
+          # - name: otel-collector
+          #   namespace: monitoring
+          #   port: 9411
         zipkin:
           enable128BitTraceId: true
       customTags:
