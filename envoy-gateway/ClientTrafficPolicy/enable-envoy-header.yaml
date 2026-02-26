@@ -1,11 +1,110 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: eg
+spec:
+  controllerName: gateway.envoyproxy.io/gatewayclass-controller
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: eg
+spec:
+  gatewayClassName: eg
+  infrastructure:
+    parametersRef:
+      group: gateway.envoyproxy.io
+      kind: EnvoyProxy
+      name: proxy-config
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyProxy
+metadata:
+  name: proxy-config
+spec:
+  telemetry:
+    accessLog:
+      settings:
+        - format:
+            type: JSON
+            json:
+              method: "%REQ(:METHOD)%"
+              http.host: "%REQ(HOST)%"
+              http.path: "%REQ(:PATH)%"
+              http.original_host: "%REQ(X-ENVOY-ORIGINAL-HOST)%"
+              http.original_path: "%REQ(X-ENVOY-ORIGINAL-PATH)%"
+              "protocol": "%PROTOCOL%"
+              "response_code": "%RESPONSE_CODE%"
+              "response_code_details": "%RESPONSE_CODE_DETAILS%"
+          sinks:
+            - type: File
+              file:
+                path: /dev/stdout
+---
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: ClientTrafficPolicy
 metadata:
-  name: envoy-headers
+  name: eg
 spec:
-  targetRef:
-    group: gateway.networking.k8s.io
-    kind: Gateway
-    name: eg
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: eg
   headers:
     enableEnvoyHeaders: true
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: Backend
+metadata:
+  name: backend-dynamic-resolver
+spec:
+  type: DynamicResolver
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: http-filter-url-rewrite
+spec:
+  parentRefs:
+    - name: eg
+  rules:
+    - matches:
+        - path:
+            value: "/get"
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            hostname: www.google.com
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /replace
+      backendRefs:
+        - group: gateway.envoyproxy.io
+          kind: Backend
+          name: backend-dynamic-resolver
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: http-filter-url-rewrite-status
+spec:
+  parentRefs:
+    - name: eg
+  rules:
+    - matches:
+        - path:
+            value: "/status"
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            hostname: www.example.com
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /replace
+      backendRefs:
+        - name: backend
+          port: 3000
