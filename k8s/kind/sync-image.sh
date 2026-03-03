@@ -32,7 +32,7 @@ done
 
 # sync image from docker.io
 images=(redis:6.0.6
-        kindest/node:v1.33.1
+        kindest/node:v1.35.0
         otel/opentelemetry-collector-contrib:0.144.0
         mccutchen/go-httpbin:v2.5.0
         prom/prometheus:v2.52.0
