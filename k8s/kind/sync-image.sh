@@ -34,12 +34,13 @@ done
 images=(redis:6.0.6
         kindest/node:v1.35.0
         otel/opentelemetry-collector-contrib:0.144.0
+        kiwigrid/k8s-sidecar:1.30.9
         mccutchen/go-httpbin:v2.5.0
         prom/prometheus:v2.52.0
         prom/prometheus:v3.9.1
-        grafana/alloy:v1.12.2
+        grafana/alloy:v1.13.0
         grafana/grafana:12.3.1
-        grafana/loki:3.6.3
+        grafana/loki:3.6.5
         grafana/tempo:2.1.1
         bats/bats:v1.4.1)
 for imageName in ${images[@]} ; do
@@ -48,7 +49,7 @@ done
 
 # sync images from quary.io
 queryImages=(prometheus-operator/prometheus-config-reloader:v0.81.0
-             prometheus-operator/prometheus-config-reloader:v0.88.0
+             prometheus-operator/prometheus-config-reloader:v0.89.0
              metallb/controller:v0.13.10
              metallb/speaker:v0.13.10)
 for imageName in ${queryImages[@]} ; do
