@@ -1,11 +1,13 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"sync"
+	"time"
 )
 
 type EchoResponse struct {
@@ -27,6 +29,9 @@ func main() {
 		fmt.Printf(".")
 	}
 
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	var wg sync.WaitGroup
 	for _, name := range user_names {
 		for _, org := range user_orgs {
@@ -35,7 +40,7 @@ func main() {
 			wg.Add(1)
 			go func(url string) {
 				defer wg.Done()
-				runConsistentHashQueryParamTest(url)
+				runConsistentHashQueryParamTest(ctx, cancel, url)
 			}(url)
 			fmt.Printf("\n")
 		}
@@ -44,17 +49,33 @@ func main() {
 	wg.Wait()
 }
 
-func runConsistentHashQueryParamTest(url string) {
+func runConsistentHashQueryParamTest(ctx context.Context, cancel context.CancelFunc, url string) {
 	var firstService string
 	count := 0
 
 	fmt.Printf("Starting requests to %s\n", url)
 
 	for {
-		resp, err := http.Get(url)
+		select {
+		case <-ctx.Done():
+			return
+		default:
+		}
+
+		req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 		if err != nil {
-			fmt.Printf("Error sending request: %v\n", err)
-			continue
+			fmt.Printf("Error creating request: %v\n", err)
+			return
+		}
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			select {
+			case <-ctx.Done():
+				return
+			default:
+				fmt.Printf("Error sending request: %v\n", err)
+				continue
+			}
 		}
 
 		body, err := io.ReadAll(resp.Body)
@@ -80,21 +101,24 @@ func runConsistentHashQueryParamTest(url string) {
 			fmt.Printf("Initial service: %s\n", firstService)
 		} else if currentService != firstService {
 			fmt.Printf("\nDETECTED CHANGE!\n")
+			fmt.Printf("time: %v\n", time.Now())
+			fmt.Printf("URL %s!\n", url)
 			fmt.Printf("Previous: %s\n", firstService)
 			fmt.Printf("Current:  %s\n", currentService)
 			fmt.Printf("Requests sent before change: %d\n", count)
-			break
+			cancel()
+			return
 		}
 
 		count++
 		if count%100 == 0 {
-			fmt.Printf(".")
+			fmt.Println(".")
 		}
 
 		// Stability check
 		if count >= 10000 {
 			fmt.Printf("\nFinished: Reached %d requests with no change in service (%s). Consistent hashing is stable.\n", count, firstService)
-			break
+			return
 		}
 	}
 }
