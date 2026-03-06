@@ -1,0 +1,48 @@
+services:
+  envoy:
+    image: envoyproxy/envoy:distroless-dev
+    command:
+      [
+        "-c",
+        "/etc/envoy/envoy.yaml",
+        "--component-log-level",
+        "upstream:debug",
+      ]
+    volumes:
+      - ./envoy.yaml:/etc/envoy/envoy.yaml:ro
+    ports:
+      - "10000:10000"
+    networks:
+      - envoymesh
+
+  echo1:
+    image: gcr.io/k8s-staging-gateway-api/echo-basic:v20231214-v1.0.0-140-gf544a46e
+    environment:
+      - SERVICE_NAME=echo1
+    networks:
+      - envoymesh
+
+  echo2:
+    image: gcr.io/k8s-staging-gateway-api/echo-basic:v20231214-v1.0.0-140-gf544a46e
+    environment:
+      - SERVICE_NAME=echo2
+    networks:
+      - envoymesh
+
+  echo3:
+    image: gcr.io/k8s-staging-gateway-api/echo-basic:v20231214-v1.0.0-140-gf544a46e
+    environment:
+      - SERVICE_NAME=echo3
+    networks:
+      - envoymesh
+
+  echo4:
+    image: gcr.io/k8s-staging-gateway-api/echo-basic:v20231214-v1.0.0-140-gf544a46e
+    environment:
+      - SERVICE_NAME=echo4
+    networks:
+      - envoymesh
+
+networks:
+  envoymesh:
+    driver: bridge
