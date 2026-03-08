@@ -24,22 +24,27 @@ static_resources:
                       extensionFilter:
                         name: envoy.access_loggers.extension_filters.cel
                         typedConfig:
-                          '@type': type.googleapis.com/envoy.extensions.access_loggers.filters.cel.v3.ExpressionFilter
+                          "@type": type.googleapis.com/envoy.extensions.access_loggers.filters.cel.v3.ExpressionFilter
                           expression: response.code != 200
                 route_config:
-                  name: local_route
+                  name: service_echo
                   virtual_hosts:
-                    - name: local_service
+                    - name: service_echo
                       domains: ["*"]
                       routes:
                         - match:
-                            prefix: "/"
+                            prefix: "/get"
                           route:
                             cluster: service_echo
                             hash_policy:
                               - query_parameter:
                                   name: "user_id"
+                              - query_parameter:
                                   name: "user_org"
+                        - match:
+                            prefix: "/"
+                          route:
+                            cluster: service_echo
                 http_filters:
                   - name: envoy.filters.http.router
                     typed_config:
