@@ -1,0 +1,72 @@
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyProxy
+metadata:
+  name: merge-gateways
+spec:
+  mergeGateways: true
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: merge-gateways
+spec:
+  controllerName: gateway.envoyproxy.io/gatewayclass-controller
+  parametersRef:
+    group: gateway.envoyproxy.io
+    kind: EnvoyProxy
+    name: merge-gateways
+    namespace: default
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyPatchPolicy
+metadata:
+  name: merge-gateways-epp
+spec:
+  jsonPatches:
+    # - name: ""
+    - name: "default/gtw-1/http"
+      operation:
+        op: add
+        path: /default_filter_chain/filters/0/typed_config/http_filters/0
+        value:
+          name: "envoy.lua"
+          typedConfig:
+            "@type": type.googleapis.com/udpa.type.v1.TypedStruct
+            typeUrl: type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua
+            value:
+              inline_code: |
+                function envoy_on_request(request_handle)
+                  -- Make an HTTP call to an upstream host with the following headers, body, and timeout.
+                  val = request_handle:headers():get("x-envoy-peer-metadata-id")
+                  request_handle:logWarn("get result: " .. val)
+                end
+      type: type.googleapis.com/envoy.config.listener.v3.Listener
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: GatewayClass
+    name: merge-gateways
+  type: JSONPatch
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: gtw-1
+spec:
+  gatewayClassName: merge-gateways
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: gtw-2
+spec:
+  gatewayClassName: merge-gateways
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 81
+---
