@@ -11,6 +11,9 @@ helm upgrade --install -n spire-server spire spire --repo https://spiffe.github.
 
 ```shell
 istioctl install -f istio/spire/iop.yaml -y
+
+kubectl create namespace spire-sample
+kubectl label namespace spire-sample istio-injection=enabled
 ```
 
 ## Install curl and httpbin

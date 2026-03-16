@@ -31,7 +31,8 @@ for imageName in ${golangImages[@]} ; do
 done
 
 # sync image from docker.io
-images=(redis:6.0.6
+images=(registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.9.4
+        redis:6.0.6
         kindest/node:v1.35.0
         otel/opentelemetry-collector-contrib:0.144.0
         kiwigrid/k8s-sidecar:1.30.9
@@ -57,7 +58,12 @@ for imageName in ${queryImages[@]} ; do
 done
 
 # sync image from ghcr.io
-ghcrImages=(projectcontour/yages:v0.1.0)
+ghcrImages=(projectcontour/yages:v0.1.0
+            spiffe/spire-controller-manager:0.6.3
+            spiffe/spiffe-csi-driver:0.2.7
+            spiffe/spiffe-helper:0.11.0
+            spiffe/oidc-discovery-provider:1.14.2
+            spiffe/spire-agent:1.14.2)
 for imageName in ${ghcrImages[@]} ; do
     crane cp "ghcr.io/${imageName}" "${MIRROR_REGISTRY}/${imageName}"
 done
