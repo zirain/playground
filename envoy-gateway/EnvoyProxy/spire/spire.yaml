@@ -1,0 +1,137 @@
+# Install SPIRE and Istio following the instructions in https://github.com/zirain/playground/blob/master/istio/spire/README.md
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: eg
+spec:
+  gatewayClassName: eg
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+      allowedRoutes:
+        namespaces:
+          from: All
+  infrastructure:
+    annotations:
+      kubectl.kubernetes.io/default-container: envoy
+      kubectl.kubernetes.io/default-logs-container: envoy
+    parametersRef:
+      group: gateway.envoyproxy.io
+      kind: EnvoyProxy
+      name: envoy-proxy-config
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyProxy
+metadata:
+  name: envoy-proxy-config
+  namespace: default
+spec:
+  backendTLS:
+    clientCertificateRef:
+      kind: SDS
+      name: default
+    alpnProtocols:
+      # without this, need to enforce mTLS with PeerAuthentication
+      - istio
+  sds:
+    group: gateway.envoyproxy.io
+    kind: Backend
+    name: spire-uds
+  provider:
+    type: Kubernetes
+    kubernetes:
+      envoyDeployment:
+        container:
+          image: envoyproxy/envoy:dev
+        pod:
+          volumes:
+            - name: workload-socket
+              csi:
+                driver: "csi.spiffe.io"
+                readOnly: true
+        patch:
+          type: StrategicMerge
+          value:
+            spec:
+              template:
+                spec:
+                  labels:
+                    spiffe.io/spire-managed-identity: "true"
+                  initContainers:
+                    - name: wait-for-spire-socket
+                      image: docker.io/library/busybox:1.28
+                      volumeMounts:
+                        - name: workload-socket
+                          mountPath: /run/secrets/workload-spiffe-uds
+                          readOnly: true
+                      env:
+                        - name: CHECK_FILE
+                          value: /run/secrets/workload-spiffe-uds/socket
+                      command:
+                        - sh
+                        - -c
+                        - |
+                          until [ -S "$CHECK_FILE" ]; do
+                            echo "Waiting for SPIRE socket to be available..."
+                            sleep 1
+                          done
+                          echo "SPIRE socket is available, starting Envoy..."
+                  containers:
+                    - name: envoy
+                      volumeMounts:
+                        - name: workload-socket
+                          mountPath: "/run/secrets/workload-spiffe-uds"
+                          readOnly: true
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: httpbin
+  namespace: spire-sample
+spec:
+  parentRefs:
+    - name: eg
+      namespace: default
+  rules:
+    - backendRefs:
+        - group: ""
+          kind: Service
+          name: httpbin
+          port: 8000
+      matches:
+        - path:
+            type: PathPrefix
+            value: /
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: BackendTLSPolicy
+metadata:
+  name: httpbin-btp
+  namespace: spire-sample
+spec:
+  targetRefs:
+    - group: ""
+      kind: Service
+      name: httpbin
+  validation:
+    caCertificateRefs:
+      - kind: SDS
+        group: ""
+        name: ROOTCA
+    hostname: httpbin.spire-sample.svc.cluster.local
+    subjectAltNames:
+      - type: URI
+        # trust domain is example.org, namespace is spire-sample, service account is httpbin
+        uri: spiffe://example.org/ns/spire-sample/sa/httpbin
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: Backend
+metadata:
+  name: spire-uds
+spec:
+  endpoints:
+    - unix:
+        path: /var/run/secrets/workload-spiffe-uds/socket
+  type: Endpoints
+---
