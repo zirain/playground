@@ -1,0 +1,6 @@
+*.crt
+*.key
+*.conf
+*.csr
+*.pem
+dumps/*
