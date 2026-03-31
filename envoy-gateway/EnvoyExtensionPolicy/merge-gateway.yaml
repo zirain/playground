@@ -1,0 +1,230 @@
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: eg-merge-demo
+spec:
+  controllerName: gateway.envoyproxy.io/gatewayclass-controller
+  parametersRef:
+    group: gateway.envoyproxy.io
+    kind: EnvoyProxy
+    name: merge-proxy
+    namespace: envoy-gateway-system
+
+---
+# EnvoyProxy with mergeGateways enabled
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyProxy
+metadata:
+  name: merge-proxy
+  namespace: envoy-gateway-system
+spec:
+  mergeGateways: true
+---
+# Gateway 1: v1
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: gateway-v1
+  namespace: default
+spec:
+  gatewayClassName: eg-merge-demo
+  listeners:
+    - name: http-v1
+      protocol: HTTP
+      port: 80
+      allowedRoutes:
+        namespaces:
+          from: Same
+---
+# Gateway 2: v2
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: gateway-v2
+  namespace: default
+spec:
+  gatewayClassName: eg-merge-demo
+  listeners:
+    - name: http-v2
+      protocol: HTTP
+      port: 8081
+      allowedRoutes:
+        namespaces:
+          from: Same
+---
+# Gateway 3: v3
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: gateway-v3
+  namespace: default
+spec:
+  gatewayClassName: eg-merge-demo
+  listeners:
+    - name: http-v3
+      protocol: HTTP
+      port: 8082
+      allowedRoutes:
+        namespaces:
+          from: Same
+---
+# HTTPRoute for v1
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: route-v1
+  namespace: default
+spec:
+  parentRefs:
+    - name: gateway-v1
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: infra-backend-v1
+          port: 8080
+
+---
+# HTTPRoute for v2
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: route-v2
+  namespace: default
+spec:
+  parentRefs:
+    - name: gateway-v2
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: infra-backend-v2
+          port: 8080
+
+---
+# HTTPRoute for v3
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: route-v3
+  namespace: default
+spec:
+  parentRefs:
+    - name: gateway-v3
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: infra-backend-v3
+          port: 8080
+
+---
+# EnvoyExtensionPolicy with Lua filter targeting the GatewayClass
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyExtensionPolicy
+metadata:
+  name: lua-extension-policy
+  namespace: default
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: GatewayClass
+      name: eg-merge-demo
+  lua:
+    - type: Inline
+      inline: |
+        function envoy_on_request(request_handle)
+          request_handle:headers():add("X-Lua-Filter", "applied-at-gateway-class")
+          request_handle:logInfo("Lua filter executed for hostname: " .. (request_handle:headers():get(":authority") or "unknown"))
+        end
+        function envoy_on_response(response_handle)
+          response_handle:headers():add("X-Lua-Response", "true")
+        end
+---
+# Another EnvoyExtensionPolicy targeting specifically gateway-v1
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyExtensionPolicy
+metadata:
+  name: lua-v1-only-policy
+  namespace: default
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: gateway-v1
+  lua:
+    - type: Inline
+      inline: |
+        function envoy_on_request(request_handle)
+          request_handle:headers():add("X-Lua-V1-Only", "true")
+          request_handle:logInfo("V1-specific Lua filter executed")
+        end
+---
+# EnvoyPatchPolicy targeting the GatewayClass
+# This allows applying low-level xDS patches to the merged Envoy proxy
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyPatchPolicy
+metadata:
+  name: patch-gateway-class
+  namespace: default
+spec:
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: GatewayClass
+    name: eg-merge-demo
+  type: JSONPatch
+  jsonPatches:
+    - name: "default/gateway-v1/http-v1"
+      type: type.googleapis.com/envoy.config.listener.v3.Listener
+      operation:
+        op: add
+        path: /default_filter_chain/filters/0/typed_config/http_filters/0
+        value:
+          name: "envoy.lua"
+          typedConfig:
+            "@type": type.googleapis.com/udpa.type.v1.TypedStruct
+            typeUrl: type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua
+            value:
+              inline_code: |
+                function envoy_on_request(request_handle)
+                  -- Make an HTTP call to an upstream host with the following headers, body, and timeout.
+                  val = request_handle:headers():get("x-envoy-peer-metadata-id")
+                  request_handle:logWarn("get result: " .. val)
+                end
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyPatchPolicy
+metadata:
+  name: patch-gateway
+  namespace: default
+spec:
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: gateway-v2
+  type: JSONPatch
+  jsonPatches:
+    - name: "default/gateway-v2/http-v2"
+      type: type.googleapis.com/envoy.config.listener.v3.Listener
+      operation:
+        op: add
+        path: /default_filter_chain/filters/0/typed_config/http_filters/0
+        value:
+          name: "envoy.lua"
+          typedConfig:
+            "@type": type.googleapis.com/udpa.type.v1.TypedStruct
+            typeUrl: type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua
+            value:
+              inline_code: |
+                function envoy_on_request(request_handle)
+                  -- Make an HTTP call to an upstream host with the following headers, body, and timeout.
+                  val = request_handle:headers():get("x-envoy-peer-metadata-id")
+                  request_handle:logWarn("get result: " .. val)
+                end
