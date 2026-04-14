@@ -20,3 +20,10 @@ curl http://$GW_IP/get -H "x-user-id: two"
 curl http://$GW_IP/echo -HHost:www.example.com -H "x-user-id: two"
 curl -ik -v  -H "x-user-id: two" -HHost:www.example.com --resolve "www.example.com:443:$GW_IP" https://www.example.com:443/echo
 ```
+
+## Multiple hosts
+
+```shell
+curl http://$GW_IP/echo -HHost:app1.example.com -H "x-user-id: two"
+curl http://$GW_IP/echo -HHost:app2.example.com -H "x-user-id: two"
+``` 
