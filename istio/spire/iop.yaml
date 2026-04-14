@@ -5,6 +5,7 @@ metadata:
 spec:
   profile: default
   meshConfig:
+    accessLogFile: /dev/stdout
     trustDomain: example.org
   values:
     # This is used to customize the sidecar template

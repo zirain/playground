@@ -29,15 +29,11 @@ metadata:
 spec:
   backendTLS:
     clientCertificateRef:
-      kind: SDS
-      name: default
+      kind: Secret
+      name: sds-client-cert-default
     alpnProtocols:
       # without this, need to enforce mTLS with PeerAuthentication
       - istio
-  sds:
-    group: gateway.envoyproxy.io
-    kind: Backend
-    name: spire-uds
   provider:
     type: Kubernetes
     kubernetes:
@@ -116,22 +112,34 @@ spec:
       name: httpbin
   validation:
     caCertificateRefs:
-      - kind: SDS
+      - name: sds-client-cert-rootca
         group: ""
-        name: ROOTCA
+        kind: Secret
     hostname: httpbin.spire-sample.svc.cluster.local
     subjectAltNames:
       - type: URI
         # trust domain is example.org, namespace is spire-sample, service account is httpbin
         uri: spiffe://example.org/ns/spire-sample/sa/httpbin
 ---
-apiVersion: gateway.envoyproxy.io/v1alpha1
-kind: Backend
+apiVersion: v1
+kind: Secret
 metadata:
-  name: spire-uds
-spec:
-  endpoints:
-    - unix:
-        path: /var/run/secrets/workload-spiffe-uds/socket
-  type: Endpoints
+  name: sds-client-cert-default
+  namespace: default
+type: gateway.envoyproxy.io/sds-ref
+data:
+  # /var/run/secrets/workload-spiffe-uds/socket
+  url: L3Zhci9ydW4vc2VjcmV0cy93b3JrbG9hZC1zcGlmZmUtdWRzL3NvY2tldA==
+  secretName: ZGVmYXVsdA== # base64 for "default"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: sds-client-cert-rootca
+  namespace: spire-sample
+type: gateway.envoyproxy.io/sds-ref
+data:
+  # /var/run/secrets/workload-spiffe-uds/socket
+  url: L3Zhci9ydW4vc2VjcmV0cy93b3JrbG9hZC1zcGlmZmUtdWRzL3NvY2tldA==
+  secretName: Uk9PVENB # base64 for "ROOTCA"
 ---
