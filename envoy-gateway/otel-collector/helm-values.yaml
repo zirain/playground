@@ -13,10 +13,11 @@ ports:
     hostPort: 8126
     protocol: TCP
 fullnameOverride: otel-collector
-mode: deployment
+mode: daemonset
+service:
+  enabled: true # this need to be enabled when mode is daemonset.
 image:
   repository: "otel/opentelemetry-collector-contrib"
-  tag: "0.121.0"
 config:
   exporters:
     prometheus:
