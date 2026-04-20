@@ -1,0 +1,23 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: patch-any-virtual-hosts
+  namespace: sample
+spec:
+  configPatches:
+    # Patch the VirtualHosts with the rate limits
+    - applyTo: VIRTUAL_HOST
+      match:
+        context: SIDECAR_OUTBOUND
+        routeConfiguration:
+          vhost:
+            route:
+              action: ANY
+      patch:
+        operation: MERGE
+        value:
+          rate_limits:
+            - actions:
+                - request_headers:
+                    header_name: "key-1"
+                    descriptor_key: "value-1"
