@@ -1,3 +1,4 @@
+# this's used to reproduce the issue of https://github.com/istio/istio/issues/58914
 apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
@@ -21,3 +22,7 @@ spec:
                 - request_headers:
                     header_name: "key-1"
                     descriptor_key: "value-1"
+
+# kubectl patch svc helloworld -n sample --type='json' -p='[{"op": "replace", "path": "/spec/ports/0/targetPort", "value": 80}]'
+# kubectl patch svc helloworld -n sample --type='json' -p='[{"op": "replace", "path": "/spec/ports/0/targetPort", "value": 5000}]'
+# istioctl pc r -n sample deploy/sleep --name "helloworld.sample.svc.cluster.local:80" -o yaml
