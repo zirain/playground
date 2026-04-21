@@ -31,8 +31,22 @@ spec:
             port: 4317
       tags:
         "k8s.cluster.name": "envoy-gateway"
-        "k8s.pod.name": "%ENVIRONMENT(ENVOY_POD_NAME)%"
-        "k8s.namespace.name": "%ENVIRONMENT(ENVOY_POD_NAMESPACE)%"
+        "k8s.pod.ip": "%ENVIRONMENT(ENVOY_POD_IP)%"
+        "k8s.pod.uid": "%ENVIRONMENT(ENVOY_POD_UID)%"
+  provider:
+    type: Kubernetes
+    kubernetes:
+      envoyDeployment:
+        container:
+          env:
+            - name: ENVOY_POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: ENVOY_POD_UID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.uid
     # metrics:
     #   prometheus: {}
     #   sinks:
@@ -94,3 +108,10 @@ spec:
     - fqdn:
         hostname: "www.httpbin.org"
         port: 80
+
+# transform in otel-collector
+#      transform/trace:
+#        trace_statements:
+#          - statements:
+#              - set(resource.attributes["k8s.pod.ip"], span.attributes["k8s.pod.ip"])
+#              - set(resource.attributes["k8s.pod.uid"], span.attributes["k8s.pod.uid"])
