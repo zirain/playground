@@ -1,0 +1,106 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: otel-telemetry
+spec:
+  gatewayClassName: eg
+  listeners:
+    - name: http
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: All
+  infrastructure:
+    parametersRef:
+      group: gateway.envoyproxy.io
+      kind: EnvoyProxy
+      name: otel-telemetry
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyProxy
+metadata:
+  name: otel-telemetry
+spec:
+  telemetry:
+    tracing:
+      provider:
+        backendRefs:
+          - name: otel-collector
+            namespace: monitoring
+            port: 4317
+      tags:
+        "k8s.cluster.name": "envoy-gateway"
+        "k8s.pod.ip": "%ENVIRONMENT(ENVOY_POD_IP)%"
+        "k8s.pod.uid": "%ENVIRONMENT(ENVOY_POD_UID)%"
+  provider:
+    type: Kubernetes
+    kubernetes:
+      envoyDeployment:
+        container:
+          env:
+            - name: ENVOY_POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: ENVOY_POD_UID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.uid
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: "k8s.pod.ip=$(ENVOY_POD_IP),k8s.pod.uid=$(ENVOY_POD_UID),service.name=envoy-gateway"
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: otel-telemetry
+spec:
+  parentRefs:
+    - name: otel-telemetry
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /otel
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            hostname: www.httpbin.org
+            path:
+              type: ReplaceFullPath
+              replaceFullPath: /headers
+      backendRefs:
+        - group: gateway.envoyproxy.io
+          kind: Backend
+          name: httpbin
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: Backend
+metadata:
+  name: httpbin
+spec:
+  endpoints:
+    - fqdn:
+        hostname: "www.httpbin.org"
+        port: 80
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyPatchPolicy
+metadata:
+  name: otel-resource-detector
+spec:
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: otel-telemetry
+  type: JSONPatch
+  jsonPatches:
+    - name: default/otel-telemetry/http
+      type: type.googleapis.com/envoy.config.listener.v3.Listener
+      operation:
+        op: add
+        path: /default_filter_chain/filters/0/typed_config/tracing/provider/typed_config/resource_detectors
+        value:
+          - name: envoy.tracers.opentelemetry.resource_detectors.environment
+            typedConfig:
+              "@type": type.googleapis.com/envoy.extensions.tracers.opentelemetry.resource_detectors.v3.EnvironmentResourceDetectorConfig
