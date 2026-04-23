@@ -1,0 +1,19 @@
+---
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: block-sleep-egress
+  namespace: istio-system
+spec:
+  selector:
+    matchLabels:
+      istio: egressgateway
+  action: DENY
+  rules:
+  - from:
+    - source:
+        principals: ["cluster.local/ns/sample/sa/sleep"]
+    when:
+    - key: connection.sni
+      values: 
+      - edition.cnn.com

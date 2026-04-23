@@ -1,0 +1,14 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  name: istio-egressgateway
+spec:
+  profile: default
+  meshConfig:
+    accessLogFile: /dev/stdout
+    outboundTrafficPolicy:
+      mode: REGISTRY_ONLY
+  components:
+    egressGateways:
+      - name: istio-egressgateway
+        enabled: true

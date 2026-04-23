@@ -2,46 +2,95 @@ apiVersion: networking.istio.io/v1
 kind: ServiceEntry
 metadata:
   name: cnn
+  namespace: istio-system
 spec:
   hosts:
   - edition.cnn.com
+  exportTo:
+  - "."
+  location: MESH_EXTERNAL
   ports:
   - number: 80
     name: http-port
     protocol: HTTP
   - number: 443
     name: https
-    protocol: HTTPS
+    protocol: TLS
   resolution: DNS
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: originate-tls-for-cnn
+  namespace: istio-system
+spec:
+  host: edition.cnn.com
+  subsets:
+  - name: tls-simple
+    trafficPolicy:
+      portLevelSettings:
+      - port:
+          number: 443
+        tls:
+          mode: SIMPLE
+          sni: edition.cnn.com
 ---
 apiVersion: networking.istio.io/v1
 kind: Gateway
 metadata:
   name: istio-egressgateway
+  namespace: sample
 spec:
   selector:
     istio: egressgateway
   servers:
   - port:
       number: 80
-      name: http
-      protocol: HTTP
+      name: https-port-for-tls-origination
+      protocol: HTTPS
     hosts:
     - edition.cnn.com
+    tls:
+      mode: ISTIO_MUTUAL
+  - port:
+      number: 443
+      name: tls-passthrough
+      protocol: TLS
+    hosts:
+    - edition.cnn.com
+    tls:
+      mode: ISTIO_MUTUAL
 ---
-# apiVersion: networking.istio.io/v1
-# kind: DestinationRule
-# metadata:
-#   name: egressgateway-for-cnn
-# spec:
-#   host: istio-egressgateway.istio-system.svc.cluster.local
-#   subsets:
-#   - name: cnn
+apiVersion: networking.istio.io/v1
+kind: DestinationRule
+metadata:
+  name: egressgateway-for-cnn
+  namespace: sample
+spec:
+  host: istio-egressgateway.istio-system.svc.cluster.local
+  subsets:
+  - name: cnn-443
+    trafficPolicy:
+      portLevelSettings:
+      - port:
+          number: 443
+        tls:
+          mode: ISTIO_MUTUAL
+          sni: edition.cnn.com
+  - name: cnn-80
+    trafficPolicy:
+      portLevelSettings:
+      - port:
+          number: 80
+        tls:
+          mode: ISTIO_MUTUAL
+          sni: edition.cnn.com
 ---
 apiVersion: networking.istio.io/v1
 kind: VirtualService
 metadata:
   name: direct-cnn-through-egress-gateway
+  namespace: sample
 spec:
   hosts:
   - edition.cnn.com
@@ -56,7 +105,7 @@ spec:
     route:
     - destination:
         host: istio-egressgateway.istio-system.svc.cluster.local
-        # subset: cnn
+        subset: cnn-80
         port:
           number: 80
       weight: 100
@@ -67,6 +116,32 @@ spec:
     route:
     - destination:
         host: edition.cnn.com
+        subset: tls-simple
         port:
-          number: 80
+          number: 443
       weight: 100
+  tls:
+  - match:
+    - gateways:
+      - mesh
+      port: 443
+      sniHosts:
+      - edition.cnn.com
+    route:
+    - destination:
+        host: istio-egressgateway.istio-system.svc.cluster.local
+        subset: cnn-443
+        port:
+          number: 443
+  tcp:
+  - match:
+    - gateways:
+      - istio-egressgateway
+      port: 443
+    route:
+    - destination:
+        host: edition.cnn.com
+        port:
+          number: 443
+      weight: 100
+  
