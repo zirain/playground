@@ -2,13 +2,13 @@ apiVersion: install.istio.io/v1alpha1
 kind: IstioOperator
 spec:
   values:
-    global:
+    # global:
       # logging:
       #   level: "xdsproxy:debug"
       # proxy:
       #   componentLogLevel: "filter:debug,http:debug"
-    pilot:
-      env:
+    # pilot:
+    #   env:
         # METRIC_ROTATION_INTERVAL: 1m
         # METRIC_GRACEFUL_DELETION_INTERVAL: 30s
         # PILOT_ENABLE_PERSISTENT_SESSION_FILTER: "true"
