@@ -1,0 +1,92 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: eg
+spec:
+  gatewayClassName: eg
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: backend
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: eg
+  rules:
+    - backendRefs:
+        - kind: Service
+          name: backend
+          port: 3000
+      matches:
+        - path:
+            type: PathPrefix
+            value: /
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyExtensionPolicy
+metadata:
+  name: lua-per-gateway-1
+  namespace: default
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: eg
+  lua:
+    - type: Inline
+      inline: |
+        function envoy_on_request(request_handle)
+          request_handle:headers():add("X-Lua-Filter", "applied-at-gateway-class")
+          request_handle:logInfo("Lua filter executed for hostname: " .. (request_handle:headers():get(":authority") or "unknown"))
+        end
+        function envoy_on_response(response_handle)
+          response_handle:headers():add("X-Lua-Response", "true")
+        end
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyExtensionPolicy
+metadata:
+  name: lua-per-route-1
+  namespace: default
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: backend
+  lua:
+    - type: Inline
+      inline: |
+        function envoy_on_request(request_handle)
+          request_handle:headers():add("X-Lua-Filter", "applied-at-gateway-class")
+          request_handle:logInfo("Lua filter executed for hostname: " .. (request_handle:headers():get(":authority") or "unknown"))
+        end
+        function envoy_on_response(response_handle)
+          response_handle:headers():add("X-Lua-Response", "true")
+        end
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyExtensionPolicy
+metadata:
+  name: lua-per-route-2
+  namespace: default
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: backend
+  lua:
+    - type: Inline
+      inline: |
+        function envoy_on_request(request_handle)
+          request_handle:headers():add("X-Lua-Filter", "applied-at-gateway-class")
+          request_handle:logInfo("Lua filter executed for hostname: " .. (request_handle:headers():get(":authority") or "unknown"))
+        end
+        function envoy_on_response(response_handle)
+          response_handle:headers():add("X-Lua-Response", "true")
+        end
