@@ -1,0 +1,189 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: eg
+spec:
+  gatewayClassName: eg
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: backend
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: eg
+  rules:
+    - backendRefs:
+        - kind: Service
+          name: backend
+          port: 3000
+      matches:
+        - path:
+            type: PathPrefix
+            value: /
+---
+# Today the order of filter in HCM is lua -> wasm -> dym.
+# Only one EnvoyExtensionPolicy is supported for each TargetRef(Gateway/GatewayClass or HTTPRoute).
+# Problems:
+#   1. EEP target to Gateway(created by Admin) will be overridden by the EEP target to HTTPRoute(created by user).
+#   2. Only one EEP can be attached to the HTTPRoute, which means only one set of filters can be attached to the route, 
+#     and users have no choice but to put all filters in one EEP.
+# Proposal:
+# - Support Merge mode for EPP, which means multiple EEPs can be attached to the same TargetRef, 
+#   and the filters in these EEPs will be chained together in the order of EEP creation time and then alphabetical order.
+# - Support multiple EEPs attached to the same TargetRef, and the filters in these EEPs will be 
+#   chained together in the order of EEP creation time and then alphabetical order.
+#   e.g. the filter order will like following:
+#    - lua filters in lua-per-gateway-1
+#    - wasm filters in lua-per-gateway-1
+#    - lua filters in lua-per-gateway-2
+#    - wasm filters in lua-per-gateway-2
+#    - lua filters in lua-per-route-1
+#    - wasm filters in lua-per-route-1
+#    - lua filters in lua-per-route-2 
+#    - wasm filters in lua-per-route-2
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyExtensionPolicy
+metadata:
+  name: lua-per-gateway-1
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: eg
+  wasm:
+    - name: gtw-wasm-filter-1
+      rootID: my_root_id
+      code:
+        type: HTTP
+        http:
+          url: https://raw.githubusercontent.com/envoyproxy/examples/main/wasm-cc/lib/envoy_filter_http_wasm_example.wasm
+    - name: gtw-wasm-filter-2
+      rootID: my_root_id
+      code:
+        type: HTTP
+        http:
+          url: https://raw.githubusercontent.com/envoyproxy/examples/main/wasm-cc/lib/envoy_filter_http_wasm_example.wasm
+  lua:
+    - type: Inline
+      inline: |
+        function envoy_on_request(request_handle)
+          request_handle:headers():add("X-Lua-Filter", "gtw-lua-0")
+        end
+    - type: Inline
+      inline: |
+        function envoy_on_request(request_handle)
+          request_handle:headers():add("X-Lua-Filter", "gtw-lua-1")
+        end
+---
+# lua-per-gateway-2 will be ignored since lua-per-gateway-1 and only one EEP can be attached to the Gateway.
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyExtensionPolicy
+metadata:
+  name: lua-per-gateway-2
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: eg
+  wasm:
+    - name: gtw-wasm-filter-1
+      rootID: my_root_id
+      code:
+        type: HTTP
+        http:
+          url: https://raw.githubusercontent.com/envoyproxy/examples/main/wasm-cc/lib/envoy_filter_http_wasm_example.wasm
+    - name: gtw-wasm-filter-2
+      rootID: my_root_id
+      code:
+        type: HTTP
+        http:
+          url: https://raw.githubusercontent.com/envoyproxy/examples/main/wasm-cc/lib/envoy_filter_http_wasm_example.wasm
+  lua:
+    - type: Inline
+      inline: |
+        function envoy_on_request(request_handle)
+          request_handle:headers():add("X-Lua-Filter", "gtw-lua-0")
+        end
+    - type: Inline
+      inline: |
+        function envoy_on_request(request_handle)
+          request_handle:headers():add("X-Lua-Filter", "gtw-lua-1")
+        end
+---
+# lua-per-route-1 will override lua-per-gateway-1
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyExtensionPolicy
+metadata:
+  name: lua-per-route-1
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: backend
+  wasm:
+    - name: route-wasm-filter-1
+      rootID: my_root_id
+      code:
+        type: HTTP
+        http:
+          url: https://raw.githubusercontent.com/envoyproxy/examples/main/wasm-cc/lib/envoy_filter_http_wasm_example.wasm
+    - name: route-wasm-filter-2
+      rootID: my_root_id
+      code:
+        type: HTTP
+        http:
+          url: https://raw.githubusercontent.com/envoyproxy/examples/main/wasm-cc/lib/envoy_filter_http_wasm_example.wasm
+  lua:
+    - type: Inline
+      inline: |
+        function envoy_on_request(request_handle)
+          request_handle:headers():add("X-Lua-Filter", "route-lua-0")
+        end
+    - type: Inline
+      inline: |
+        function envoy_on_request(request_handle)
+          request_handle:headers():add("X-Lua-Filter", "route-lua-1")
+        end
+---
+# message: Unable to target HTTPRoute backend, another EnvoyExtensionPolicy
+#          has already attached to it
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyExtensionPolicy
+metadata:
+  name: lua-per-route-2
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: backend
+  wasm:
+    - name: route2-wasm-filter-1
+      rootID: my_root_id
+      code:
+        type: HTTP
+        http:
+          url: https://raw.githubusercontent.com/envoyproxy/examples/main/wasm-cc/lib/envoy_filter_http_wasm_example.wasm
+    - name: route2-wasm-filter-2
+      rootID: my_root_id
+      code:
+        type: HTTP
+        http:
+          url: https://raw.githubusercontent.com/envoyproxy/examples/main/wasm-cc/lib/envoy_filter_http_wasm_example.wasm
+  lua:
+    - type: Inline
+      inline: |
+        function envoy_on_request(request_handle)
+          request_handle:headers():add("X-Lua-Filter", "route2-lua-0")
+        end
+    - type: Inline
+      inline: |
+        function envoy_on_request(request_handle)
+          request_handle:headers():add("X-Lua-Filter", "route-lua-1")
+        end
