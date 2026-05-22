@@ -1,0 +1,80 @@
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: eg-merge-demo
+spec:
+  controllerName: gateway.envoyproxy.io/gatewayclass-controller
+  parametersRef:
+    group: gateway.envoyproxy.io
+    kind: EnvoyProxy
+    name: merge-proxy
+    namespace: envoy-gateway-system
+---
+# EnvoyProxy with mergeGateways enabled
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyProxy
+metadata:
+  name: merge-proxy
+  namespace: envoy-gateway-system
+spec:
+  mergeGateways: true
+  provider:
+    type: Kubernetes
+    kubernetes:
+      envoyService:
+        patch:
+          type: StrategicMerge
+          value:
+            spec:
+              externalIPs:
+                - 10.19.160.11
+              externalTrafficPolicy: Local
+---
+# Gateway 1: v1
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: gateway-v1
+  namespace: default
+spec:
+  gatewayClassName: eg-merge-demo
+  listeners:
+    - name: http-v1
+      protocol: HTTP
+      port: 80
+      allowedRoutes:
+        namespaces:
+          from: Same
+---
+# Gateway 2: v2
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: gateway-v2
+  namespace: default
+spec:
+  gatewayClassName: eg-merge-demo
+  listeners:
+    - name: http-v2
+      protocol: HTTP
+      port: 8081
+      allowedRoutes:
+        namespaces:
+          from: Same
+---
+# Gateway 3: v3
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: gateway-v3
+  namespace: default
+spec:
+  gatewayClassName: eg-merge-demo
+  listeners:
+    - name: http-v3
+      protocol: HTTP
+      port: 8082
+      allowedRoutes:
+        namespaces:
+          from: Same
