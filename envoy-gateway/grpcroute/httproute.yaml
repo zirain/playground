@@ -1,0 +1,66 @@
+# export GATEWAY_HOST=$(kubectl get gateway/grpc-gateway -o jsonpath='{.status.addresses[0].value}')
+# grpcurl -plaintext -authority=www.example.com ${GATEWAY_HOST}:80 yages.Echo/Ping
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: grpc-gateway
+spec:
+  gatewayClassName: eg
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: yages
+spec:
+  parentRefs:
+    - name: grpc-gateway
+  rules:
+    - backendRefs:
+        - name: yages
+          port: 9000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: yages
+  name: yages
+spec:
+  selector:
+    matchLabels:
+      app: yages
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: yages
+    spec:
+      containers:
+        - name: grpcsrv
+          image: ghcr.io/projectcontour/yages:v0.1.0
+          ports:
+            - containerPort: 9000
+              protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: yages
+  name: yages
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 9000
+      protocol: TCP
+      targetPort: 9000
+      appProtocol: grpc
+  selector:
+    app: yages
+---
