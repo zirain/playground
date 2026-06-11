@@ -3,6 +3,9 @@ kind: IstioOperator
 spec:
   meshConfig:
     accessLogFile: /dev/stdout
+    # discoverySelectors:
+    #   - matchLabels:
+    #       istio-discovery: enabled
   values:
     istiodRemote:
       injectionPath: /inject/cluster/remote1/net/network1

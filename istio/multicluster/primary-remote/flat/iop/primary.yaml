@@ -3,6 +3,9 @@ kind: IstioOperator
 spec:
   meshConfig:
     accessLogFile: /dev/stdout
+    # discoverySelectors:
+    #   - matchLabels:
+    #       istio-discovery: enabled
   components:
     ingressGateways:
       - name: istio-eastwestgateway
