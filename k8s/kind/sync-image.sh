@@ -2,18 +2,25 @@
 
 set -euo pipefail
 
+if ! command -v regctl &>/dev/null; then
+    echo "regctl not found. Install with: brew install regclient"
+    exit 1
+fi
+
 # Setup default values
 ISTIO_VERSION=${ISTIO_VERSION:-$(istioctl version --remote=false | cut -d ':' -f2 | xargs)}
 MIRROR_REGISTRY=${MIRROR_REGISTRY:-"192.168.4.146:5000"}
 
+regctl registry set "${MIRROR_REGISTRY}" --tls=disabled
+
 # sync Istio images(distroless is used in Ambient)
 istioImages=(pilot proxyv2 ztunnel install-cni)
 for imageName in ${istioImages[@]} ; do
-    crane cp "docker.io/istio/${imageName}:${ISTIO_VERSION}" "${MIRROR_REGISTRY}/istio/${imageName}:${ISTIO_VERSION}"
-    crane cp "docker.io/istio/${imageName}:${ISTIO_VERSION}-distroless" "${MIRROR_REGISTRY}/istio/${imageName}:${ISTIO_VERSION}-distroless"
+    regctl image copy "docker.io/istio/${imageName}:${ISTIO_VERSION}" "${MIRROR_REGISTRY}/istio/${imageName}:${ISTIO_VERSION}"
+    regctl image copy "docker.io/istio/${imageName}:${ISTIO_VERSION}-distroless" "${MIRROR_REGISTRY}/istio/${imageName}:${ISTIO_VERSION}-distroless"
 done
 
-bookinfoTag=${BOOKINFO_IMAGE_TAG:-""}
+bookinfoTag=${BOOKINFO_IMAGE_TAG:-"1.20.3"}
 bookinfoImages=(istio/examples-bookinfo-productpage-v1
                  istio/examples-bookinfo-details-v1
                  istio/examples-bookinfo-ratings-v1
@@ -21,13 +28,16 @@ bookinfoImages=(istio/examples-bookinfo-productpage-v1
                  istio/examples-bookinfo-reviews-v2
                  istio/examples-bookinfo-reviews-v3)
 for imageName in ${bookinfoImages[@]} ; do
-    crane cp "docker.io/${imageName}" "${MIRROR_REGISTRY}/${imageName}:${bookinfoTag}"
+    regctl image copy "docker.io/${imageName}:${bookinfoTag}" "${MIRROR_REGISTRY}/${imageName}:${bookinfoTag}"
 done
 
-golangImages=(golang:1.23.1 golang:1.22.6 curlimages/curl:latest moby/buildkit:buildx-stable-1)
-for imageName in ${golangImages[@]} ; do
-    # https://github.com/google/go-containerregistry/issues/2016
-    crane index filter "${imageName}" --platform linux/amd64 --platform linux/arm64 -t "${MIRROR_REGISTRY}/${imageName}"
+# golang: filter to linux/amd64 and linux/arm64 only
+regctl image copy --platform linux/amd64 --platform linux/arm64 \
+    "docker.io/golang:1.26.4" "${MIRROR_REGISTRY}/golang:1.26.4"
+
+otherImages=(curlimages/curl:latest moby/buildkit:buildx-stable-1)
+for imageName in ${otherImages[@]} ; do
+    regctl image copy "docker.io/${imageName}" "${MIRROR_REGISTRY}/${imageName}"
 done
 
 # sync image from docker.io
@@ -45,16 +55,16 @@ images=(registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.9.4
         grafana/tempo:2.1.1
         bats/bats:v1.4.1)
 for imageName in ${images[@]} ; do
-    crane cp "${imageName}" "${MIRROR_REGISTRY}/${imageName}"
+    regctl image copy "${imageName}" "${MIRROR_REGISTRY}/${imageName}"
 done
 
-# sync images from quary.io
+# sync images from quay.io
 queryImages=(prometheus-operator/prometheus-config-reloader:v0.81.0
              prometheus-operator/prometheus-config-reloader:v0.89.0
              metallb/controller:v0.13.10
              metallb/speaker:v0.13.10)
 for imageName in ${queryImages[@]} ; do
-    crane cp "quay.io/${imageName}" "${MIRROR_REGISTRY}/${imageName}"
+    regctl image copy "quay.io/${imageName}" "${MIRROR_REGISTRY}/${imageName}"
 done
 
 # sync image from ghcr.io
@@ -65,7 +75,7 @@ ghcrImages=(projectcontour/yages:v0.1.0
             spiffe/oidc-discovery-provider:1.14.2
             spiffe/spire-agent:1.14.2)
 for imageName in ${ghcrImages[@]} ; do
-    crane cp "ghcr.io/${imageName}" "${MIRROR_REGISTRY}/${imageName}"
+    regctl image copy "ghcr.io/${imageName}" "${MIRROR_REGISTRY}/${imageName}"
 done
 
 # sync Envoy Gateway images
@@ -74,7 +84,7 @@ echo "EG_VERSION: ${EG_VERSION}"
 
 egImages=(envoyproxy/gateway)
 for imageName in ${egImages[@]} ; do
-    crane cp "docker.io/${imageName}:v${EG_VERSION}" "${MIRROR_REGISTRY}/${imageName}:${EG_VERSION}"
+    regctl image copy "docker.io/${imageName}:v${EG_VERSION}" "${MIRROR_REGISTRY}/${imageName}:v${EG_VERSION}"
 done
 
 # images for Gateway API conformance tests
@@ -83,5 +93,5 @@ image=(
     registry.k8s.io/coredns/coredns:v1.12.2
 )
 for img in ${image[@]}; do
-    crane cp "${img}" "${MIRROR_REGISTRY}/${img}"
+    regctl image copy "${img}" "${MIRROR_REGISTRY}/${img}"
 done
