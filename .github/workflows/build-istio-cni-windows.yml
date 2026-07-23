@@ -1,0 +1,82 @@
+name: Build istio-cni Windows image
+
+on:
+  workflow_dispatch:
+    inputs:
+      istio_ref:
+        description: "istio/istio branch/tag/sha to build"
+        required: false
+        default: experimental-windows-ambient
+      image_tag:
+        description: "Extra floating tag to push (in addition to the commit sha). Defaults to the commit sha if left blank."
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  IMAGE: ghcr.io/zirain/istio-cni-windows
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout istio/istio
+        uses: actions/checkout@v4
+        with:
+          repository: istio/istio
+          ref: ${{ inputs.istio_ref }}
+
+      - name: Resolve commit sha
+        id: rev
+        run: echo "sha=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve extra tag
+        id: extra_tag
+        run: echo "tag=${INPUT_IMAGE_TAG:-$SHA}" >> "$GITHUB_OUTPUT"
+        env:
+          INPUT_IMAGE_TAG: ${{ inputs.image_tag }}
+          SHA: ${{ steps.rev.outputs.sha }}
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Install MinGW (Windows cross toolchain)
+        run: sudo apt-get update && sudo apt-get install -y mingw-w64
+
+      # Dockerfile.install-cni-windows has no build stage of its own - it
+      # just COPYs prebuilt out/windows_${TARGETARCH}/*.exe binaries into
+      # the Windows base image, so the Go cross-compile has to happen here
+      # on the runner first.
+      - name: Cross-compile istio-cni for Windows
+        run: make -e TARGET_OS=windows build-cni
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          name: windows-builder
+          platforms: windows/amd64
+
+      - name: Log in to ghcr.io
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: cni/deployments/kubernetes/Dockerfile.install-cni-windows
+          builder: windows-builder
+          platforms: windows/amd64
+          pull: true
+          push: true
+          tags: |
+            ${{ env.IMAGE }}:${{ steps.extra_tag.outputs.tag }}
+            ${{ env.IMAGE }}:${{ steps.rev.outputs.sha }}
