@@ -6,4 +6,4 @@ metadata:
 spec:
   accessLogging:
     - providers:
-        - name: file-log
+        - name: envoy
