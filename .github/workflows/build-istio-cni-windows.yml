@@ -3,6 +3,10 @@ name: Build istio-cni Windows image
 on:
   workflow_dispatch:
     inputs:
+      repository:
+        description: "istio/istio repository to build (owner/repo)"
+        required: false
+        default: istio/istio
       istio_ref:
         description: "istio/istio branch/tag/sha to build"
         required: false
@@ -26,7 +30,7 @@ jobs:
       - name: Checkout istio/istio
         uses: actions/checkout@v4
         with:
-          repository: istio/istio
+          repository: ${{ inputs.repository }}
           ref: ${{ inputs.istio_ref }}
 
       - name: Resolve commit sha

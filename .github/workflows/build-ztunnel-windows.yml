@@ -3,6 +3,10 @@ name: Build ztunnel Windows image
 on:
   workflow_dispatch:
     inputs:
+      repository:
+        description: "istio/ztunnel repository to build (owner/repo)"
+        required: false
+        default: istio/ztunnel
       ztunnel_ref:
         description: "istio/ztunnel branch/tag/sha to build"
         required: false
@@ -26,7 +30,7 @@ jobs:
       - name: Checkout istio/ztunnel
         uses: actions/checkout@v4
         with:
-          repository: istio/ztunnel
+          repository: ${{ inputs.repository }}
           ref: ${{ inputs.ztunnel_ref }}
 
       - name: Resolve commit sha
