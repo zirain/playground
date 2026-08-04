@@ -1,0 +1,15 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: demo-cert
+  namespace: cert-vault-demo
+spec:
+  secretName: demo-cert-tls
+  duration: 2160h
+  renewBefore: 360h
+  commonName: demo.example.com
+  dnsNames:
+    - example.com
+  issuerRef:
+    name: vault-issuer
+    kind: Issuer

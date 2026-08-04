@@ -1,0 +1,17 @@
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: vault-issuer
+  namespace: cert-vault-demo
+spec:
+  vault:
+    server: http://vault.vault.svc.cluster.local:8200
+    path: pki/sign/example-dot-com
+    # path: pki/issuer/example-dot-com # the wrong one
+    auth:
+      appRole:
+        path: approle
+        roleId: bbdfc669-5cbc-bb82-4adc-6ab590e82425 # replace with your actual roleId
+        secretRef:
+          name: vault-approle-credentials
+          key: secretId
