@@ -44,6 +44,7 @@ done
 images=(registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.9.4
         redis:6.0.6
         kindest/node:v1.35.0
+        kindest/node:v1.36.1
         otel/opentelemetry-collector-contrib:0.144.0
         kiwigrid/k8s-sidecar:1.30.9
         mccutchen/go-httpbin:v2.5.0
@@ -61,8 +62,8 @@ done
 # sync images from quay.io
 queryImages=(prometheus-operator/prometheus-config-reloader:v0.81.0
              prometheus-operator/prometheus-config-reloader:v0.89.0
-             metallb/controller:v0.13.10
-             metallb/speaker:v0.13.10)
+             metallb/controller:v0.16.1
+             metallb/speaker:v0.16.1)
 for imageName in ${queryImages[@]} ; do
     regctl image copy "quay.io/${imageName}" "${MIRROR_REGISTRY}/${imageName}"
 done
