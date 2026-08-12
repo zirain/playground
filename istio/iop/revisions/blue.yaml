@@ -7,10 +7,12 @@ spec:
   revision: blue
   meshConfig:
     accessLogFile: /dev/stdout
-    discoverySelectors:
-      - matchLabels:
-          istio-discovery: blue
   values:
-    pilot:
-      env:
-        ENABLE_ENHANCED_RESOURCE_SCOPING: "true" # need this before v1.22
+    gateways:
+      istio-ingressgateway:
+        injectionTemplate: gateway
+    global:
+      meshID: mesh1
+      multiCluster:
+        clusterName: primary
+      network: network2
