@@ -1,0 +1,127 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: websocket-demo
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: websocket-gateway
+  namespace: websocket-demo
+spec:
+  gatewayClassName: eg
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+      allowedRoutes:
+        namespaces:
+          from: Same
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: websocket-echo
+  namespace: websocket-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: websocket-echo
+  template:
+    metadata:
+      labels:
+        app: websocket-echo
+    spec:
+      containers:
+        - name: websocket-echo
+          image: jmalloc/echo-server:0.3.6
+          ports:
+            - containerPort: 8080
+              name: websocket
+          readinessProbe:
+            tcpSocket:
+              port: websocket
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: websocket-echo
+  namespace: websocket-demo
+spec:
+  selector:
+    app: websocket-echo
+  ports:
+    - name: websocket
+      port: 8080
+      targetPort: websocket
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: websocket-echo
+  namespace: websocket-demo
+spec:
+  parentRefs:
+    - name: websocket-gateway
+  rules:
+    - name: echo
+      matches:
+        - path:
+            type: PathPrefix
+            value: /echo
+      backendRefs:
+        - name: websocket-echo
+          port: 8080
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: websocket-echo
+          port: 8080
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: BackendTrafficPolicy
+metadata:
+  name: btp-for-route
+  namespace: websocket-demo
+spec:
+  circuitBreaker:
+    maxConnections: 1000000
+    maxParallelRequests: 1000000
+    maxParallelRetries: 1000000
+    maxPendingRequests: 100000
+    maxRequestsPerConnection: 1000000
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: websocket-echo
+  timeout:
+    http:
+      connectionIdleTimeout: 600s
+    tcp:
+      connectTimeout: 10000ms
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: BackendTrafficPolicy
+metadata:
+  name: btp-for-routerule
+  namespace: websocket-demo
+spec:
+  circuitBreaker:
+    maxConnections: 1000000
+    maxParallelRequests: 1000000
+    maxParallelRetries: 1000000
+    maxPendingRequests: 100000
+    maxRequestsPerConnection: 1000000
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: websocket-echo
+      sectionName: echo
+  timeout:
+    http:
+      connectionIdleTimeout: 1000s
+    tcp:
+      connectTimeout: 10000ms
