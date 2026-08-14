@@ -121,6 +121,83 @@ kubectl delete secret websocket-backend-tls -n websocket-ssl-demo
 kubectl delete configmap websocket-backend-ca -n websocket-ssl-demo
 ```
 
+## SSL frontend + SSL backend variant
+
+`websocket-wss-ssl-backend.yaml` takes the SSL-backend demo further: the
+client-facing listener now terminates TLS too (`HTTPS`/port `443`), so clients
+connect with `wss://` instead of `ws://`. It uses a separate certificate
+(`websocket-frontend-tls`) from the one the backend TLS hop uses
+(`websocket-backend-tls`) — TLS is terminated independently on each hop. It
+runs in its own `websocket-wss-ssl-demo` namespace, so it can coexist with the
+other demos.
+
+### Generate certificates
+
+Two unrelated self-signed certs are needed: one for the Gateway's
+client-facing listener, one for the backend (same as the SSL-backend variant):
+
+```sh
+# Frontend cert — terminated by the Gateway listener itself.
+openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 \
+  -subj '/CN=websocket-frontend.example.com/O=example organization' \
+  -addext 'subjectAltName=DNS:websocket-frontend.example.com' \
+  -keyout websocket-frontend.key -out websocket-frontend.crt
+
+# Backend cert — terminated by the nginx sidecar, validated via BackendTLSPolicy.
+openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 \
+  -subj '/CN=websocket-backend.example.com/O=example organization' \
+  -addext 'subjectAltName=DNS:websocket-backend.example.com' \
+  -keyout websocket-backend.key -out websocket-backend.crt
+
+kubectl create namespace websocket-wss-ssl-demo
+kubectl create secret tls websocket-frontend-tls -n websocket-wss-ssl-demo \
+  --cert=websocket-frontend.crt --key=websocket-frontend.key
+kubectl create secret tls websocket-backend-tls -n websocket-wss-ssl-demo \
+  --cert=websocket-backend.crt --key=websocket-backend.key
+# Self-signed, so the backend leaf cert is also its own trust anchor.
+kubectl create configmap websocket-backend-ca -n websocket-wss-ssl-demo \
+  --from-file=ca.crt=websocket-backend.crt
+```
+
+### Run
+
+```sh
+kubectl apply -f websocket-wss-ssl-backend.yaml
+kubectl wait --for=condition=programmed gateway/websocket-wss-ssl-gateway -n websocket-wss-ssl-demo --timeout=2m
+kubectl rollout status deployment/websocket-echo-tls -n websocket-wss-ssl-demo
+```
+
+Connect with `wss://`. The frontend cert is self-signed, so `websocat` needs
+`-k`/`--insecure` to skip certificate validation:
+
+```sh
+GATEWAY_HOST=$(kubectl get gateway websocket-wss-ssl-gateway -n websocket-wss-ssl-demo \
+  -o jsonpath='{.status.addresses[0].value}')
+websocat -k "wss://${GATEWAY_HOST}/echo"
+```
+
+To confirm both hops are actually using TLS, check the listener's transport
+socket (client-facing) and the cluster's transport socket (backend-facing) in
+the config dump:
+
+```sh
+ENVOY_POD=$(kubectl get pods -n websocket-wss-ssl-demo \
+  -l gateway.envoyproxy.io/owning-gateway-name=websocket-wss-ssl-gateway \
+  -o jsonpath='{.items[0].metadata.name}')
+kubectl exec -n websocket-wss-ssl-demo "${ENVOY_POD}" -c envoy -- \
+  curl -s 127.0.0.1:19000/config_dump | grep -A5 '"name": "wss"'
+kubectl exec -n websocket-wss-ssl-demo "${ENVOY_POD}" -c envoy -- \
+  curl -s 127.0.0.1:19000/config_dump | grep -A5 '"name": ".*websocket-echo-tls'
+```
+
+### Clean up
+
+```sh
+kubectl delete -f websocket-wss-ssl-backend.yaml
+kubectl delete secret websocket-frontend-tls websocket-backend-tls -n websocket-wss-ssl-demo
+kubectl delete configmap websocket-backend-ca -n websocket-wss-ssl-demo
+```
+
 ## Broken SSL backend variant
 
 `websocket-ssl-backend-500.yaml` is the SSL-backend demo again, but the backend

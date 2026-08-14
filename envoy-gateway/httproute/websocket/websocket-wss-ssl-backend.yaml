@@ -1,0 +1,222 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: websocket-wss-ssl-demo
+---
+# Client-facing listener now terminates TLS too (protocol HTTPS/wss://), using a
+# cert distinct from the one the backend TLS hop below uses. This is the
+# end-to-end-TLS variant of websocket-ssl-backend.yaml: TLS client<->Gateway
+# *and* TLS Gateway<->backend, each with its own certificate.
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: websocket-wss-ssl-gateway
+  namespace: websocket-wss-ssl-demo
+spec:
+  gatewayClassName: eg
+  listeners:
+    - name: wss
+      protocol: HTTPS
+      port: 443
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - group: ""
+            kind: Secret
+            name: websocket-frontend-tls
+      allowedRoutes:
+        namespaces:
+          from: Same
+---
+# Full nginx.conf (not a conf.d snippet) terminating TLS on 8443 and reverse-proxying
+# the WebSocket upgrade to the plaintext echo server on 127.0.0.1:8080.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: websocket-tls-proxy-conf
+  namespace: websocket-wss-ssl-demo
+data:
+  nginx.conf: |
+    events {}
+    http {
+      map $http_upgrade $connection_upgrade {
+        default upgrade;
+        ''      close;
+      }
+
+      server {
+        listen 8443 ssl;
+
+        ssl_certificate     /etc/nginx/tls/tls.crt;
+        ssl_certificate_key /etc/nginx/tls/tls.key;
+
+        location / {
+          proxy_pass http://127.0.0.1:8080;
+          proxy_http_version 1.1;
+          proxy_set_header Upgrade $http_upgrade;
+          proxy_set_header Connection $connection_upgrade;
+          proxy_set_header Host $host;
+          proxy_read_timeout 3600s;
+          proxy_send_timeout 3600s;
+        }
+      }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: websocket-echo-tls
+  namespace: websocket-wss-ssl-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: websocket-echo-tls
+  template:
+    metadata:
+      labels:
+        app: websocket-echo-tls
+    spec:
+      containers:
+        # Plain WebSocket echo server, reachable only inside the pod on 127.0.0.1:8080.
+        - name: websocket-echo
+          image: jmalloc/echo-server:0.3.6
+          ports:
+            - containerPort: 8080
+              name: websocket
+          readinessProbe:
+            tcpSocket:
+              port: websocket
+        # TLS-terminating sidecar: this is the "SSL backend" Envoy Gateway connects to.
+        - name: tls-proxy
+          image: nginx:1.27-alpine
+          ports:
+            - containerPort: 8443
+              name: wss
+          readinessProbe:
+            tcpSocket:
+              port: wss
+          volumeMounts:
+            - name: nginx-conf
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+              readOnly: true
+            - name: tls-cert
+              mountPath: /etc/nginx/tls
+              readOnly: true
+      volumes:
+        - name: nginx-conf
+          configMap:
+            name: websocket-tls-proxy-conf
+        - name: tls-cert
+          secret:
+            # Created out-of-band, see README.md — must contain tls.crt/tls.key for
+            # CN/SAN "websocket-backend.example.com". Distinct from the
+            # websocket-frontend-tls cert the Gateway listener above uses.
+            secretName: websocket-backend-tls
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: websocket-echo-tls
+  namespace: websocket-wss-ssl-demo
+spec:
+  selector:
+    app: websocket-echo-tls
+  ports:
+    - name: wss
+      port: 8443
+      targetPort: wss
+---
+# Tells Envoy Gateway to originate TLS when connecting to websocket-echo-tls:8443,
+# on top of the client-facing listener above now also terminating TLS.
+apiVersion: gateway.networking.k8s.io/v1
+kind: BackendTLSPolicy
+metadata:
+  name: websocket-backend-tls
+  namespace: websocket-wss-ssl-demo
+spec:
+  targetRefs:
+    - group: ""
+      kind: Service
+      name: websocket-echo-tls
+  validation:
+    caCertificateRefs:
+      - name: websocket-backend-ca
+        group: ""
+        kind: ConfigMap
+    hostname: websocket-backend.example.com
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: websocket-echo-tls
+  namespace: websocket-wss-ssl-demo
+spec:
+  parentRefs:
+    - name: websocket-wss-ssl-gateway
+  rules:
+    - name: echo
+      matches:
+        - path:
+            type: PathPrefix
+            value: /echo
+      backendRefs:
+        - name: websocket-echo-tls
+          port: 8443
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: websocket-echo-tls
+          port: 8443
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: BackendTrafficPolicy
+metadata:
+  name: btp-for-route-tls
+  namespace: websocket-wss-ssl-demo
+spec:
+  circuitBreaker:
+    maxConnections: 1000000
+    maxParallelRequests: 1000000
+    maxParallelRetries: 1000000
+    maxPendingRequests: 100000
+    maxRequestsPerConnection: 1000000
+  httpUpgrade:
+    - type: websocket
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: websocket-echo-tls
+  timeout:
+    http:
+      connectionIdleTimeout: 600s
+    tcp:
+      connectTimeout: 10000ms
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: BackendTrafficPolicy
+metadata:
+  name: btp-for-routerule-tls
+  namespace: websocket-wss-ssl-demo
+spec:
+  circuitBreaker:
+    maxConnections: 1000000
+    maxParallelRequests: 1000000
+    maxParallelRetries: 1000000
+    maxPendingRequests: 100000
+    maxRequestsPerConnection: 1000000
+  httpUpgrade:
+    - type: websocket
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: websocket-echo-tls
+      sectionName: echo
+  timeout:
+    http:
+      connectionIdleTimeout: 1000s
+    tcp:
+      connectTimeout: 10000ms
