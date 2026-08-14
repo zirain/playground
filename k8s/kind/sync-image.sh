@@ -45,14 +45,15 @@ images=(registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.9.4
         redis:6.0.6
         kindest/node:v1.35.0
         kindest/node:v1.36.1
-        otel/opentelemetry-collector-contrib:0.144.0
+        otel/opentelemetry-collector-contrib:0.158.0
         kiwigrid/k8s-sidecar:1.30.9
         mccutchen/go-httpbin:v2.5.0
         prom/prometheus:v2.52.0
-        prom/prometheus:v3.9.1
-        grafana/alloy:v1.13.0
+        prom/prometheus:v3.12.0
+        grafana/alloy:v1.17.0
+        kiwigrid/k8s-sidecar:2.5.0
         grafana/grafana:12.3.1
-        grafana/loki:3.6.5
+        grafana/loki:3.6.11
         grafana/tempo:2.1.1
         bats/bats:v1.4.1)
 for imageName in ${images[@]} ; do
