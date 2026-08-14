@@ -1,0 +1,192 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: websocket-ssl-500-demo
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: websocket-ssl-500-gateway
+  namespace: websocket-ssl-500-demo
+spec:
+  gatewayClassName: eg
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+      allowedRoutes:
+        namespaces:
+          from: Same
+---
+# Full nginx.conf (not a conf.d snippet) terminating TLS on 8443. It always answers
+# 500: this backend completes the TLS handshake but fails every request, for
+# exercising Envoy Gateway's handling of an SSL backend that's up but broken.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: websocket-tls-500-conf
+  namespace: websocket-ssl-500-demo
+data:
+  nginx.conf: |
+    events {}
+    http {
+      server {
+        listen 8443 ssl;
+
+        ssl_certificate     /etc/nginx/tls/tls.crt;
+        ssl_certificate_key /etc/nginx/tls/tls.key;
+
+        location / {
+          return 500;
+        }
+      }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: websocket-tls-500
+  namespace: websocket-ssl-500-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: websocket-tls-500
+  template:
+    metadata:
+      labels:
+        app: websocket-tls-500
+    spec:
+      containers:
+        # TLS-terminating "SSL backend" Envoy Gateway connects to. Always returns 500.
+        - name: tls-proxy
+          image: nginx:1.27-alpine
+          ports:
+            - containerPort: 8443
+              name: wss
+          readinessProbe:
+            tcpSocket:
+              port: wss
+          volumeMounts:
+            - name: nginx-conf
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+              readOnly: true
+            - name: tls-cert
+              mountPath: /etc/nginx/tls
+              readOnly: true
+      volumes:
+        - name: nginx-conf
+          configMap:
+            name: websocket-tls-500-conf
+        - name: tls-cert
+          secret:
+            # Created out-of-band, see README.md — must contain tls.crt/tls.key for
+            # CN/SAN "websocket-backend-500.example.com".
+            secretName: websocket-backend-500-tls
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: websocket-tls-500
+  namespace: websocket-ssl-500-demo
+spec:
+  selector:
+    app: websocket-tls-500
+  ports:
+    - name: wss
+      port: 8443
+      targetPort: wss
+---
+# Tells Envoy Gateway to originate TLS when connecting to websocket-tls-500:8443,
+# even though the client-facing listener above is still plain HTTP/ws://.
+apiVersion: gateway.networking.k8s.io/v1
+kind: BackendTLSPolicy
+metadata:
+  name: websocket-backend-500-tls
+  namespace: websocket-ssl-500-demo
+spec:
+  targetRefs:
+    - group: ""
+      kind: Service
+      name: websocket-tls-500
+  validation:
+    caCertificateRefs:
+      - name: websocket-backend-500-ca
+        group: ""
+        kind: ConfigMap
+    hostname: websocket-backend-500.example.com
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: websocket-tls-500
+  namespace: websocket-ssl-500-demo
+spec:
+  parentRefs:
+    - name: websocket-ssl-500-gateway
+  rules:
+    - name: echo
+      matches:
+        - path:
+            type: PathPrefix
+            value: /echo
+      backendRefs:
+        - name: websocket-tls-500
+          port: 8443
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: websocket-tls-500
+          port: 8443
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: BackendTrafficPolicy
+metadata:
+  name: btp-for-route-500
+  namespace: websocket-ssl-500-demo
+spec:
+  circuitBreaker:
+    maxConnections: 1000000
+    maxParallelRequests: 1000000
+    maxParallelRetries: 1000000
+    maxPendingRequests: 100000
+    maxRequestsPerConnection: 1000000
+  httpUpgrade:
+    - type: websocket
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: websocket-tls-500
+  timeout:
+    http:
+      connectionIdleTimeout: 600s
+    tcp:
+      connectTimeout: 10000ms
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: BackendTrafficPolicy
+metadata:
+  name: btp-for-routerule-500
+  namespace: websocket-ssl-500-demo
+spec:
+  circuitBreaker:
+    maxConnections: 1000000
+    maxParallelRequests: 1000000
+    maxParallelRetries: 1000000
+    maxPendingRequests: 100000
+    maxRequestsPerConnection: 1000000
+  httpUpgrade:
+    - type: websocket
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: websocket-tls-500
+      sectionName: echo
+  timeout:
+    http:
+      connectionIdleTimeout: 1000s
+    tcp:
+      connectTimeout: 10000ms
