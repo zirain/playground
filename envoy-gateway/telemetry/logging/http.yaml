@@ -1,7 +1,7 @@
 apiVersion: gateway.networking.k8s.io/v1
 kind: GatewayClass
 metadata:
-  name: eg
+  name: eg-with-ep
 spec:
   controllerName: gateway.envoyproxy.io/gatewayclass-controller
   parametersRef:
@@ -27,9 +27,9 @@ spec:
             - type: ALS
               als:
                 backendRefs:
-                  - name: envoy-als
+                  - name: otel-collector
                     namespace: monitoring
-                    port: 8080
+                    port: 9000
                 type: HTTP
 ---
 apiVersion: gateway.networking.k8s.io/v1
@@ -37,7 +37,7 @@ kind: Gateway
 metadata:
   name: eg
 spec:
-  gatewayClassName: eg
+  gatewayClassName: eg-with-ep
   listeners:
     - name: http
       protocol: HTTP
