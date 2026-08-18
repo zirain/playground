@@ -260,3 +260,149 @@ kubectl delete -f websocket-ssl-backend-500.yaml
 kubectl delete secret websocket-backend-500-tls -n websocket-ssl-500-demo
 kubectl delete configmap websocket-backend-500-ca -n websocket-ssl-500-demo
 ```
+
+## Certificate mismatch variants
+
+The next two demos are also SSL-backend demos with a healthy echo server behind
+the `tls-proxy` sidecar, but each has a deliberately broken `BackendTLSPolicy` so
+the TLS handshake to the backend fails before any WebSocket traffic gets
+through. They isolate the two distinct ways an upstream cert check can fail:
+the hostname doesn't match the cert, or the cert doesn't chain to the trusted
+CA. Both should make Envoy Gateway reject the upstream connection and return
+`503` — never the `500`/`101` the app itself would produce.
+
+### Hostname mismatch
+
+`websocket-ssl-backend-hostname-mismatch.yaml` presents a cert that's valid and
+self-trusted (the `BackendTLSPolicy`'s CA ref is the cert's own issuer), but
+the policy's `validation.hostname` doesn't match the cert's SAN — as if the
+cert were rotated to a new domain and the policy never got updated. Runs in
+its own `websocket-hostname-mismatch-demo` namespace.
+
+#### Generate a backend certificate
+
+```sh
+openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 \
+  -subj '/CN=websocket-backend-hostname-mismatch.example.com/O=example organization' \
+  -addext 'subjectAltName=DNS:websocket-backend-hostname-mismatch.example.com' \
+  -keyout websocket-backend-hostname-mismatch.key -out websocket-backend-hostname-mismatch.crt
+
+kubectl create namespace websocket-hostname-mismatch-demo
+kubectl create secret tls websocket-backend-tls -n websocket-hostname-mismatch-demo \
+  --cert=websocket-backend-hostname-mismatch.crt --key=websocket-backend-hostname-mismatch.key
+# Self-signed, so the leaf cert is also its own trust anchor — the CA ref is
+# correct. It's the hostname in the BackendTLSPolicy (websocket-backend.example.com)
+# that doesn't match this cert's SAN.
+kubectl create configmap websocket-backend-ca -n websocket-hostname-mismatch-demo \
+  --from-file=ca.crt=websocket-backend-hostname-mismatch.crt
+```
+
+#### Run
+
+```sh
+kubectl apply -f websocket-ssl-backend-hostname-mismatch.yaml
+kubectl wait --for=condition=programmed gateway/websocket-hostname-mismatch-gateway -n websocket-hostname-mismatch-demo --timeout=2m
+kubectl rollout status deployment/websocket-echo-tls -n websocket-hostname-mismatch-demo
+```
+
+Connect with `ws://`, same as the other demos. The upstream TLS handshake
+fails hostname verification, so Envoy Gateway never reaches the (healthy)
+echo server:
+
+```sh
+GATEWAY_HOST=$(kubectl get gateway websocket-hostname-mismatch-gateway -n websocket-hostname-mismatch-demo \
+  -o jsonpath='{.status.addresses[0].value}')
+websocat "ws://${GATEWAY_HOST}/echo"
+# websocat: WebSocketError: Received unexpected status code (503 Service Unavailable)
+```
+
+To confirm the failure is a cert verification error and not the app rejecting
+the request, check Envoy's SSL stats for the backend cluster:
+
+```sh
+ENVOY_POD=$(kubectl get pods -n websocket-hostname-mismatch-demo \
+  -l gateway.envoyproxy.io/owning-gateway-name=websocket-hostname-mismatch-gateway \
+  -o jsonpath='{.items[0].metadata.name}')
+kubectl exec -n websocket-hostname-mismatch-demo "${ENVOY_POD}" -c envoy -- \
+  curl -s 127.0.0.1:19000/stats | grep -i 'ssl.*fail'
+```
+
+#### Clean up
+
+```sh
+kubectl delete -f websocket-ssl-backend-hostname-mismatch.yaml
+kubectl delete secret websocket-backend-tls -n websocket-hostname-mismatch-demo
+kubectl delete configmap websocket-backend-ca -n websocket-hostname-mismatch-demo
+```
+
+### CA mismatch
+
+`websocket-ssl-backend-ca-mismatch.yaml` presents a cert whose hostname
+matches the policy fine, but the `websocket-backend-ca` ConfigMap is seeded
+with a completely unrelated self-signed cert — not the one the backend
+actually presents — so the chain of trust itself fails to verify. Runs in its
+own `websocket-ca-mismatch-demo` namespace.
+
+#### Generate the certificates
+
+Two unrelated self-signed certs: the one the backend actually serves, and a
+decoy that gets configured as the (wrong) trusted CA:
+
+```sh
+# The cert nginx actually presents.
+openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 \
+  -subj '/CN=websocket-backend.example.com/O=example organization' \
+  -addext 'subjectAltName=DNS:websocket-backend.example.com' \
+  -keyout websocket-backend.key -out websocket-backend.crt
+
+# An unrelated cert, only its public half is used — as the (wrong) trust anchor.
+openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 \
+  -subj '/CN=wrong-ca.example.com/O=example organization' \
+  -addext 'subjectAltName=DNS:wrong-ca.example.com' \
+  -keyout wrong-ca.key -out wrong-ca.crt
+
+kubectl create namespace websocket-ca-mismatch-demo
+kubectl create secret tls websocket-backend-tls -n websocket-ca-mismatch-demo \
+  --cert=websocket-backend.crt --key=websocket-backend.key
+# Deliberately the wrong cert — doesn't chain to websocket-backend.crt at all.
+kubectl create configmap websocket-backend-ca -n websocket-ca-mismatch-demo \
+  --from-file=ca.crt=wrong-ca.crt
+```
+
+#### Run
+
+```sh
+kubectl apply -f websocket-ssl-backend-ca-mismatch.yaml
+kubectl wait --for=condition=programmed gateway/websocket-ca-mismatch-gateway -n websocket-ca-mismatch-demo --timeout=2m
+kubectl rollout status deployment/websocket-echo-tls -n websocket-ca-mismatch-demo
+```
+
+Connect with `ws://`, same as the other demos. The upstream TLS handshake
+fails chain-of-trust verification, so Envoy Gateway never reaches the
+(healthy) echo server:
+
+```sh
+GATEWAY_HOST=$(kubectl get gateway websocket-ca-mismatch-gateway -n websocket-ca-mismatch-demo \
+  -o jsonpath='{.status.addresses[0].value}')
+websocat "ws://${GATEWAY_HOST}/echo"
+# websocat: WebSocketError: Received unexpected status code (503 Service Unavailable)
+```
+
+To confirm the failure is a cert verification error and not the app rejecting
+the request, check Envoy's SSL stats for the backend cluster:
+
+```sh
+ENVOY_POD=$(kubectl get pods -n websocket-ca-mismatch-demo \
+  -l gateway.envoyproxy.io/owning-gateway-name=websocket-ca-mismatch-gateway \
+  -o jsonpath='{.items[0].metadata.name}')
+kubectl exec -n websocket-ca-mismatch-demo "${ENVOY_POD}" -c envoy -- \
+  curl -s 127.0.0.1:19000/stats | grep -i 'ssl.*fail'
+```
+
+#### Clean up
+
+```sh
+kubectl delete -f websocket-ssl-backend-ca-mismatch.yaml
+kubectl delete secret websocket-backend-tls -n websocket-ca-mismatch-demo
+kubectl delete configmap websocket-backend-ca -n websocket-ca-mismatch-demo
+```
