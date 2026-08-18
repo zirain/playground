@@ -1,0 +1,162 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: websocket-500-demo
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: websocket-500-gateway
+  namespace: websocket-500-demo
+spec:
+  gatewayClassName: eg
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+      allowedRoutes:
+        namespaces:
+          from: Same
+---
+# Full nginx.conf (not a conf.d snippet). It always answers 500: this backend is
+# up but fails every request, for exercising Envoy Gateway's handling of a
+# plain HTTP backend that's broken.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: websocket-500-conf
+  namespace: websocket-500-demo
+data:
+  nginx.conf: |
+    events {}
+    http {
+      server {
+        listen 8080;
+
+        location / {
+          return 401;
+        }
+      }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: websocket-500
+  namespace: websocket-500-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: websocket-500
+  template:
+    metadata:
+      labels:
+        app: websocket-500
+    spec:
+      containers:
+        # Always returns 500.
+        - name: http-500
+          image: nginx:1.27-alpine
+          ports:
+            - containerPort: 8080
+              name: http
+          readinessProbe:
+            tcpSocket:
+              port: http
+          volumeMounts:
+            - name: nginx-conf
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+              readOnly: true
+      volumes:
+        - name: nginx-conf
+          configMap:
+            name: websocket-500-conf
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: websocket-500
+  namespace: websocket-500-demo
+spec:
+  selector:
+    app: websocket-500
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: websocket-500
+  namespace: websocket-500-demo
+spec:
+  parentRefs:
+    - name: websocket-500-gateway
+  rules:
+    - name: echo
+      matches:
+        - path:
+            type: PathPrefix
+            value: /echo
+      backendRefs:
+        - name: websocket-500
+          port: 8080
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: websocket-500
+          port: 8080
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: BackendTrafficPolicy
+metadata:
+  name: btp-for-route-500
+  namespace: websocket-500-demo
+spec:
+  circuitBreaker:
+    maxConnections: 1000000
+    maxParallelRequests: 1000000
+    maxParallelRetries: 1000000
+    maxPendingRequests: 100000
+    maxRequestsPerConnection: 1000000
+  httpUpgrade:
+    - type: websocket
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: websocket-500
+  timeout:
+    http:
+      connectionIdleTimeout: 600s
+    tcp:
+      connectTimeout: 10000ms
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: BackendTrafficPolicy
+metadata:
+  name: btp-for-routerule-500
+  namespace: websocket-500-demo
+spec:
+  circuitBreaker:
+    maxConnections: 1000000
+    maxParallelRequests: 1000000
+    maxParallelRetries: 1000000
+    maxPendingRequests: 100000
+    maxRequestsPerConnection: 1000000
+  httpUpgrade:
+    - type: websocket
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: websocket-500
+      sectionName: echo
+  timeout:
+    http:
+      connectionIdleTimeout: 1000s
+    tcp:
+      connectTimeout: 10000ms
