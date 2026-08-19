@@ -92,6 +92,7 @@ done
 # images for Gateway API conformance tests
 image=(
     gcr.io/k8s-staging-gateway-api/echo-basic:v20240412-v1.0.0-394-g40c666fd
+    registry.k8s.io/gateway-api/conformance/echo-basic:v0.1.0
     registry.k8s.io/coredns/coredns:v1.12.2
 )
 for img in ${image[@]}; do
