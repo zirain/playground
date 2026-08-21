@@ -1,0 +1,51 @@
+# This's a demo EnvoyPatchPolicy to patch the ratelimit cluster to use headless service for better load balancing.
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/component: ratelimit
+    app.kubernetes.io/managed-by: envoy-gateway
+    app.kubernetes.io/name: envoy-ratelimit
+  name: envoy-ratelimit-headless
+  namespace: envoy-gateway-system
+spec:
+  clusterIP: None
+  ports:
+    - name: http
+      port: 8081
+      protocol: TCP
+      targetPort: 8081
+    - name: metrics
+      port: 19001
+      protocol: TCP
+      targetPort: 19001
+  selector:
+    app.kubernetes.io/component: ratelimit
+    app.kubernetes.io/managed-by: envoy-gateway
+    app.kubernetes.io/name: envoy-ratelimit
+  sessionAffinity: None
+  type: ClusterIP
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyPatchPolicy
+metadata:
+  name: patch-ratelimit-cluster
+spec:
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: eg
+  type: JSONPatch
+  jsonPatches:
+    - name: ratelimit_cluster
+      type: type.googleapis.com/envoy.config.cluster.v3.Cluster
+      operation:
+        op: replace
+        jsonPath: .load_assignment.endpoints
+        value:
+          - lbEndpoints:
+              - endpoint:
+                  address:
+                    socketAddress:
+                      address: envoy-ratelimit-headless.envoy-gateway-system.svc.cluster.local
+                      portValue: 8081
