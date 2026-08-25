@@ -25,19 +25,19 @@ or the Helm charts — either is fine, this demo only relies on the
 ## 1. Deploy
 
 ```console
-kubectl apply -f k8s/VPA/istio-sidecar/deployment.yaml
-kubectl apply -f k8s/VPA/istio-sidecar/vpa.yaml
+kubectl apply -f k8s/VPA/istio-sidecar/deployment.yaml -n sidecar
+kubectl apply -f k8s/VPA/istio-sidecar/vpa.yaml -n sidecar
 ```
 
 Confirm injection actually happened before going further — you should see
 2/2 containers:
 
 ```console
-kubectl get pods -l app=stress-demo-istio
+kubectl get pods -l app=stress-demo-istio -n sidecar
 # NAME                                  READY   STATUS    RESTARTS   AGE
 # stress-demo-istio-xxxxxxxxxx-xxxxx    2/2     Running   0          10s
 
-kubectl get pod -l app=stress-demo-istio \
+kubectl get pod -l app=stress-demo-istio -n sidecar \
   -o jsonpath='{.items[0].spec.containers[*].name}{"\n"}'
 # stress istio-proxy
 ```
@@ -61,10 +61,10 @@ exceeds it, without needing to push any real traffic through the mesh.
 ## 3. Watch the resize — and the restart-count split
 
 ```console
-POD=$(kubectl get pod -l app=stress-demo-istio -o jsonpath='{.items[0].metadata.name}')
+POD=$(kubectl get pod -l app=stress-demo-istio -n sidecar -o jsonpath='{.items[0].metadata.name}')
 
 # pod name should stay this same value the whole time
-kubectl get pods -l app=stress-demo-istio -w
+kubectl get pods -l app=stress-demo-istio -n sidecar -w
 ```
 
 ```console
