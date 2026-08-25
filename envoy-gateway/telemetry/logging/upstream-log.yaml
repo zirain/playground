@@ -1,0 +1,174 @@
+# Upstream access log demo.
+#
+# `type: Upstream` (EnvoyProxy telemetry.accessLog.settings) configures the
+# HTTP Router filter's upstream_log, which is emitted per upstream request
+# attempt - i.e. once per retry, in addition to the usual once-per-downstream-
+# request Route/Listener log. It only applies to HTTP/gRPC traffic (there is
+# no upstream_log equivalent for TCP/UDP proxy) and requires Envoy Gateway
+# v1.8+.
+#
+# The Route setting below is kept for contrast: send a request that triggers
+# retries (e.g. `kubectl rollout restart deployment/backend` while curling in
+# a loop) and you'll see a single "route-log" line per downstream request but
+# one "upstream-log" line per upstream attempt, each carrying backend-only
+# fields (UPSTREAM_HOST/CLUSTER, transport failure reason, attempt count)
+# that aren't known yet when the Route/Listener log is normally emitted.
+#
+# Note: even without retries you'd normally get *two* upstream-log records
+# per attempt - an early one (response.code still 0) flushed as soon as the
+# upstream stream is set up, plus the final one once the response completes.
+# The `matches: ["response.code > 0"]` CEL filter below drops the early one
+# so the demo only prints one completed record per attempt.
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: eg-with-ep
+spec:
+  controllerName: gateway.envoyproxy.io/gatewayclass-controller
+  parametersRef:
+    group: gateway.envoyproxy.io
+    kind: EnvoyProxy
+    name: upstream-log
+    namespace: envoy-gateway-system
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyProxy
+metadata:
+  name: upstream-log
+  namespace: envoy-gateway-system
+spec:
+  telemetry:
+    accessLog:
+      settings:
+        - type: Route
+          format:
+            type: Text
+            text: |
+              route-log: [%START_TIME%] "%REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)% %PROTOCOL%" %RESPONSE_CODE% %RESPONSE_FLAGS% %DURATION% "%REQ(X-REQUEST-ID)%"
+          sinks:
+            - type: File
+              file:
+                path: /dev/stdout
+        - type: Upstream
+          # Envoy Gateway always sets FlushUpstreamLogOnUpstreamStream on the
+          # router filter once an Upstream sink is configured, which makes
+          # Envoy emit an extra "early" upstream log record as soon as the
+          # upstream stream is associated (response.code still 0, before the
+          # backend has actually replied). This match drops that early
+          # record so only the final, completed record is logged.
+          matches:
+            - "response.code > 0"
+          format:
+            type: Text
+            text: |
+              upstream-log: [%START_TIME%] attempt=%UPSTREAM_REQUEST_ATTEMPT_COUNT% "%REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)% %PROTOCOL%" %RESPONSE_CODE% %RESPONSE_FLAGS% %RESPONSE_CODE_DETAILS% cluster=%UPSTREAM_CLUSTER% host=%UPSTREAM_HOST% failure_reason=%UPSTREAM_TRANSPORT_FAILURE_REASON% %DURATION% "%REQ(X-REQUEST-ID)%"
+          sinks:
+            - type: File
+              file:
+                path: /dev/stdout
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: eg
+spec:
+  gatewayClassName: eg-with-ep
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: BackendTrafficPolicy
+metadata:
+  name: backend-retry
+spec:
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    name: backend
+  retry:
+    numRetries: 3
+    perRetry:
+      backOff:
+        baseInterval: 100ms
+        maxInterval: 1s
+    retryOn:
+      triggers:
+        - connect-failure
+        - reset
+        - retriable-status-codes
+      httpStatusCodes:
+        - 503
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: backend
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  labels:
+    app: backend
+    service: backend
+spec:
+  ports:
+    - name: http
+      port: 3000
+      targetPort: 3000
+  selector:
+    app: backend
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: backend
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: backend
+        version: v1
+    spec:
+      serviceAccountName: backend
+      containers:
+        - image: gcr.io/k8s-staging-gateway-api/echo-basic:v20231214-v1.0.0-140-gf544a46e
+          imagePullPolicy: IfNotPresent
+          name: backend
+          ports:
+            - containerPort: 3000
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: backend
+spec:
+  parentRefs:
+    - name: eg
+  rules:
+    - backendRefs:
+        - group: ""
+          kind: Service
+          name: backend
+          port: 3000
+          weight: 1
+      matches:
+        - path:
+            type: PathPrefix
+            value: /
