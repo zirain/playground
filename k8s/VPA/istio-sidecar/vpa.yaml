@@ -1,0 +1,38 @@
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: stress-demo-istio-vpa
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: stress-demo-istio
+  updatePolicy:
+    # same strictly-in-place mode as ../vpa-inplace.yaml: never falls back to
+    # evict+recreate. See that file's comment for the InPlaceOrRecreate
+    # alternative.
+    updateMode: InPlace
+    # deployment.yaml runs a single replica, but vpa-updater's default
+    # --min-replicas is 2 — override per-VPA, see ../README.md.
+    minReplicas: 1
+  resourcePolicy:
+    containerPolicies:
+    - containerName: stress
+      minAllowed:
+        cpu: 100m
+        memory: 50Mi
+      maxAllowed:
+        cpu: "2"
+        memory: 512Mi
+      controlledResources: ["cpu", "memory"]
+    # istio-proxy is only present once the sidecar-injection webhook has run;
+    # this policy applies to it by name regardless of which container index
+    # it ends up at.
+    - containerName: istio-proxy
+      minAllowed:
+        cpu: 10m
+        memory: 32Mi
+      maxAllowed:
+        cpu: 500m
+        memory: 256Mi
+      controlledResources: ["cpu", "memory"]

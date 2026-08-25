@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stress-demo-istio
+  labels:
+    app: stress-demo-istio
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: stress-demo-istio
+  template:
+    metadata:
+      labels:
+        app: stress-demo-istio
+      annotations:
+        # per-pod injection so this demo doesn't depend on a namespace-wide
+        # istio-injection label being set anywhere else in the cluster.
+        sidecar.istio.io/inject: "true"
+        # seed the injected istio-proxy's own request deliberately low (same
+        # trick as the stress container's request below) so its baseline
+        # footprint alone gives the VPA recommender something to act on,
+        # with no real mesh traffic required.
+        sidecar.istio.io/proxyCPU: "10m"
+        sidecar.istio.io/proxyCPULimit: "500m"
+        sidecar.istio.io/proxyMemory: "32Mi"
+        sidecar.istio.io/proxyMemoryLimit: "256Mi"
+    spec:
+      containers:
+      - name: stress
+        image: vish/stress
+        # burn ~1 vCPU, well above the request below, so metrics-server
+        # sees usage > request and the VPA recommender has something to act on.
+        args: ["-cpus", "1"]
+        resources:
+          requests:
+            cpu: 100m
+            memory: 50Mi
+          limits:
+            cpu: "1"
+            memory: 256Mi
+        # required for the kubelet to resize this container in place instead
+        # of restarting it (this is the native K8s in-place resize API that
+        # VPA's InPlace/InPlaceOrRecreate modes drive under the hood).
+        resizePolicy:
+        - resourceName: cpu
+          restartPolicy: NotRequired
+        - resourceName: memory
+          restartPolicy: NotRequired
+      # istio-proxy is injected by the webhook at admission time — it is NOT
+      # declared here. Istio's injection template has no annotation/field
+      # for setting resizePolicy on the sidecar it adds, so the injected
+      # istio-proxy container ends up with no resizePolicy at all, which
+      # defaults to RestartContainer for both cpu and memory. That's the
+      # whole point of this demo: see istio-sidecar/README.md for what that
+      # means once VPA tries to resize it.

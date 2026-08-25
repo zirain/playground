@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stress-demo
+  labels:
+    app: stress-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: stress-demo
+  template:
+    metadata:
+      labels:
+        app: stress-demo
+    spec:
+      containers:
+      - name: stress
+        image: vish/stress
+        # burn ~1 vCPU, well above the request below, so metrics-server
+        # sees usage > request and the VPA recommender has something to act on.
+        args: ["-cpus", "1"]
+        resources:
+          requests:
+            cpu: 100m
+            memory: 50Mi
+          limits:
+            cpu: "1"
+            memory: 256Mi
+        # required for the kubelet to resize this container in place instead
+        # of restarting it (this is the native K8s in-place resize API that
+        # VPA's InPlaceOrRecreate mode drives under the hood).
+        resizePolicy:
+        - resourceName: cpu
+          restartPolicy: NotRequired
+        - resourceName: memory
+          restartPolicy: NotRequired

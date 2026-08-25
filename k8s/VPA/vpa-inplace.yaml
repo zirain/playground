@@ -1,0 +1,30 @@
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: stress-demo-vpa
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: stress-demo
+  updatePolicy:
+    # alpha mode: apply recommendations via the in-place resize API first,
+    # falling back to evict+recreate only when in-place isn't possible.
+    # updateMode: "InPlaceOrRecreate"
+    updateMode: InPlace
+    # deployment.yaml runs a single replica, but vpa-updater's default
+    # --min-replicas is 2 — below that, it won't touch the pod at all
+    # (logs "pod's controller not found in replica creator map") because
+    # disrupting the only replica isn't provably safe. Override per-VPA
+    # instead of changing the cluster-wide flag.
+    minReplicas: 1
+  resourcePolicy:
+    containerPolicies:
+    - containerName: stress
+      minAllowed:
+        cpu: 200m
+        memory: 50Mi
+      maxAllowed:
+        cpu: "2"
+        memory: 512Mi
+      controlledResources: ["cpu", "memory"]
