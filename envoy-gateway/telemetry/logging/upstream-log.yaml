@@ -17,8 +17,11 @@
 # Note: even without retries you'd normally get *two* upstream-log records
 # per attempt - an early one (response.code still 0) flushed as soon as the
 # upstream stream is set up, plus the final one once the response completes.
-# The `matches: ["response.code > 0"]` CEL filter below drops the early one
-# so the demo only prints one completed record per attempt.
+# Rather than filtering the early record out, the format text below uses a
+# %CEL()% expression so RESPONSE_CODE renders as "pending" while
+# response.code is still 0 and as the real status code once the response
+# completes - both records get logged and you can tell them apart at a
+# glance.
 apiVersion: gateway.networking.k8s.io/v1
 kind: GatewayClass
 metadata:
@@ -54,14 +57,13 @@ spec:
           # router filter once an Upstream sink is configured, which makes
           # Envoy emit an extra "early" upstream log record as soon as the
           # upstream stream is associated (response.code still 0, before the
-          # backend has actually replied). This match drops that early
-          # record so only the final, completed record is logged.
-          matches:
-            - "response.code > 0"
+          # backend has actually replied). Instead of filtering that record
+          # out, the %CEL()% expression below renders it as "pending" so
+          # both the early and the final record are visible in the log.
           format:
             type: Text
             text: |
-              upstream-log: [%START_TIME%] attempt=%UPSTREAM_REQUEST_ATTEMPT_COUNT% "%REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)% %PROTOCOL%" %RESPONSE_CODE% %RESPONSE_FLAGS% %RESPONSE_CODE_DETAILS% cluster=%UPSTREAM_CLUSTER% host=%UPSTREAM_HOST% failure_reason=%UPSTREAM_TRANSPORT_FAILURE_REASON% %DURATION% "%REQ(X-REQUEST-ID)%"
+              %CEL(has(response.code) ? "upstreamlog-request-and-response" : "upstreamlog-request")%: [%START_TIME%] attempt=%UPSTREAM_REQUEST_ATTEMPT_COUNT% "%REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)% %PROTOCOL%"  %RESPONSE_FLAGS% %RESPONSE_CODE_DETAILS% cluster=%UPSTREAM_CLUSTER% host=%UPSTREAM_HOST% failure_reason=%UPSTREAM_TRANSPORT_FAILURE_REASON% %DURATION% "%REQ(X-REQUEST-ID)%"
           sinks:
             - type: File
               file:
