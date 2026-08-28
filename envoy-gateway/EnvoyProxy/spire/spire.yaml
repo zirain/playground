@@ -128,8 +128,8 @@ metadata:
   namespace: default
 type: gateway.envoyproxy.io/sds-ref
 data:
-  # /var/run/secrets/workload-spiffe-uds/socket
-  url: L3Zhci9ydW4vc2VjcmV0cy93b3JrbG9hZC1zcGlmZmUtdWRzL3NvY2tldA==
+  # unix:///var/run/secrets/workload-spiffe-uds/socket
+  url: dW5peDovLy92YXIvcnVuL3NlY3JldHMvd29ya2xvYWQtc3BpZmZlLXVkcy9zb2NrZXQ=
   secretName: ZGVmYXVsdA== # base64 for "default"
 ---
 apiVersion: v1
@@ -139,7 +139,7 @@ metadata:
   namespace: spire-sample
 type: gateway.envoyproxy.io/sds-ref
 data:
-  # /var/run/secrets/workload-spiffe-uds/socket
-  url: L3Zhci9ydW4vc2VjcmV0cy93b3JrbG9hZC1zcGlmZmUtdWRzL3NvY2tldA==
+  # unix:///var/run/secrets/workload-spiffe-uds/socket
+  url: dW5peDovLy92YXIvcnVuL3NlY3JldHMvd29ya2xvYWQtc3BpZmZlLXVkcy9zb2NrZXQ=
   secretName: Uk9PVENB # base64 for "ROOTCA"
 ---
