@@ -1,0 +1,85 @@
+# 1. Gateway: Listens on HTTPS port 8443 and terminates TLS using gateway-frontend-tls
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: apiserver-l7-gateway
+  namespace: default
+spec:
+  gatewayClassName: eg
+  listeners:
+    - name: https
+      protocol: HTTPS
+      port: 6443
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - kind: Secret
+            name: gateway-frontend-tls
+      allowedRoutes:
+        namespaces:
+          from: Same
+---
+# 2. HTTPRoute: Routes traffic for host 'k8s-api.example.com' to 'kubernetes' Service on port 443
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: apiserver-l7-route
+  namespace: default
+spec:
+  parentRefs:
+    - name: apiserver-l7-gateway
+  hostnames:
+    - "k8s-api.example.com"
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: kubernetes
+          port: 443
+---
+# 3. BackendTLSPolicy: Re-encrypts traffic from Envoy to K8s API Server using TLS
+apiVersion: gateway.networking.k8s.io/v1
+kind: BackendTLSPolicy
+metadata:
+  name: kube-api
+  namespace: default
+spec:
+  targetRefs:
+    - group: ""
+      kind: Service
+      name: kubernetes
+  validation:
+    hostname: kubernetes.default.svc
+    caCertificateRefs:
+      - group: ""
+        kind: ConfigMap
+        name: kube-root-ca.crt
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: BackendTrafficPolicy
+metadata:
+  name: kube-api
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: apiserver-l7-route
+  httpUpgrade:
+    - type: "spdy/3.1"
+    - type: "websocket"
+  # without this, you might want to better disable HTTP/2 when running kubectl exec
+  # GODEBUG=http2client=0 kubectl exec
+  useClientProtocol: true
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: ClientTrafficPolicy
+metadata:
+  name: kube-api
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: apiserver-l7-gateway
+  http1: {}

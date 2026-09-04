@@ -1,0 +1,19 @@
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+# - role: control-plane
+#   extraPortMappings:
+#   - containerPort: 6443
+#     hostPort: 6443
+#     protocol: TCP
+kubeadmConfigPatches:
+- |
+  apiVersion: kubeadm.k8s.io/v1beta3
+  kind: ClusterConfiguration
+  apiServer:
+    certSANs:
+      # 在此处列出反向代理、Ingress、或外部访问所需的域名与 IP
+      - "k8s-api.example.com"
+      - "my-envoy-gateway.local"
+      - "172.18.255.206"
+      - "10.0.0.1"
