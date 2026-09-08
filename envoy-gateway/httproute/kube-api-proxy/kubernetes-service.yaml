@@ -69,17 +69,5 @@ spec:
   httpUpgrade:
     - type: "spdy/3.1"
     - type: "websocket"
-  # without this, you might want to better disable HTTP/2 when running kubectl exec
-  # GODEBUG=http2client=0 kubectl exec
   useClientProtocol: true
 ---
-apiVersion: gateway.envoyproxy.io/v1alpha1
-kind: ClientTrafficPolicy
-metadata:
-  name: kube-api
-spec:
-  targetRefs:
-    - group: gateway.networking.k8s.io
-      kind: Gateway
-      name: apiserver-l7-gateway
-  http1: {}
