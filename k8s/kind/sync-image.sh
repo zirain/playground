@@ -45,6 +45,7 @@ images=(registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.9.4
         redis:6.0.6
         kindest/node:v1.35.0
         kindest/node:v1.36.1
+        kindest/node:v1.37.0
         otel/opentelemetry-collector-contrib:0.158.0
         kiwigrid/k8s-sidecar:1.30.9
         mccutchen/go-httpbin:v2.5.0
