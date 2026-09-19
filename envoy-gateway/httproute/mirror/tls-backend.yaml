@@ -1,0 +1,189 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: eg
+spec:
+  gatewayClassName: eg
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+      hostname: "*.example.com"
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: mirror-tls-backend
+spec:
+  parentRefs:
+    - name: eg
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /mirror-tls
+      filters:
+        - type: RequestMirror
+          requestMirror:
+            backendRef:
+              group: gateway.envoyproxy.io
+              kind: Backend
+              name: mirror-tls-backend
+      backendRefs:
+        - name: tls-backend-1
+          port: 443
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: BackendTLSPolicy
+metadata:
+  name: tls-backend-1
+spec:
+  targetRefs:
+    - group: ""
+      kind: Service
+      name: tls-backend-1
+  validation:
+    caCertificateRefs:
+      - name: example-ca
+        group: ""
+        kind: ConfigMap
+    hostname: tls-backend-1.example.com
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tls-backend-1
+spec:
+  selector:
+    app: tls-backend-1
+  ports:
+    - name: https
+      protocol: TCP
+      port: 443
+      targetPort: 8443
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tls-backend-1
+  labels:
+    app: tls-backend-1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tls-backend-1
+  template:
+    metadata:
+      labels:
+        app: tls-backend-1
+    spec:
+      containers:
+        - name: tls-backend
+          image: registry.k8s.io/gateway-api/conformance/echo-basic:v0.1.0
+          volumeMounts:
+            - name: secret-volume
+              mountPath: /etc/secret-volume
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: TLS_SERVER_CERT
+              value: /etc/secret-volume/crt
+            - name: TLS_SERVER_PRIVKEY
+              value: /etc/secret-volume/key
+          resources:
+            requests:
+              cpu: 10m
+      volumes:
+        - name: secret-volume
+          secret:
+            secretName: tls-backend-1-cert
+            items:
+              - key: tls.crt
+                path: crt
+              - key: tls.key
+                path: key
+---
+# curl -vk --resolve mirror.example.com:443:172.18.255.201 https://mirror.example.com/
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: eg-https
+spec:
+  gatewayClassName: eg
+  listeners:
+    - name: https
+      protocol: HTTPS
+      port: 443
+      hostname: "mirror.example.com"
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: mirror-tls-backend-cert
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: backend
+spec:
+  parentRefs:
+    - name: eg-https
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: backend
+          port: 3000
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: Backend
+metadata:
+  name: mirror-tls-backend
+spec:
+  endpoints:
+    - fqdn:
+        hostname: mirror.example.com
+        port: 443
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: BackendTLSPolicy
+metadata:
+  name: mirror-tls-backend
+spec:
+  targetRefs:
+    - group: gateway.envoyproxy.io
+      kind: Backend
+      name: mirror-tls-backend
+  validation:
+    caCertificateRefs:
+      - name: example-org-ca
+        group: ""
+        kind: ConfigMap
+    hostname: mirror.example.com
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyPatchPolicy
+metadata:
+  name: patch-request-mirror-policies
+spec:
+  jsonPatches:
+    - name: default/eg/http
+      operation:
+        jsonPath: ..routes[?(@.name=~"^httproute/default/mirror-tls-backend/rule/0/match/0")].route.request_mirror_policies[?(@.cluster=~"^httproute/default/mirror-tls-backend")]
+        op: add
+        path: hostRewriteLiteral
+        value: "mirror.example.com"
+      type: type.googleapis.com/envoy.config.route.v3.RouteConfiguration
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: eg
+  type: JSONPatch

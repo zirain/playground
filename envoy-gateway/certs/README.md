@@ -1,16 +1,17 @@
 # Envoy Gateway Certificates
 
+Run `./gen-cert.sh` to (re)generate all cert material below and sync the
+matching Secrets/ConfigMaps into the cluster. It's idempotent — re-run it any
+time a cert expires or a demo needs to be reset.
 
-```shell
-openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 -subj '/O=example Inc./CN=example.com' -keyout example.com.key -out example.com.crt
+| CA (self-signed)  | Leaf                        | Secret               | ConfigMap (`ca.crt` key) | Used by                            |
+| ------------------ | --------------------------- | -------------------- | ------------------------ | ----------------------------------- |
+| `example.com`       | `www.example.com`           | `example-cert`        | `example-ca`              | `httproute/backend-tls.yaml`        |
+| `example.com`       | `tls-backend-1.example.com` | `tls-backend-1-cert`  | `example-ca`              | `httproute/mirror/tls-backend.yaml` |
+| `example.org`       | `www.example.org`           | `example-org-cert`    | `example-org-ca`          | -                                    |
+| `example.org`       | `mirror.example.com`        | `mirror-tls-backend-cert` | `example-org-ca`     | `httproute/mirror/tls-backend.yaml` |
+| `clientca`          | `client`                    | `example-client-cert` (in `envoy-gateway-system`) | `example-client-ca` | `EnvoyProxy/backend-mtls/*.yaml` |
 
-openssl req -out www.example.com.csr -newkey rsa:2048 -nodes -keyout www.example.com.key -subj "/CN=www.example.com/O=example organization"
-openssl x509 -req -days 365 -CA example.com.crt -CAkey example.com.key -set_serial 0 -in www.example.com.csr -out www.example.com.crt
-```
-
-```shell
-kubectl create secret tls example-cert --key=www.example.com.key --cert=www.example.com.crt
-kubectl create configmap example-ca --from-file=ca.crt
-kubectl create secret -n envoy-gateway-system tls example-client-cert --key=client.key --cert=client.crt
-kubectl create configmap example-client-ca --from-file=clientca.crt
-```
+`tls-backend-1` and the mirror target intentionally sit under different base
+domains and CAs, so the mirror demo mirrors a request to a backend with a
+genuinely different certificate.

@@ -3,4 +3,5 @@
 *.conf
 *.csr
 *.pem
+*.srl
 dumps/*
