@@ -32,8 +32,20 @@ static_resources:
                   - name: envoy.filters.http.filter_chain
                     typed_config:
                       "@type": type.googleapis.com/envoy.extensions.filters.http.filter_chain.v3.FilterChainConfig
-                  - name: envoy.filters.http.lua.0
-
+                      default_filter_chain:
+                        filters:
+                          - name: envoy.filters.http.lua
+                            typed_config:
+                              "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua
+                              inline_code: |
+                                function envoy_on_response(response_handle)
+                                  -- Add a header to the downstream response back to the client
+                                  response_handle:headers():add("x-response-modified-by", "envoy-route-listener")
+                                end
+                  # Placeholder for per route filter_chain
+                  - name: envoy.filters.http.filter_chain.for_route
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.extensions.filters.http.filter_chain.v3.FilterChainConfig
                   - name: envoy.filters.http.router
                     typed_config:
                       "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
@@ -43,18 +55,35 @@ static_resources:
                     - name: local_service
                       domains: ["*"]
                       routes:
-                        - match: { prefix: "/svc" }
-                          name: "rl-always-reject"
+                        - match: { prefix: "/" }
+                          name: "default"
                           route:
                             cluster: default_service
                           typed_per_filter_config:
-                            envoy.filters.http.lua.0:
-                              disabled: true
                             envoy.filters.http.filter_chain:
                               "@type": type.googleapis.com/envoy.extensions.filters.http.filter_chain.v3.FilterChainConfigPerRoute
                               filter_chain:
                                 filters:
                                   - name: envoy.filters.http.lua
+                                    typed_config:
+                                      "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua
+                                      inline_code: |
+                                        function envoy_on_response(response_handle)
+                                          -- Add a header to the downstream response back to the client
+                                          response_handle:headers():add("x-response-modified-by", "envoy-route-override")
+                                        end
+                            envoy.filters.http.filter_chain.for_route:
+                              "@type": type.googleapis.com/envoy.extensions.filters.http.filter_chain.v3.FilterChainConfigPerRoute
+                              filter_chain:
+                                filters:
+                                  - name: envoy.filters.http.lua
+                                    typed_config:
+                                      "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua
+                                      inline_code: |
+                                        function envoy_on_response(response_handle)
+                                          -- Add a header to the downstream response back to the client
+                                          response_handle:headers():add("x-response-modified-by", "envoy-route-lua")
+                                        end
 
     - name: staticreply-8080
       address:
