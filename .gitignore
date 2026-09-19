@@ -128,3 +128,5 @@ build-log.txt
 *.pem
 
 .claude
+
+*.dump.yaml
