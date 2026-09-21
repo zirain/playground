@@ -28,6 +28,10 @@ spec:
         - group: gateway.envoyproxy.io
           kind: Backend
           name: backend-tls-1-ip
+          filters:
+            - type: URLRewrite
+              urlRewrite:
+                hostname: "tls-backend-1.default.svc.cluster.local"
         - group: gateway.envoyproxy.io
           kind: Backend
           name: backend-tls-2-ip
@@ -64,7 +68,7 @@ metadata:
 spec:
   endpoints:
     - ip:
-        address: 10.244.1.14
+        address: 10.244.1.54
         port: 8443
 ---
 apiVersion: gateway.networking.k8s.io/v1
@@ -164,7 +168,7 @@ metadata:
 spec:
   endpoints:
     - ip:
-        address: 10.244.1.13
+        address: 10.244.1.54
         port: 8443
 ---
 apiVersion: gateway.networking.k8s.io/v1
