@@ -1,0 +1,86 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: eg
+spec:
+  gatewayClassName: eg
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+  infrastructure:
+    parametersRef:
+      group: gateway.envoyproxy.io
+      kind: EnvoyProxy
+      name: proxy-config
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyProxy
+metadata:
+  name: proxy-config
+spec:
+  provider:
+    type: Kubernetes
+    kubernetes:
+      envoyDeployment:
+        pod:
+          volumes:
+            - name: dynamic-modules
+              image:
+                reference: ghcr.io/tetratelabs/built-on-envoy/composer:0.11.0
+                pullPolicy: IfNotPresent
+        container:
+          env:
+            - name: GODEBUG
+              value: "cgocheck=0"
+          volumeMounts:
+            - name: dynamic-modules
+              mountPath: /etc/envoy/dynamic-modules
+              readOnly: true
+  dynamicModules:
+    - name: composer
+      source:
+        type: Local
+        local:
+          path: /etc/envoy/dynamic-modules/libcomposer.so
+      doNotClose: true
+      loadGlobally: false
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyExtensionPolicy
+metadata:
+  name: waf-extension
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway # or e.g. HTTPRoute
+      name: eg
+  dynamicModule:
+    - name: composer
+      filterName: coraza-waf
+      config:
+        directives:
+          - Include @coraza.conf
+          - SecRuleEngine On
+          - SecResponseBodyAccess Off
+          - Include @crs-setup.conf
+          - Include @owasp_crs/*.conf
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: backend
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: eg
+  rules:
+    - backendRefs:
+        - kind: Service
+          name: backend
+          port: 3000
+      matches:
+        - path:
+            type: PathPrefix
+            value: /

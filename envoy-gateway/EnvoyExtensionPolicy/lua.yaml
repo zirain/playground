@@ -44,9 +44,11 @@ spec:
         function envoy_on_request(request_handle)
           request_handle:headers():add("X-Lua-Filter", "applied-at-gateway")
           request_handle:logInfo("Lua filter executed for hostname: " .. (request_handle:headers():get(":authority") or "gateway"))
+          request_handle:logInfo("Route name: " .. (request_handle:streamInfo():routeName() or "unknown"))
         end
         function envoy_on_response(response_handle)
           response_handle:headers():add("X-Lua-Response", "gateway")
+          response_handle:logInfo("Route name: " .. (response_handle:streamInfo():routeName() or "unknown"))
         end
 ---
 apiVersion: gateway.envoyproxy.io/v1alpha1
@@ -64,8 +66,10 @@ spec:
       inline: |
         function envoy_on_request(request_handle)
           request_handle:headers():add("X-Lua-Filter", "applied-at-route")
-          request_handle:logInfo("Lua filter executed for hostname: " .. (request_handle:headers():get(":authority") or "unknown"))
+          request_handle:logInfo("Route Lua filter executed for hostname: " .. (request_handle:headers():get(":authority") or "unknown"))
+          request_handle:logInfo("Route name from request: " .. (request_handle:streamInfo():routeName() or "unknown"))
         end
         function envoy_on_response(response_handle)
           response_handle:headers():add("X-Lua-Response", "route")
+          response_handle:logInfo("Route name from response: " .. (response_handle:streamInfo():routeName() or "unknown"))
         end
