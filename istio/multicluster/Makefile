@@ -4,7 +4,7 @@ create-clusters: ## Create clusters
 
 .PHONY: delete-clusters
 delete-clusters: ## Delete clusters
-	@kind delete clusters primary remote1 remote2
+	@kind delete clusters primary remote1 remote2 cluster1 cluster2
 
 .PHONY: connect-clusters
 connect-clusters:
@@ -25,7 +25,7 @@ up: create-clusters connect-clusters install-istio install-app
 
 .PHONY: down
 down: delete-clusters
-	@rm -rf ./.kube
+	@rm -rf ./.kube ./.certs
 
 .PHONY: help
 help:  ## Display this help

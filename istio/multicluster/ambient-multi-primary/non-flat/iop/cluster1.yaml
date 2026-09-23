@@ -1,0 +1,41 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+spec:
+  profile: ambient
+  meshConfig:
+    accessLogFile: /dev/stdout
+    # serviceScopeConfigs:
+    #   - scope: GLOBAL
+    #     namespacesSelector:
+    #       matchExpressions:
+    #         - key: istio.io/dataplane-mode
+    #           operator: In
+    #           values:
+    #             - ambient
+    #     servicesSelector:
+    #       matchExpressions:
+    #         - key: istio.io/global
+    #           operator: NotIn
+    #           values:
+    #             - "false"
+    #   - scope: GLOBAL
+    #     servicesSelector:
+    #       matchExpressions:
+    #         - key: istio.io/global
+    #           operator: In
+    #           values:
+    #             - "true"
+  components:
+    pilot:
+      k8s:
+        env:
+          - name: AMBIENT_ENABLE_MULTI_NETWORK
+            value: "true"
+          - name: AMBIENT_ENABLE_BAGGAGE
+            value: "true"
+  values:
+    global:
+      meshID: mesh1
+      multiCluster:
+        clusterName: cluster1
+      network: network1

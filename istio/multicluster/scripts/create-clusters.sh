@@ -9,7 +9,7 @@ SCRIPT_DIR=$(dirname $(realpath "$0"))
 BASE_DIR="${SCRIPT_DIR}/.."
 
 IP_FAMILY="${IP_FAMILY:-"ipv4"}"
-KIND_NODE_TAG="${KIND_NODE_TAG:-"v1.33.1"}"
+KIND_NODE_TAG="${KIND_NODE_TAG:-"v1.37.0"}"
 ISTIO_MC_MODE=${ISTIO_MC_MODE:-"primary-remote"}
 ISTIO_NETWORK_MODE=${ISTIO_NETWORK_MODE:-"flat"}
 OS="$(uname)"
@@ -45,7 +45,7 @@ for file in ${KIND_CFG_FILES[@]}; do
   if [ "${IP_FAMILY}" = "ipv4" ] || [ "${IP_FAMILY}" = "dual" ]; then
       subnet_v4=$(docker network inspect kind | jq -r '.[].IPAM.Config[] | select(.Subnet | contains(":") | not) | .Subnet')
       address_prefix_v4=$(echo "${subnet_v4}" | awk -F. '{print $1"."$2"."$3}')
-      address_range_v4="${address_prefix_v4}.${ipv4_address_start_at}-${address_prefix_v4}.250"
+      address_range_v4="${address_prefix_v4}.${ipv4_address_start_at}-${address_prefix_v4}.$((ipv4_address_start_at + 49))"
       echo "IPv4 address range: ${address_range_v4}"
       address_ranges+="- ${address_range_v4}"
   fi

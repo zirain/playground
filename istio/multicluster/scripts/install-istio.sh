@@ -9,6 +9,7 @@ SCRIPT_DIR=$(dirname $(realpath "$0"))
 BASE_DIR="${SCRIPT_DIR}/.."
 
 KUBECONFIG_BASE=${KUBECONFIG_BASE:-".kube"}
+CERTS_DIR=${CERTS_DIR:-".certs"}
 
 ISTIO_MC_MODE=${ISTIO_MC_MODE:-"primary-remote"}
 ISTIO_NETWORK_MODE=${ISTIO_NETWORK_MODE:-"flat"}
@@ -51,4 +52,49 @@ function install_primary_remote() {
     fi
 }
 
-install_primary_remote
+function install_ambient_multi_primary() {
+    CLUSTERS=(cluster1 cluster2)
+    GATEWAY_API_VERSION=${GATEWAY_API_VERSION:-"v1.4.0"}
+
+    # multi-primary requires all istiods to share a common root of trust
+    "${SCRIPT_DIR}/gen-certs.sh" "${CLUSTERS[@]}"
+
+    for i in "${!CLUSTERS[@]}"; do
+        cluster="${CLUSTERS[$i]}"
+        network="network$((i + 1))"
+        kubeconfig="${KUBECONFIG_BASE}/${cluster}"
+
+        echo "Install Istio ambient on ${cluster} (${network})"
+        kubectl get crd gateways.gateway.networking.k8s.io --kubeconfig "${kubeconfig}" &> /dev/null || \
+            kubectl apply --server-side --kubeconfig "${kubeconfig}" \
+                -f "https://github.com/kubernetes-sigs/gateway-api/releases/download/${GATEWAY_API_VERSION}/experimental-install.yaml"
+        kubectl --kubeconfig="${kubeconfig}" create namespace istio-system || true
+        kubectl --kubeconfig="${kubeconfig}" label namespace istio-system topology.istio.io/network="${network}" --overwrite
+        kubectl --kubeconfig="${kubeconfig}" create secret generic cacerts -n istio-system \
+            --from-file="${CERTS_DIR}/${cluster}/ca-cert.pem" \
+            --from-file="${CERTS_DIR}/${cluster}/ca-key.pem" \
+            --from-file="${CERTS_DIR}/${cluster}/root-cert.pem" \
+            --from-file="${CERTS_DIR}/${cluster}/cert-chain.pem" \
+            --dry-run=client -o yaml | kubectl apply -f - --kubeconfig "${kubeconfig}"
+        istioctl install -y -f "${IOP_CFG_PREFIX}/${cluster}.yaml" --kubeconfig "${kubeconfig}"
+
+        echo "Install east-west gateway on ${cluster}"
+        kubectl apply -f "${ISTIO_BASE_DIR}/eastwest/${cluster}.yaml" --kubeconfig "${kubeconfig}"
+        kubectl wait --for=condition=programmed --timeout=5m gateway/istio-eastwestgateway -n istio-system --kubeconfig "${kubeconfig}"
+    done
+
+    # every primary watches the API servers of all other clusters for endpoint discovery
+    for src in "${CLUSTERS[@]}"; do
+        for dst in "${CLUSTERS[@]}"; do
+            [ "${src}" = "${dst}" ] && continue
+            istioctl create-remote-secret --kubeconfig "${KUBECONFIG_BASE}/${src}" --name="${src}" | \
+                kubectl apply -f - --kubeconfig "${KUBECONFIG_BASE}/${dst}"
+        done
+    done
+}
+
+case "${ISTIO_MC_MODE}" in
+    primary-remote) install_primary_remote ;;
+    ambient-multi-primary) install_ambient_multi_primary ;;
+    *) echo "unsupported ISTIO_MC_MODE: ${ISTIO_MC_MODE}"; exit 1 ;;
+esac
