@@ -1,0 +1,10 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+spec:
+  profile: minimal
+  meshConfig:
+    accessLogFile: /dev/stdout
+  values:
+    pilot:
+      env:
+        PILOT_AUTO_SEND_UNHEALTHY_ENDPOINTS: "false"

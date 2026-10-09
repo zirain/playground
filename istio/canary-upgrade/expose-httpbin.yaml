@@ -1,0 +1,44 @@
+apiVersion: networking.istio.io/v1
+kind: Gateway
+metadata:
+  name: httpbin-gateway
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - "*"
+---
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: httpbin
+spec:
+  hosts:
+    - "*"
+  gateways:
+    - httpbin-gateway
+  http:
+    - match:
+        - uri:
+            prefix: /agnhost/
+      rewrite:
+        uri: /
+      route:
+        - destination:
+            host: agnhost
+            port:
+              number: 8000
+    - route:
+        - destination:
+            host: httpbin
+            port:
+              number: 8000
+      # Retry requests that hit a terminating pod during rollouts
+      # retries:
+      #   attempts: 2
+      #   retryOn: connect-failure,refused-stream,unavailable,cancelled,reset,503

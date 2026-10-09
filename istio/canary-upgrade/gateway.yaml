@@ -1,0 +1,64 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: istio-ingressgateway
+  namespace: istio-ingress
+spec:
+  type: LoadBalancer
+  selector:
+    istio: ingressgateway
+  ports:
+    - port: 80
+      name: http
+    - port: 443
+      name: https
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: istio-ingressgateway
+  namespace: istio-ingress
+spec:
+  selector:
+    matchLabels:
+      istio: ingressgateway
+  template:
+    metadata:
+      annotations:
+        # Select the gateway injection template (rather than the default sidecar template)
+        inject.istio.io/templates: gateway
+      labels:
+        # Set a unique label for the gateway. This is required to ensure Gateways can select this workload
+        istio: ingressgateway
+        # Enable gateway injection. If connecting to a revisioned control plane, replace with "istio.io/rev: revision-name"
+        istio.io/rev: 1-31-1 # Set to the control plane revision you want to deploy
+    spec:
+      containers:
+        - name: istio-proxy
+          image: auto
+          imagePullPolicy: IfNotPresent
+
+---
+# Set up roles to allow reading credentials for TLS
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: istio-ingressgateway-sds
+  namespace: istio-ingress
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "watch", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: istio-ingressgateway-sds
+  namespace: istio-ingress
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: istio-ingressgateway-sds
+subjects:
+  - kind: ServiceAccount
+    name: default

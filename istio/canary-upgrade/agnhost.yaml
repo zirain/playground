@@ -1,0 +1,39 @@
+# HTTP backend that keeps serving for 5s after SIGTERM before shutting down,
+# to compare against httpbin (which exits immediately) during rollouts
+apiVersion: v1
+kind: Service
+metadata:
+  name: agnhost
+  labels:
+    app: agnhost
+spec:
+  selector:
+    app: agnhost
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agnhost
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: agnhost
+  template:
+    metadata:
+      labels:
+        app: agnhost
+    spec:
+      containers:
+        - name: agnhost
+          image: registry.k8s.io/e2e-test-images/agnhost:2.53
+          args:
+            - netexec
+            - --http-port=8080
+            - --delay-shutdown=5
+          ports:
+            - containerPort: 8080
