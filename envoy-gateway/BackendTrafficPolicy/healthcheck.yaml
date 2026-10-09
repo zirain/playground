@@ -21,7 +21,7 @@ spec:
       consecutive5XxErrors: 0
       consecutiveLocalOriginFailures: 2
       interval: 3s
-      maxEjectionPercent: 100
+      maxEjectionPercent: 100 # use 0 to disable ejection
       splitExternalLocalOriginErrors: true
 ---
 apiVersion: gateway.networking.k8s.io/v1
