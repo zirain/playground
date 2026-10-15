@@ -41,8 +41,7 @@ for imageName in ${otherImages[@]} ; do
 done
 
 # sync image from docker.io
-images=(registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.9.4
-        redis:6.0.6
+images=(redis:8.6.7
         kindest/node:v1.35.0
         kindest/node:v1.36.1
         kindest/node:v1.37.0
@@ -92,9 +91,10 @@ done
 
 # images for Gateway API conformance tests
 image=(
-    registry.k8s.io/gateway-api/conformance/echo-basic:v0.1.0
-    registry.k8s.io/coredns/coredns:v1.12.2
+    sig-storage/csi-node-driver-registrar:v2.9.4
+    coredns/coredns:v1.12.2
+    gateway-api/echo-basic:v1.5.1
 )
 for img in ${image[@]}; do
-    regctl image copy "${img}" "${MIRROR_REGISTRY}/${img}"
+    regctl image copy "registry.k8s.io/${img}" "${MIRROR_REGISTRY}/${img}"
 done
