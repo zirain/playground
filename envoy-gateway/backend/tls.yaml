@@ -1,8 +1,4 @@
 # Backend demo: Envoy Gateway originates TLS to a Backend resource.
-#
-# Prerequisites (see ../certs/README.md):
-#   kubectl create secret tls example-cert --key=../certs/www.example.com.key --cert=../certs/www.example.com.crt
-#   kubectl create configmap example-ca --from-file=ca.crt=../certs/ca.crt
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
@@ -21,17 +17,21 @@ metadata:
 spec:
   parentRefs:
     - name: eg
-  # hostnames:
-  # - "www.example.com"
   rules:
     - backendRefs:
         - group: gateway.envoyproxy.io
           kind: Backend
           name: backend-tls-1-ip
-          filters:
-            - type: URLRewrite
-              urlRewrite:
-                hostname: "tls-backend-1.default.svc.cluster.local"
+          # filters:
+          #   - type: URLRewrite
+          #     urlRewrite:
+          #       hostname: "tls-backend-1.default.svc.cluster.local"
+            # use a dummy RequestHeaderModifier if URLRewrite is not wanted
+            # - type: RequestHeaderModifier
+            #   requestHeaderModifier:
+            #     add:
+            #       - name: dummy-key
+            #         value: dumm-val
         - group: gateway.envoyproxy.io
           kind: Backend
           name: backend-tls-2-ip
@@ -68,7 +68,7 @@ metadata:
 spec:
   endpoints:
     - ip:
-        address: 10.244.1.54
+        address: 10.244.0.62 # Replace with the actual IP address of the backend pod
         port: 8443
 ---
 apiVersion: gateway.networking.k8s.io/v1
@@ -121,7 +121,7 @@ spec:
     spec:
       containers:
         - name: tls-backend
-          image: registry.k8s.io/gateway-api/conformance/echo-basic:v0.1.0
+          image: registry.k8s.io/gateway-api/echo-basic:v1.5.1
           volumeMounts:
             - name: secret-volume
               mountPath: /etc/secret-volume
@@ -168,7 +168,7 @@ metadata:
 spec:
   endpoints:
     - ip:
-        address: 10.244.1.54
+        address: 10.244.0.62 # Replace with the actual IP address of the backend pod
         port: 8443
 ---
 apiVersion: gateway.networking.k8s.io/v1
@@ -221,7 +221,7 @@ spec:
     spec:
       containers:
         - name: tls-backend
-          image: registry.k8s.io/gateway-api/conformance/echo-basic:v0.1.0
+          image: registry.k8s.io/gateway-api/echo-basic:v1.5.1
           volumeMounts:
             - name: secret-volume
               mountPath: /etc/secret-volume

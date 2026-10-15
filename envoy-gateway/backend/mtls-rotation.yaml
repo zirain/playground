@@ -1,0 +1,202 @@
+# Backend with mTLS (mutual TLS) rotation demo.
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: eg
+spec:
+  gatewayClassName: eg
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: backend-tls-route
+spec:
+  parentRefs:
+    - name: eg
+  rules:
+    - backendRefs:
+        - group: gateway.envoyproxy.io
+          kind: Backend
+          name: backend-tls-1-ip
+        - group: gateway.envoyproxy.io
+          kind: Backend
+          name: backend-tls-2-ip
+      matches:
+        - path:
+            type: PathPrefix
+            value: /ip
+    - backendRefs:
+        - group: gateway.envoyproxy.io
+          kind: Backend
+          name: backend-tls-1
+        - group: gateway.envoyproxy.io
+          kind: Backend
+          name: backend-tls-2
+      matches:
+        - path:
+            type: PathPrefix
+            value: /fqdn
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: Backend
+metadata:
+  name: backend-tls-1
+spec:
+  endpoints:
+    - fqdn:
+        hostname: tls-backend-1.default.svc.cluster.local
+        port: 443
+  tls:
+    clientCertificateRef:
+      kind: Secret
+      name: example-client-cert1
+    insecureSkipVerify: true
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: Backend
+metadata:
+  name: backend-tls-1-ip
+spec:
+  endpoints:
+    - ip:
+        address: 10.244.0.62 # Replace with the actual IP address of the backend pod
+        port: 8443
+  tls:
+    clientCertificateRef:
+      kind: Secret
+      name: example-client-cert1
+    insecureSkipVerify: true
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: BackendTLSPolicy
+metadata:
+  name: backend-tls-1
+spec:
+  targetRefs:
+    - group: gateway.envoyproxy.io
+      kind: Backend
+      name: backend-tls-1
+    - group: gateway.envoyproxy.io
+      kind: Backend
+      name: backend-tls-1-ip
+  validation:
+    caCertificateRefs:
+      - name: example-ca
+        group: ""
+        kind: ConfigMap
+    hostname: www.example.com
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: Backend
+metadata:
+  name: backend-tls-2
+spec:
+  endpoints:
+    - fqdn:
+        hostname: tls-backend-2.default.svc.cluster.local
+        port: 443
+  tls:
+    clientCertificateRef:
+      kind: Secret
+      name: example-client-cert2
+    insecureSkipVerify: true
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: Backend
+metadata:
+  name: backend-tls-2-ip
+spec:
+  endpoints:
+    - ip:
+        address: 10.244.0.62 # Replace with the actual IP address of the backend pod
+        port: 8443
+  tls:
+    clientCertificateRef:
+      kind: Secret
+      name: example-client-cert2
+    insecureSkipVerify: true
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: BackendTLSPolicy
+metadata:
+  name: backend-tls-2
+spec:
+  targetRefs:
+    - group: gateway.envoyproxy.io
+      kind: Backend
+      name: backend-tls-2
+    - group: gateway.envoyproxy.io
+      kind: Backend
+      name: backend-tls-2-ip
+  validation:
+    caCertificateRefs:
+      # this could be different to the backend-tls-1 in a rotation scenario, but here we are using the same one
+      - name: example-ca
+        group: ""
+        kind: ConfigMap
+    hostname: www.example.com
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tls-backend-1
+spec:
+  selector:
+    app: tls-backend-1
+  ports:
+    - name: https
+      protocol: TCP
+      port: 443
+      targetPort: 8443
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tls-backend-1
+  labels:
+    app: tls-backend-1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tls-backend-1
+  template:
+    metadata:
+      labels:
+        app: tls-backend-1
+    spec:
+      containers:
+        - name: tls-backend
+          image: registry.k8s.io/gateway-api/echo-basic:v1.5.1
+          volumeMounts:
+            - name: secret-volume
+              mountPath: /etc/secret-volume
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: TLS_SERVER_CERT
+              value: /etc/secret-volume/crt
+            - name: TLS_SERVER_PRIVKEY
+              value: /etc/secret-volume/key
+          resources:
+            requests:
+              cpu: 10m
+      volumes:
+        - name: secret-volume
+          secret:
+            secretName: example-cert
+            items:
+              - key: tls.crt
+                path: crt
+              - key: tls.key
+                path: key
