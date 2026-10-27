@@ -1,0 +1,12 @@
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+spec:
+  meshConfig:
+    accessLogFile: /dev/stdout
+    # the trust domain of this mesh, used in SPIFFE IDs: spiffe://<trustDomain>/ns/<ns>/sa/<sa>
+    trustDomain: cluster.local
+    # identities from these trust domains are treated as belonging to this mesh,
+    # e.g. AuthorizationPolicy principals and peer SAN verification during a trust domain migration
+    trustDomainAliases:
+      - cluster.local2
+      - old-td.local
