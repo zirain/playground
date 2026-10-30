@@ -1,0 +1,104 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: canary
+spec:
+  parentRefs:
+    - name: eg
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /canary
+      backendRefs:
+        - name: canary
+          port: 3000
+          weight: 50
+        - name: canary
+          port: 4000
+          weight: 0
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: eg
+spec:
+  gatewayClassName: eg
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+  infrastructure:
+    parametersRef:
+      group: gateway.envoyproxy.io
+      kind: EnvoyProxy
+      name: merge-backends
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyProxy
+metadata:
+  name: merge-backends
+spec:
+  mergeBackends: {}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: canary
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: canary
+  labels:
+    app: canary
+    service: canary
+spec:
+  ports:
+    - name: http-v1
+      port: 3000
+      targetPort: 3000
+    - name: http-v2
+      port: 4000
+      targetPort: 3000
+  selector:
+    app: canary
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: canary
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: canary
+  template:
+    metadata:
+      labels:
+        app: canary
+    spec:
+      serviceAccountName: canary
+      containers:
+        - image: registry.k8s.io/gateway-api/echo-basic:v1.5.1
+          imagePullPolicy: IfNotPresent
+          name: v1
+          ports:
+            - containerPort: 3000
+          env:
+            - name: HTTP_PORT
+              value: "3000"
+            - name: HTTPS_PORT
+              value: "8443"
+            - name: _POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            # suffix the pod name so the response shows which port served it
+            - name: POD_NAME
+              value: "$(_POD_NAME)-3000"
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+---
