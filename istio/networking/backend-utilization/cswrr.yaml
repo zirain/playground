@@ -1,0 +1,134 @@
+# Backend utilization (ORCA) load balancing demo, see https://github.com/istio/api/pull/3750
+#
+# Two backends behind one Service, each reporting a fixed ORCA load report through the
+# `endpoint-load-metrics` response header:
+#   - orca-busy: application_utilization=0.9
+#   - orca-idle: application_utilization=0.1
+# Envoy computes weight = rps_fractional / utilization, so the idle pod should get ~90% of requests
+# once weights stabilize (weightStabilizationPeriod).
+#
+# kubectl label ns default istio-injection=enabled
+# kubectl apply -f cswrr.yaml
+# kubectl apply -f ../../apps/http/sleep.yaml
+#
+# Verify the cluster uses client_side_weighted_round_robin:
+#   istioctl pc cluster deploy/sleep --fqdn orca.default.svc.cluster.local -o json | grep -A10 client_side_weighted_round_robin
+#
+# Send traffic and count which pod served it:
+#   kubectl exec deploy/sleep -- sh -c 'for i in $(seq 1 200); do curl -s orca:8080; done' | sort | uniq -c
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: orca-nginx
+data:
+  default.conf.template: |
+    server {
+      listen 8080;
+      location / {
+        # ORCA native HTTP format, rps_fractional must be > 0 or Envoy ignores the report.
+        add_header endpoint-load-metrics "TEXT application_utilization=${UTILIZATION},rps_fractional=100" always;
+        return 200 "${POD_NAME}\n";
+      }
+    }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: orca
+  labels:
+    app: orca
+spec:
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+  selector:
+    app: orca
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orca-busy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: orca
+      version: busy
+  template:
+    metadata:
+      labels:
+        app: orca
+        version: busy
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.27
+          ports:
+            - containerPort: 8080
+          env:
+            - name: UTILIZATION
+              value: "0.9"
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          volumeMounts:
+            - name: templates
+              mountPath: /etc/nginx/templates
+      volumes:
+        - name: templates
+          configMap:
+            name: orca-nginx
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orca-idle
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: orca
+      version: idle
+  template:
+    metadata:
+      labels:
+        app: orca
+        version: idle
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.27
+          ports:
+            - containerPort: 8080
+          env:
+            - name: UTILIZATION
+              value: "0.1"
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          volumeMounts:
+            - name: templates
+              mountPath: /etc/nginx/templates
+      volumes:
+        - name: templates
+          configMap:
+            name: orca-nginx
+---
+apiVersion: networking.istio.io/v1
+kind: DestinationRule
+metadata:
+  name: orca
+spec:
+  host: orca.default.svc.cluster.local
+  trafficPolicy:
+    loadBalancer:
+      backendUtilization:
+        weightStabilizationPeriod: 5s
+        weightExpirationPeriod: 3m
+        weightUpdatePeriod: 1s
+        # errorUtilizationPenaltyPercent: 100
+        # metricNamesForComputingUtilization:
+        #   - named_metrics.foo
