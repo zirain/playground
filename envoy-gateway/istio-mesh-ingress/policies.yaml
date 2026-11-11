@@ -1,0 +1,86 @@
+# Mesh-wide STRICT mTLS + backends that only accept the Envoy Gateway identity.
+#
+# Replace <EG_PROXY_SA> with the proxy's ServiceAccount name, see README.md.
+apiVersion: security.istio.io/v1
+kind: PeerAuthentication
+metadata:
+  name: default
+  namespace: istio-system
+spec:
+  mtls:
+    mode: STRICT
+---
+# Sidecar backend: enforced by its sidecar.
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-from-eg
+  namespace: sidecar-app
+spec:
+  selector:
+    matchLabels:
+      app: httpbin
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals:
+              - cluster.local/ns/envoy-gateway-system/sa/<EG_PROXY_SA>
+---
+# Ambient backend: L7 rule enforced by the waypoint. A 403 on /deny proves the
+# waypoint is on the path (ztunnel alone can't match paths).
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-from-eg
+  namespace: ambient-app
+spec:
+  targetRefs:
+    - kind: Service
+      group: ""
+      name: httpbin
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals:
+              - cluster.local/ns/envoy-gateway-system/sa/<EG_PROXY_SA>
+      to:
+        - operation:
+            notPaths: ["/deny"]
+---
+# Ambient backend: L4 rule enforced by ztunnel. Only the waypoint may connect
+# to the pods, so nothing can bypass it.
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-from-waypoint
+  namespace: ambient-app
+spec:
+  selector:
+    matchLabels:
+      app: httpbin
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals:
+              - cluster.local/ns/ambient-app/sa/waypoint
+---
+# Ambient backend without a waypoint: L4 rule enforced by the pod's ztunnel.
+# Only identity can be matched here; paths, methods and headers can't.
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-from-eg
+  namespace: ambient-l4-app
+spec:
+  selector:
+    matchLabels:
+      app: httpbin
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals:
+              - cluster.local/ns/envoy-gateway-system/sa/<EG_PROXY_SA>

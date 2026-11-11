@@ -1,0 +1,204 @@
+# Two backends: one with a sidecar, one in ambient behind a waypoint.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: sidecar-app
+  labels:
+    istio-injection: enabled
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ambient-app
+  labels:
+    istio.io/dataplane-mode: ambient
+    istio.io/use-waypoint: waypoint
+---
+# Waypoint for ambient-app (L7 policy for Services in this namespace)
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: waypoint
+  namespace: ambient-app
+  labels:
+    istio.io/waypoint-for: service
+spec:
+  gatewayClassName: istio-waypoint
+  listeners:
+    - name: mesh
+      port: 15008
+      protocol: HBONE
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: httpbin
+  namespace: sidecar-app
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: httpbin
+  namespace: sidecar-app
+spec:
+  selector:
+    app: httpbin
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: httpbin
+  namespace: sidecar-app
+spec:
+  selector:
+    matchLabels:
+      app: httpbin
+  template:
+    metadata:
+      labels:
+        app: httpbin
+    spec:
+      serviceAccountName: httpbin
+      containers:
+        - name: httpbin
+          image: mccutchen/go-httpbin:v2.15.0
+          ports:
+            - containerPort: 8080
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: httpbin
+  namespace: ambient-app
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: httpbin
+  namespace: ambient-app
+spec:
+  selector:
+    app: httpbin
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: httpbin
+  namespace: ambient-app
+spec:
+  selector:
+    matchLabels:
+      app: httpbin
+  template:
+    metadata:
+      labels:
+        app: httpbin
+    spec:
+      serviceAccountName: httpbin
+      containers:
+        - name: httpbin
+          image: mccutchen/go-httpbin:v2.15.0
+          ports:
+            - containerPort: 8080
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: sidecar-app
+  namespace: sidecar-app
+spec:
+  parentRefs:
+    - name: mesh-ingress
+      namespace: envoy-gateway-system
+  hostnames: ["sidecar.example.com"]
+  rules:
+    - backendRefs:
+        - name: httpbin
+          port: 8000
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: ambient-app
+  namespace: ambient-app
+spec:
+  parentRefs:
+    - name: mesh-ingress
+      namespace: envoy-gateway-system
+  hostnames: ["ambient.example.com"]
+  rules:
+    - backendRefs:
+        - name: httpbin
+          port: 8000
+---
+# Third backend: ambient without a waypoint. ztunnel delivers straight to the
+# pod, so only L4 policy (identity, ports) applies.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ambient-l4-app
+  labels:
+    istio.io/dataplane-mode: ambient
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: httpbin
+  namespace: ambient-l4-app
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: httpbin
+  namespace: ambient-l4-app
+spec:
+  selector:
+    app: httpbin
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: httpbin
+  namespace: ambient-l4-app
+spec:
+  selector:
+    matchLabels:
+      app: httpbin
+  template:
+    metadata:
+      labels:
+        app: httpbin
+    spec:
+      serviceAccountName: httpbin
+      containers:
+        - name: httpbin
+          image: mccutchen/go-httpbin:v2.15.0
+          ports:
+            - containerPort: 8080
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: ambient-l4-app
+  namespace: ambient-l4-app
+spec:
+  parentRefs:
+    - name: mesh-ingress
+      namespace: envoy-gateway-system
+  hostnames: ["ambient-l4.example.com"]
+  rules:
+    - backendRefs:
+        - name: httpbin
+          port: 8000

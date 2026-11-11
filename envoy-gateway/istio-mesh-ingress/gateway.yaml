@@ -1,0 +1,63 @@
+# Envoy Gateway as north-south ingress for an Istio mesh (sidecar + ambient).
+#
+# The proxy pods join ambient through a pod label, so only the data plane is in
+# the mesh; the Envoy Gateway controller in the same namespace stays out.
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyProxy
+metadata:
+  name: mesh-ingress
+  namespace: envoy-gateway-system
+spec:
+  # Send traffic to the Service ClusterIP instead of pod IPs, so ztunnel sees
+  # the Service and applies Service-level policy and waypoints.
+  routingType: Service
+  provider:
+    type: Kubernetes
+    kubernetes:
+      envoyDeployment:
+        pod:
+          labels:
+            istio.io/dataplane-mode: ambient
+      envoyService:
+        externalTrafficPolicy: Local
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: eg-mesh
+spec:
+  controllerName: gateway.envoyproxy.io/gatewayclass-controller
+  parametersRef:
+    group: gateway.envoyproxy.io
+    kind: EnvoyProxy
+    name: mesh-ingress
+    namespace: envoy-gateway-system
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: mesh-ingress
+  namespace: envoy-gateway-system
+spec:
+  gatewayClassName: eg-mesh
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+      allowedRoutes:
+        namespaces:
+          from: All
+---
+# External clients send plaintext. Keep the gateway pods PERMISSIVE so ztunnel
+# doesn't drop it when the mesh-wide mode is STRICT.
+apiVersion: security.istio.io/v1
+kind: PeerAuthentication
+metadata:
+  name: eg-proxy-permissive
+  namespace: envoy-gateway-system
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/managed-by: envoy-gateway
+  mtls:
+    mode: PERMISSIVE

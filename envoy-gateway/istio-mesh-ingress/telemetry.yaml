@@ -1,0 +1,11 @@
+# Mesh-wide Envoy access logs for sidecars and waypoints (written to stdout).
+# ztunnel logs every connection on its own, no config needed.
+apiVersion: telemetry.istio.io/v1
+kind: Telemetry
+metadata:
+  name: mesh-default
+  namespace: istio-system
+spec:
+  accessLogging:
+    - providers:
+        - name: envoy
