@@ -1,0 +1,401 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: h2test
+  labels:
+    istio-injection: enabled
+---
+apiVersion: security.istio.io/v1
+kind: PeerAuthentication
+metadata:
+  name: strict
+  namespace: h2test
+spec:
+  mtls:
+    mode: STRICT
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: httpbin-http
+  namespace: h2test
+spec:
+  selector:
+    matchLabels:
+      app: httpbin-http
+  template:
+    metadata:
+      labels:
+        app: httpbin-http
+    spec:
+      containers:
+        - name: httpbin
+          image: mccutchen/go-httpbin:v2.15.0
+          ports:
+            - containerPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: httpbin-http2
+  namespace: h2test
+spec:
+  selector:
+    matchLabels:
+      app: httpbin-http2
+  template:
+    metadata:
+      labels:
+        app: httpbin-http2
+    spec:
+      containers:
+        - name: httpbin
+          image: mccutchen/go-httpbin:v2.15.0
+          ports:
+            - containerPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: httpbin-ap-http2
+  namespace: h2test
+spec:
+  selector:
+    matchLabels:
+      app: httpbin-ap-http2
+  template:
+    metadata:
+      labels:
+        app: httpbin-ap-http2
+    spec:
+      containers:
+        - name: httpbin
+          image: mccutchen/go-httpbin:v2.15.0
+          ports:
+            - containerPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: httpbin-h2c
+  namespace: h2test
+spec:
+  selector:
+    matchLabels:
+      app: httpbin-h2c
+  template:
+    metadata:
+      labels:
+        app: httpbin-h2c
+    spec:
+      containers:
+        - name: httpbin
+          image: mccutchen/go-httpbin:v2.15.0
+          ports:
+            - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: svc-http
+  namespace: h2test
+spec:
+  selector:
+    app: httpbin-http
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: svc-http2
+  namespace: h2test
+spec:
+  selector:
+    app: httpbin-http2
+  ports:
+    - name: http2
+      port: 8001
+      targetPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: svc-ap-http2
+  namespace: h2test
+spec:
+  selector:
+    app: httpbin-ap-http2
+  ports:
+    - name: web
+      port: 8002
+      targetPort: 8080
+      appProtocol: http2
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: svc-h2c
+  namespace: h2test
+spec:
+  selector:
+    app: httpbin-h2c
+  ports:
+    - name: web
+      port: 8003
+      targetPort: 8080
+      appProtocol: kubernetes.io/h2c
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyProxy
+metadata:
+  name: sidecar-endpoint
+  namespace: envoy-gateway-system
+spec:
+  routingType: Endpoint
+  provider:
+    type: Kubernetes
+    kubernetes:
+      envoyDeployment:
+        pod:
+          labels:
+            sidecar.istio.io/inject: "true"
+          annotations:
+            traffic.sidecar.istio.io/includeInboundPorts: ""
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: sidecar-endpoint
+spec:
+  controllerName: gateway.envoyproxy.io/gatewayclass-controller
+  parametersRef:
+    group: gateway.envoyproxy.io
+    kind: EnvoyProxy
+    name: sidecar-endpoint
+    namespace: envoy-gateway-system
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: sidecar-endpoint
+  namespace: envoy-gateway-system
+spec:
+  gatewayClassName: sidecar-endpoint
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+      allowedRoutes:
+        namespaces:
+          from: All
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyProxy
+metadata:
+  name: sidecar-service
+  namespace: envoy-gateway-system
+spec:
+  routingType: Service
+  provider:
+    type: Kubernetes
+    kubernetes:
+      envoyDeployment:
+        pod:
+          labels:
+            sidecar.istio.io/inject: "true"
+          annotations:
+            traffic.sidecar.istio.io/includeInboundPorts: ""
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: sidecar-service
+spec:
+  controllerName: gateway.envoyproxy.io/gatewayclass-controller
+  parametersRef:
+    group: gateway.envoyproxy.io
+    kind: EnvoyProxy
+    name: sidecar-service
+    namespace: envoy-gateway-system
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: sidecar-service
+  namespace: envoy-gateway-system
+spec:
+  gatewayClassName: sidecar-service
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+      allowedRoutes:
+        namespaces:
+          from: All
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: http
+  namespace: h2test
+spec:
+  parentRefs:
+    - name: sidecar-endpoint
+      namespace: envoy-gateway-system
+    - name: sidecar-service
+      namespace: envoy-gateway-system
+  hostnames:
+    - "http.example.com"
+  rules:
+    - filters:
+        - type: URLRewrite
+          urlRewrite:
+            hostname: svc-http.h2test.svc.cluster.local
+      backendRefs:
+        - name: svc-http
+          port: 8000
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: http2
+  namespace: h2test
+spec:
+  parentRefs:
+    - name: sidecar-endpoint
+      namespace: envoy-gateway-system
+    - name: sidecar-service
+      namespace: envoy-gateway-system
+  hostnames:
+    - "http2.example.com"
+  rules:
+    - filters:
+        - type: URLRewrite
+          urlRewrite:
+            hostname: svc-http2.h2test.svc.cluster.local
+      backendRefs:
+        - name: svc-http2
+          port: 8001
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: ap-http2
+  namespace: h2test
+spec:
+  parentRefs:
+    - name: sidecar-endpoint
+      namespace: envoy-gateway-system
+    - name: sidecar-service
+      namespace: envoy-gateway-system
+  hostnames:
+    - "ap-http2.example.com"
+  rules:
+    - filters:
+        - type: URLRewrite
+          urlRewrite:
+            hostname: svc-ap-http2.h2test.svc.cluster.local
+      backendRefs:
+        - name: svc-ap-http2
+          port: 8002
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: h2c
+  namespace: h2test
+spec:
+  parentRefs:
+    - name: sidecar-endpoint
+      namespace: envoy-gateway-system
+    - name: sidecar-service
+      namespace: envoy-gateway-system
+  hostnames:
+    - "h2c.example.com"
+  rules:
+    - filters:
+        - type: URLRewrite
+          urlRewrite:
+            hostname: svc-h2c.h2test.svc.cluster.local
+      backendRefs:
+        - name: svc-h2c
+          port: 8003
+---
+# Positive control: an app that really speaks h2c, behind an http2-named port
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-h2c
+  namespace: h2test
+data:
+  default.conf: |
+    server {
+      listen 8080;
+      http2 on;
+      location / { default_type text/plain; return 200 "nginx says hello over $server_protocol\n"; }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-h2c
+  namespace: h2test
+spec:
+  selector:
+    matchLabels:
+      app: nginx-h2c
+  template:
+    metadata:
+      labels:
+        app: nginx-h2c
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.27
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: conf
+              mountPath: /etc/nginx/conf.d
+      volumes:
+        - name: conf
+          configMap:
+            name: nginx-h2c
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: svc-nginx-http2
+  namespace: h2test
+spec:
+  selector:
+    app: nginx-h2c
+  ports:
+    - name: http2
+      port: 8004
+      targetPort: 8080
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: nginx-http2
+  namespace: h2test
+spec:
+  parentRefs:
+    - name: sidecar-endpoint
+      namespace: envoy-gateway-system
+    - name: sidecar-service
+      namespace: envoy-gateway-system
+  hostnames:
+    - "nginx-http2.example.com"
+  rules:
+    - filters:
+        - type: URLRewrite
+          urlRewrite:
+            hostname: svc-nginx-http2.h2test.svc.cluster.local
+      backendRefs:
+        - name: svc-nginx-http2
+          port: 8004

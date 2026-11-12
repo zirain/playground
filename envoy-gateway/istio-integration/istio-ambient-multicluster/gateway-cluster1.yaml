@@ -1,0 +1,487 @@
+# Envoy Gateway (proxy enrolled in ambient), routes and a mesh client. Apply to cluster1 only.
+apiVersion: security.istio.io/v1
+kind: PeerAuthentication
+metadata:
+  name: eg-proxy-permissive
+  namespace: envoy-gateway-system
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/managed-by: envoy-gateway
+  mtls:
+    mode: PERMISSIVE
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyProxy
+metadata:
+  name: ambient-endpoint
+  namespace: envoy-gateway-system
+spec:
+  routingType: Endpoint
+  provider:
+    type: Kubernetes
+    kubernetes:
+      envoyDeployment:
+        pod:
+          labels:
+            istio.io/dataplane-mode: ambient
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: ambient-endpoint
+spec:
+  controllerName: gateway.envoyproxy.io/gatewayclass-controller
+  parametersRef:
+    group: gateway.envoyproxy.io
+    kind: EnvoyProxy
+    name: ambient-endpoint
+    namespace: envoy-gateway-system
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: ambient-endpoint
+  namespace: envoy-gateway-system
+spec:
+  gatewayClassName: ambient-endpoint
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+      allowedRoutes:
+        namespaces:
+          from: All
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyProxy
+metadata:
+  name: ambient-service
+  namespace: envoy-gateway-system
+spec:
+  routingType: Service
+  provider:
+    type: Kubernetes
+    kubernetes:
+      envoyDeployment:
+        pod:
+          labels:
+            istio.io/dataplane-mode: ambient
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: ambient-service
+spec:
+  controllerName: gateway.envoyproxy.io/gatewayclass-controller
+  parametersRef:
+    group: gateway.envoyproxy.io
+    kind: EnvoyProxy
+    name: ambient-service
+    namespace: envoy-gateway-system
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: ambient-service
+  namespace: envoy-gateway-system
+spec:
+  gatewayClassName: ambient-service
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+      allowedRoutes:
+        namespaces:
+          from: All
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: http-c1
+  namespace: amb
+spec:
+  parentRefs:
+    - name: ambient-endpoint
+      namespace: envoy-gateway-system
+    - name: ambient-service
+      namespace: envoy-gateway-system
+  hostnames:
+    - http-c1.amb.example.com
+  rules:
+    - backendRefs:
+        - name: http-c1
+          port: 8000
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: http2-c1
+  namespace: amb
+spec:
+  parentRefs:
+    - name: ambient-endpoint
+      namespace: envoy-gateway-system
+    - name: ambient-service
+      namespace: envoy-gateway-system
+  hostnames:
+    - http2-c1.amb.example.com
+  rules:
+    - backendRefs:
+        - name: http2-c1
+          port: 8001
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: nginx-h2c-c1
+  namespace: amb
+spec:
+  parentRefs:
+    - name: ambient-endpoint
+      namespace: envoy-gateway-system
+    - name: ambient-service
+      namespace: envoy-gateway-system
+  hostnames:
+    - nginx-h2c-c1.amb.example.com
+  rules:
+    - backendRefs:
+        - name: nginx-h2c-c1
+          port: 8004
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: http-c2
+  namespace: amb
+spec:
+  parentRefs:
+    - name: ambient-endpoint
+      namespace: envoy-gateway-system
+    - name: ambient-service
+      namespace: envoy-gateway-system
+  hostnames:
+    - http-c2.amb.example.com
+  rules:
+    - backendRefs:
+        - name: http-c2
+          port: 8000
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: http2-c2
+  namespace: amb
+spec:
+  parentRefs:
+    - name: ambient-endpoint
+      namespace: envoy-gateway-system
+    - name: ambient-service
+      namespace: envoy-gateway-system
+  hostnames:
+    - http2-c2.amb.example.com
+  rules:
+    - backendRefs:
+        - name: http2-c2
+          port: 8001
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: nginx-h2c-c2
+  namespace: amb
+spec:
+  parentRefs:
+    - name: ambient-endpoint
+      namespace: envoy-gateway-system
+    - name: ambient-service
+      namespace: envoy-gateway-system
+  hostnames:
+    - nginx-h2c-c2.amb.example.com
+  rules:
+    - backendRefs:
+        - name: nginx-h2c-c2
+          port: 8004
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: whereami
+  namespace: amb
+spec:
+  parentRefs:
+    - name: ambient-endpoint
+      namespace: envoy-gateway-system
+    - name: ambient-service
+      namespace: envoy-gateway-system
+  hostnames:
+    - whereami.amb.example.com
+  rules:
+    - backendRefs:
+        - name: whereami
+          port: 8000
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: http-c1
+  namespace: amb-wp
+spec:
+  parentRefs:
+    - name: ambient-endpoint
+      namespace: envoy-gateway-system
+    - name: ambient-service
+      namespace: envoy-gateway-system
+  hostnames:
+    - http-c1.amb-wp.example.com
+  rules:
+    - backendRefs:
+        - name: http-c1
+          port: 8000
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: http2-c1
+  namespace: amb-wp
+spec:
+  parentRefs:
+    - name: ambient-endpoint
+      namespace: envoy-gateway-system
+    - name: ambient-service
+      namespace: envoy-gateway-system
+  hostnames:
+    - http2-c1.amb-wp.example.com
+  rules:
+    - backendRefs:
+        - name: http2-c1
+          port: 8001
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: nginx-h2c-c1
+  namespace: amb-wp
+spec:
+  parentRefs:
+    - name: ambient-endpoint
+      namespace: envoy-gateway-system
+    - name: ambient-service
+      namespace: envoy-gateway-system
+  hostnames:
+    - nginx-h2c-c1.amb-wp.example.com
+  rules:
+    - backendRefs:
+        - name: nginx-h2c-c1
+          port: 8004
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: http-c2
+  namespace: amb-wp
+spec:
+  parentRefs:
+    - name: ambient-endpoint
+      namespace: envoy-gateway-system
+    - name: ambient-service
+      namespace: envoy-gateway-system
+  hostnames:
+    - http-c2.amb-wp.example.com
+  rules:
+    - backendRefs:
+        - name: http-c2
+          port: 8000
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: http2-c2
+  namespace: amb-wp
+spec:
+  parentRefs:
+    - name: ambient-endpoint
+      namespace: envoy-gateway-system
+    - name: ambient-service
+      namespace: envoy-gateway-system
+  hostnames:
+    - http2-c2.amb-wp.example.com
+  rules:
+    - backendRefs:
+        - name: http2-c2
+          port: 8001
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: nginx-h2c-c2
+  namespace: amb-wp
+spec:
+  parentRefs:
+    - name: ambient-endpoint
+      namespace: envoy-gateway-system
+    - name: ambient-service
+      namespace: envoy-gateway-system
+  hostnames:
+    - nginx-h2c-c2.amb-wp.example.com
+  rules:
+    - backendRefs:
+        - name: nginx-h2c-c2
+          port: 8004
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: whereami
+  namespace: amb-wp
+spec:
+  parentRefs:
+    - name: ambient-endpoint
+      namespace: envoy-gateway-system
+    - name: ambient-service
+      namespace: envoy-gateway-system
+  hostnames:
+    - whereami.amb-wp.example.com
+  rules:
+    - backendRefs:
+        - name: whereami
+          port: 8000
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: http-c1
+  namespace: sc
+spec:
+  parentRefs:
+    - name: ambient-endpoint
+      namespace: envoy-gateway-system
+    - name: ambient-service
+      namespace: envoy-gateway-system
+  hostnames:
+    - http-c1.sc.example.com
+  rules:
+    - backendRefs:
+        - name: http-c1
+          port: 8000
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: http2-c1
+  namespace: sc
+spec:
+  parentRefs:
+    - name: ambient-endpoint
+      namespace: envoy-gateway-system
+    - name: ambient-service
+      namespace: envoy-gateway-system
+  hostnames:
+    - http2-c1.sc.example.com
+  rules:
+    - backendRefs:
+        - name: http2-c1
+          port: 8001
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: nginx-h2c-c1
+  namespace: sc
+spec:
+  parentRefs:
+    - name: ambient-endpoint
+      namespace: envoy-gateway-system
+    - name: ambient-service
+      namespace: envoy-gateway-system
+  hostnames:
+    - nginx-h2c-c1.sc.example.com
+  rules:
+    - backendRefs:
+        - name: nginx-h2c-c1
+          port: 8004
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: http-c2
+  namespace: sc
+spec:
+  parentRefs:
+    - name: ambient-endpoint
+      namespace: envoy-gateway-system
+    - name: ambient-service
+      namespace: envoy-gateway-system
+  hostnames:
+    - http-c2.sc.example.com
+  rules:
+    - backendRefs:
+        - name: http-c2
+          port: 8000
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: http2-c2
+  namespace: sc
+spec:
+  parentRefs:
+    - name: ambient-endpoint
+      namespace: envoy-gateway-system
+    - name: ambient-service
+      namespace: envoy-gateway-system
+  hostnames:
+    - http2-c2.sc.example.com
+  rules:
+    - backendRefs:
+        - name: http2-c2
+          port: 8001
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: nginx-h2c-c2
+  namespace: sc
+spec:
+  parentRefs:
+    - name: ambient-endpoint
+      namespace: envoy-gateway-system
+    - name: ambient-service
+      namespace: envoy-gateway-system
+  hostnames:
+    - nginx-h2c-c2.sc.example.com
+  rules:
+    - backendRefs:
+        - name: nginx-h2c-c2
+          port: 8004
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: whereami
+  namespace: sc
+spec:
+  parentRefs:
+    - name: ambient-endpoint
+      namespace: envoy-gateway-system
+    - name: ambient-service
+      namespace: envoy-gateway-system
+  hostnames:
+    - whereami.sc.example.com
+  rules:
+    - backendRefs:
+        - name: whereami
+          port: 8000
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: meshclient
+  namespace: amb
+spec:
+  containers:
+    - name: curl
+      image: curlimages/curl:8.10.1
+      command:
+        - sleep
+        - 1d

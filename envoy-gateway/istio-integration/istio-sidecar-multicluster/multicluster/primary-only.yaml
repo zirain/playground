@@ -1,0 +1,307 @@
+apiVersion: security.istio.io/v1
+kind: PeerAuthentication
+metadata:
+  name: strict
+  namespace: h2test
+spec:
+  mtls:
+    mode: STRICT
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: meshclient
+  namespace: h2test
+spec:
+  containers:
+    - name: meshclient
+      image: "curlimages/curl:8.10.1"
+      command:
+        - sleep
+        - 1d
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyProxy
+metadata:
+  name: sidecar-endpoint
+  namespace: envoy-gateway-system
+spec:
+  routingType: Endpoint
+  provider:
+    type: Kubernetes
+    kubernetes:
+      envoyDeployment:
+        pod:
+          labels:
+            sidecar.istio.io/inject: "true"
+          annotations:
+            traffic.sidecar.istio.io/includeInboundPorts: ""
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: sidecar-endpoint
+spec:
+  controllerName: gateway.envoyproxy.io/gatewayclass-controller
+  parametersRef:
+    group: gateway.envoyproxy.io
+    kind: EnvoyProxy
+    name: sidecar-endpoint
+    namespace: envoy-gateway-system
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: sidecar-endpoint
+  namespace: envoy-gateway-system
+spec:
+  gatewayClassName: sidecar-endpoint
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+      allowedRoutes:
+        namespaces:
+          from: All
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyProxy
+metadata:
+  name: sidecar-service
+  namespace: envoy-gateway-system
+spec:
+  routingType: Service
+  provider:
+    type: Kubernetes
+    kubernetes:
+      envoyDeployment:
+        pod:
+          labels:
+            sidecar.istio.io/inject: "true"
+          annotations:
+            traffic.sidecar.istio.io/includeInboundPorts: ""
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: sidecar-service
+spec:
+  controllerName: gateway.envoyproxy.io/gatewayclass-controller
+  parametersRef:
+    group: gateway.envoyproxy.io
+    kind: EnvoyProxy
+    name: sidecar-service
+    namespace: envoy-gateway-system
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: sidecar-service
+  namespace: envoy-gateway-system
+spec:
+  gatewayClassName: sidecar-service
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+      allowedRoutes:
+        namespaces:
+          from: All
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: http-primary
+  namespace: h2test
+spec:
+  parentRefs:
+    - name: sidecar-endpoint
+      namespace: envoy-gateway-system
+    - name: sidecar-service
+      namespace: envoy-gateway-system
+  hostnames:
+    - "http-primary.example.com"
+  rules:
+    - filters:
+        - type: URLRewrite
+          urlRewrite:
+            hostname: http-primary.h2test.svc.cluster.local
+      backendRefs:
+        - name: http-primary
+          port: 8000
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: http2-primary
+  namespace: h2test
+spec:
+  parentRefs:
+    - name: sidecar-endpoint
+      namespace: envoy-gateway-system
+    - name: sidecar-service
+      namespace: envoy-gateway-system
+  hostnames:
+    - "http2-primary.example.com"
+  rules:
+    - filters:
+        - type: URLRewrite
+          urlRewrite:
+            hostname: http2-primary.h2test.svc.cluster.local
+      backendRefs:
+        - name: http2-primary
+          port: 8001
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: nginx-h2c-primary
+  namespace: h2test
+spec:
+  parentRefs:
+    - name: sidecar-endpoint
+      namespace: envoy-gateway-system
+    - name: sidecar-service
+      namespace: envoy-gateway-system
+  hostnames:
+    - "nginx-h2c-primary.example.com"
+  rules:
+    - filters:
+        - type: URLRewrite
+          urlRewrite:
+            hostname: nginx-h2c-primary.h2test.svc.cluster.local
+      backendRefs:
+        - name: nginx-h2c-primary
+          port: 8004
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: http-remote1
+  namespace: h2test
+spec:
+  parentRefs:
+    - name: sidecar-endpoint
+      namespace: envoy-gateway-system
+    - name: sidecar-service
+      namespace: envoy-gateway-system
+  hostnames:
+    - "http-remote1.example.com"
+  rules:
+    - filters:
+        - type: URLRewrite
+          urlRewrite:
+            hostname: http-remote1.h2test.svc.cluster.local
+      backendRefs:
+        - name: http-remote1
+          port: 8000
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: http2-remote1
+  namespace: h2test
+spec:
+  parentRefs:
+    - name: sidecar-endpoint
+      namespace: envoy-gateway-system
+    - name: sidecar-service
+      namespace: envoy-gateway-system
+  hostnames:
+    - "http2-remote1.example.com"
+  rules:
+    - filters:
+        - type: URLRewrite
+          urlRewrite:
+            hostname: http2-remote1.h2test.svc.cluster.local
+      backendRefs:
+        - name: http2-remote1
+          port: 8001
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: nginx-h2c-remote1
+  namespace: h2test
+spec:
+  parentRefs:
+    - name: sidecar-endpoint
+      namespace: envoy-gateway-system
+    - name: sidecar-service
+      namespace: envoy-gateway-system
+  hostnames:
+    - "nginx-h2c-remote1.example.com"
+  rules:
+    - filters:
+        - type: URLRewrite
+          urlRewrite:
+            hostname: nginx-h2c-remote1.h2test.svc.cluster.local
+      backendRefs:
+        - name: nginx-h2c-remote1
+          port: 8004
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: http-remote2
+  namespace: h2test
+spec:
+  parentRefs:
+    - name: sidecar-endpoint
+      namespace: envoy-gateway-system
+    - name: sidecar-service
+      namespace: envoy-gateway-system
+  hostnames:
+    - "http-remote2.example.com"
+  rules:
+    - filters:
+        - type: URLRewrite
+          urlRewrite:
+            hostname: http-remote2.h2test.svc.cluster.local
+      backendRefs:
+        - name: http-remote2
+          port: 8000
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: http2-remote2
+  namespace: h2test
+spec:
+  parentRefs:
+    - name: sidecar-endpoint
+      namespace: envoy-gateway-system
+    - name: sidecar-service
+      namespace: envoy-gateway-system
+  hostnames:
+    - "http2-remote2.example.com"
+  rules:
+    - filters:
+        - type: URLRewrite
+          urlRewrite:
+            hostname: http2-remote2.h2test.svc.cluster.local
+      backendRefs:
+        - name: http2-remote2
+          port: 8001
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: nginx-h2c-remote2
+  namespace: h2test
+spec:
+  parentRefs:
+    - name: sidecar-endpoint
+      namespace: envoy-gateway-system
+    - name: sidecar-service
+      namespace: envoy-gateway-system
+  hostnames:
+    - "nginx-h2c-remote2.example.com"
+  rules:
+    - filters:
+        - type: URLRewrite
+          urlRewrite:
+            hostname: nginx-h2c-remote2.h2test.svc.cluster.local
+      backendRefs:
+        - name: nginx-h2c-remote2
+          port: 8004

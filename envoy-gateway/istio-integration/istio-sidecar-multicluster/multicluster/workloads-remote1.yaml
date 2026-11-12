@@ -1,0 +1,75 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-h2c
+  namespace: h2test
+data:
+  default.conf: |
+    server { listen 8080; http2 on; location / { default_type text/plain; return 200 "nginx in remote1 over $server_protocol\n"; } }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: httpbin-http-remote1
+  namespace: h2test
+spec:
+  selector:
+    matchLabels:
+      app: httpbin-http-remote1
+  template:
+    metadata:
+      labels:
+        app: httpbin-http-remote1
+    spec:
+      containers:
+        - name: httpbin
+          image: mccutchen/go-httpbin:v2.15.0
+          ports:
+            - containerPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: httpbin-http2-remote1
+  namespace: h2test
+spec:
+  selector:
+    matchLabels:
+      app: httpbin-http2-remote1
+  template:
+    metadata:
+      labels:
+        app: httpbin-http2-remote1
+    spec:
+      containers:
+        - name: httpbin
+          image: mccutchen/go-httpbin:v2.15.0
+          ports:
+            - containerPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-h2c-remote1
+  namespace: h2test
+spec:
+  selector:
+    matchLabels:
+      app: nginx-h2c-remote1
+  template:
+    metadata:
+      labels:
+        app: nginx-h2c-remote1
+    spec:
+      containers:
+        - name: nginx
+          image: "nginx:1.27"
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: conf
+              mountPath: /etc/nginx/conf.d
+      volumes:
+        - name: conf
+          configMap:
+            name: nginx-h2c

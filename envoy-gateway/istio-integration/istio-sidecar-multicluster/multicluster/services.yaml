@@ -1,0 +1,123 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: h2test
+  labels:
+    istio-injection: enabled
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: http-primary
+  namespace: h2test
+spec:
+  selector:
+    app: httpbin-http-primary
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: http2-primary
+  namespace: h2test
+spec:
+  selector:
+    app: httpbin-http2-primary
+  ports:
+    - name: http2
+      port: 8001
+      targetPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-h2c-primary
+  namespace: h2test
+spec:
+  selector:
+    app: nginx-h2c-primary
+  ports:
+    - name: http2
+      port: 8004
+      targetPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: http-remote1
+  namespace: h2test
+spec:
+  selector:
+    app: httpbin-http-remote1
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: http2-remote1
+  namespace: h2test
+spec:
+  selector:
+    app: httpbin-http2-remote1
+  ports:
+    - name: http2
+      port: 8001
+      targetPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-h2c-remote1
+  namespace: h2test
+spec:
+  selector:
+    app: nginx-h2c-remote1
+  ports:
+    - name: http2
+      port: 8004
+      targetPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: http-remote2
+  namespace: h2test
+spec:
+  selector:
+    app: httpbin-http-remote2
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: http2-remote2
+  namespace: h2test
+spec:
+  selector:
+    app: httpbin-http2-remote2
+  ports:
+    - name: http2
+      port: 8001
+      targetPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-h2c-remote2
+  namespace: h2test
+spec:
+  selector:
+    app: nginx-h2c-remote2
+  ports:
+    - name: http2
+      port: 8004
+      targetPort: 8080

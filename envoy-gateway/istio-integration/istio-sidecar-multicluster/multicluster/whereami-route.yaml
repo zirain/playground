@@ -1,0 +1,21 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: whereami
+  namespace: h2test
+spec:
+  parentRefs:
+    - name: sidecar-endpoint
+      namespace: envoy-gateway-system
+    - name: sidecar-service
+      namespace: envoy-gateway-system
+  hostnames:
+    - "whereami.example.com"
+  rules:
+    - filters:
+        - type: URLRewrite
+          urlRewrite:
+            hostname: whereami.h2test.svc.cluster.local
+      backendRefs:
+        - name: whereami
+          port: 8000

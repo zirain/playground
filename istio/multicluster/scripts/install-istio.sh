@@ -78,6 +78,7 @@ function install_ambient_multi_primary() {
             --dry-run=client -o yaml | kubectl apply -f - --kubeconfig "${kubeconfig}"
         istioctl install -y -f "${IOP_CFG_PREFIX}/${cluster}.yaml" --kubeconfig "${kubeconfig}"
 
+        # One gateway: HBONE (15008) for ambient, mTLS AUTO_PASSTHROUGH (15443) for sidecars. Istio 1.32+ only.
         echo "Install east-west gateway on ${cluster}"
         kubectl apply -f "${ISTIO_BASE_DIR}/eastwest/${cluster}.yaml" --kubeconfig "${kubeconfig}"
         kubectl wait --for=condition=programmed --timeout=5m gateway/istio-eastwestgateway -n istio-system --kubeconfig "${kubeconfig}"

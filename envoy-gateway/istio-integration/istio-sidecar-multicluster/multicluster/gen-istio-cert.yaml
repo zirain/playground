@@ -1,0 +1,458 @@
+# EG without a sidecar: EG does Istio mTLS itself with a cert from gen-istio-cert
+# (Option B of the Tetrate doc). Gateway in namespace `ingress`, proxy in envoy-gateway-system.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ingress
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyProxy
+metadata:
+  name: gen-istio-cert
+  namespace: ingress
+spec:
+  backendTLS:
+    clientCertificateRef:
+      kind: Secret
+      name: istio-certs
+      namespace: ingress
+    alpnProtocols:
+      - istio
+  provider:
+    type: Kubernetes
+    kubernetes:
+      envoyServiceAccount:
+        name: eg-istio
+      envoyDeployment:
+        pod:
+          volumes:
+            - name: istiod-ca-cert
+              configMap:
+                name: istio-ca-root-cert
+            - name: istio-token
+              projected:
+                defaultMode: 420
+                sources:
+                  - serviceAccountToken:
+                      audience: istio-ca
+                      expirationSeconds: 43200
+                      path: istio-token
+        patch:
+          type: StrategicMerge
+          value:
+            spec:
+              template:
+                spec:
+                  automountServiceAccountToken: true
+                  containers:
+                    - name: gen-istio-cert
+                      image: docker.io/tetrate/gen-istio-cert:v0.6.0
+                      imagePullPolicy: IfNotPresent
+                      args:
+                        - --cluster-name
+                        - primary
+                        - --sa-name
+                        - eg-istio
+                        - --sa-namespace
+                        - envoy-gateway-system
+                        - --output-secret-ns
+                        - ingress
+                      volumeMounts:
+                        - name: istiod-ca-cert
+                          mountPath: /var/run/secrets/istio
+                        - name: istio-token
+                          mountPath: /var/run/secrets/tokens
+                          readOnly: true
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: eg-istio-gen-certs
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+      - secrets
+      - events
+    verbs:
+      - get
+      - list
+      - update
+      - create
+  - apiGroups:
+      - coordination.k8s.io
+    resources:
+      - leases
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: eg-istio-gen-certs
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: eg-istio-gen-certs
+subjects:
+  - kind: ServiceAccount
+    name: eg-istio
+    namespace: envoy-gateway-system
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: gen-istio-cert
+spec:
+  controllerName: gateway.envoyproxy.io/gatewayclass-controller
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: gen-istio-cert
+  namespace: ingress
+spec:
+  gatewayClassName: gen-istio-cert
+  infrastructure:
+    parametersRef:
+      group: gateway.envoyproxy.io
+      kind: EnvoyProxy
+      name: gen-istio-cert
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+      allowedRoutes:
+        namespaces:
+          from: All
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: gic-whereami
+  namespace: h2test
+spec:
+  parentRefs:
+    - name: gen-istio-cert
+      namespace: ingress
+  hostnames:
+    - "whereami.example.com"
+  rules:
+    - backendRefs:
+        - name: whereami
+          port: 8000
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: BackendTLSPolicy
+metadata:
+  name: whereami
+  namespace: h2test
+spec:
+  targetRefs:
+    - group: ""
+      kind: Service
+      name: whereami
+  validation:
+    caCertificateRefs:
+      - group: ""
+        kind: ConfigMap
+        name: istio-ca-root-cert
+    hostname: whereami.h2test.svc.cluster.local
+    subjectAltNames:
+      - type: URI
+        uri: spiffe://cluster.local/ns/h2test/sa/default
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: gic-http-primary
+  namespace: h2test
+spec:
+  parentRefs:
+    - name: gen-istio-cert
+      namespace: ingress
+  hostnames:
+    - "http-primary.example.com"
+  rules:
+    - backendRefs:
+        - name: http-primary
+          port: 8000
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: BackendTLSPolicy
+metadata:
+  name: http-primary
+  namespace: h2test
+spec:
+  targetRefs:
+    - group: ""
+      kind: Service
+      name: http-primary
+  validation:
+    caCertificateRefs:
+      - group: ""
+        kind: ConfigMap
+        name: istio-ca-root-cert
+    hostname: http-primary.h2test.svc.cluster.local
+    subjectAltNames:
+      - type: URI
+        uri: spiffe://cluster.local/ns/h2test/sa/default
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: gic-http2-primary
+  namespace: h2test
+spec:
+  parentRefs:
+    - name: gen-istio-cert
+      namespace: ingress
+  hostnames:
+    - "http2-primary.example.com"
+  rules:
+    - backendRefs:
+        - name: http2-primary
+          port: 8001
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: BackendTLSPolicy
+metadata:
+  name: http2-primary
+  namespace: h2test
+spec:
+  targetRefs:
+    - group: ""
+      kind: Service
+      name: http2-primary
+  validation:
+    caCertificateRefs:
+      - group: ""
+        kind: ConfigMap
+        name: istio-ca-root-cert
+    hostname: http2-primary.h2test.svc.cluster.local
+    subjectAltNames:
+      - type: URI
+        uri: spiffe://cluster.local/ns/h2test/sa/default
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: gic-nginx-h2c-primary
+  namespace: h2test
+spec:
+  parentRefs:
+    - name: gen-istio-cert
+      namespace: ingress
+  hostnames:
+    - "nginx-h2c-primary.example.com"
+  rules:
+    - backendRefs:
+        - name: nginx-h2c-primary
+          port: 8004
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: BackendTLSPolicy
+metadata:
+  name: nginx-h2c-primary
+  namespace: h2test
+spec:
+  targetRefs:
+    - group: ""
+      kind: Service
+      name: nginx-h2c-primary
+  validation:
+    caCertificateRefs:
+      - group: ""
+        kind: ConfigMap
+        name: istio-ca-root-cert
+    hostname: nginx-h2c-primary.h2test.svc.cluster.local
+    subjectAltNames:
+      - type: URI
+        uri: spiffe://cluster.local/ns/h2test/sa/default
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: gic-http-remote1
+  namespace: h2test
+spec:
+  parentRefs:
+    - name: gen-istio-cert
+      namespace: ingress
+  hostnames:
+    - "http-remote1.example.com"
+  rules:
+    - backendRefs:
+        - name: http-remote1
+          port: 8000
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: BackendTLSPolicy
+metadata:
+  name: http-remote1
+  namespace: h2test
+spec:
+  targetRefs:
+    - group: ""
+      kind: Service
+      name: http-remote1
+  validation:
+    caCertificateRefs:
+      - group: ""
+        kind: ConfigMap
+        name: istio-ca-root-cert
+    hostname: http-remote1.h2test.svc.cluster.local
+    subjectAltNames:
+      - type: URI
+        uri: spiffe://cluster.local/ns/h2test/sa/default
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: gic-http2-remote1
+  namespace: h2test
+spec:
+  parentRefs:
+    - name: gen-istio-cert
+      namespace: ingress
+  hostnames:
+    - "http2-remote1.example.com"
+  rules:
+    - backendRefs:
+        - name: http2-remote1
+          port: 8001
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: BackendTLSPolicy
+metadata:
+  name: http2-remote1
+  namespace: h2test
+spec:
+  targetRefs:
+    - group: ""
+      kind: Service
+      name: http2-remote1
+  validation:
+    caCertificateRefs:
+      - group: ""
+        kind: ConfigMap
+        name: istio-ca-root-cert
+    hostname: http2-remote1.h2test.svc.cluster.local
+    subjectAltNames:
+      - type: URI
+        uri: spiffe://cluster.local/ns/h2test/sa/default
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: gic-http-remote2
+  namespace: h2test
+spec:
+  parentRefs:
+    - name: gen-istio-cert
+      namespace: ingress
+  hostnames:
+    - "http-remote2.example.com"
+  rules:
+    - backendRefs:
+        - name: http-remote2
+          port: 8000
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: BackendTLSPolicy
+metadata:
+  name: http-remote2
+  namespace: h2test
+spec:
+  targetRefs:
+    - group: ""
+      kind: Service
+      name: http-remote2
+  validation:
+    caCertificateRefs:
+      - group: ""
+        kind: ConfigMap
+        name: istio-ca-root-cert
+    hostname: http-remote2.h2test.svc.cluster.local
+    subjectAltNames:
+      - type: URI
+        uri: spiffe://cluster.local/ns/h2test/sa/default
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: gic-http2-remote2
+  namespace: h2test
+spec:
+  parentRefs:
+    - name: gen-istio-cert
+      namespace: ingress
+  hostnames:
+    - "http2-remote2.example.com"
+  rules:
+    - backendRefs:
+        - name: http2-remote2
+          port: 8001
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: BackendTLSPolicy
+metadata:
+  name: http2-remote2
+  namespace: h2test
+spec:
+  targetRefs:
+    - group: ""
+      kind: Service
+      name: http2-remote2
+  validation:
+    caCertificateRefs:
+      - group: ""
+        kind: ConfigMap
+        name: istio-ca-root-cert
+    hostname: http2-remote2.h2test.svc.cluster.local
+    subjectAltNames:
+      - type: URI
+        uri: spiffe://cluster.local/ns/h2test/sa/default
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: gic-nginx-h2c-remote2
+  namespace: h2test
+spec:
+  parentRefs:
+    - name: gen-istio-cert
+      namespace: ingress
+  hostnames:
+    - "nginx-h2c-remote2.example.com"
+  rules:
+    - backendRefs:
+        - name: nginx-h2c-remote2
+          port: 8004
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: BackendTLSPolicy
+metadata:
+  name: nginx-h2c-remote2
+  namespace: h2test
+spec:
+  targetRefs:
+    - group: ""
+      kind: Service
+      name: nginx-h2c-remote2
+  validation:
+    caCertificateRefs:
+      - group: ""
+        kind: ConfigMap
+        name: istio-ca-root-cert
+    hostname: nginx-h2c-remote2.h2test.svc.cluster.local
+    subjectAltNames:
+      - type: URI
+        uri: spiffe://cluster.local/ns/h2test/sa/default

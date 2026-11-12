@@ -6,40 +6,49 @@ set -o nounset
 set -o pipefail
 
 KUBECONFIG_BASE=${KUBECONFIG_BASE:-".kube"}
+ISTIO_MC_MODE=${ISTIO_MC_MODE:-"primary-remote"}
+ISTIO_NETWORK_MODE=${ISTIO_NETWORK_MODE:-"flat"}
 
-function connect_kind_clusters() {
-  C1="${1}"
-  C2="${2}"
-  POD_TO_POD_AND_SERVICE_CONNECTIVITY="${3}"
+# route_to_cluster SRC DST: let every node of SRC reach the pods and services of DST.
+# Each node of DST owns its own pod CIDR, so add one route per DST node, on every SRC node.
+function route_to_cluster() {
+  local src="${1}" dst="${2}"
+  local src_nodes dst_cp_ip dst_svc_cidr
+  src_nodes=$(kubectl get nodes --kubeconfig "${KUBECONFIG_BASE}/${src}" -o jsonpath='{.items[*].metadata.name}')
+  dst_cp_ip=$(docker inspect -f "{{ .NetworkSettings.Networks.kind.IPAddress }}" "${dst}-control-plane")
+  dst_svc_cidr=$(kubectl cluster-info dump --kubeconfig "${KUBECONFIG_BASE}/${dst}" | sed -n 's/^.*--service-cluster-ip-range=\([^"]*\).*$/\1/p' | head -n 1)
 
-  C1_NODE="${C1}-control-plane"
-  C2_NODE="${C2}-control-plane"
-  C1_DOCKER_IP=$(docker inspect -f "{{ .NetworkSettings.Networks.kind.IPAddress }}" "${C1_NODE}")
-  C2_DOCKER_IP=$(docker inspect -f "{{ .NetworkSettings.Networks.kind.IPAddress }}" "${C2_NODE}")
-  if [ "${POD_TO_POD_AND_SERVICE_CONNECTIVITY}" -eq 1 ]; then
-    # Set up routing rules for inter-cluster direct pod to pod & service communication
-    C1_POD_CIDR=$(kubectl get node --kubeconfig "${KUBECONFIG_BASE}/${C1}" -ojsonpath='{.items[0].spec.podCIDR}')
-    C2_POD_CIDR=$(kubectl get node --kubeconfig "${KUBECONFIG_BASE}/${C2}" -ojsonpath='{.items[0].spec.podCIDR}')
-    C1_SVC_CIDR=$(kubectl cluster-info dump --kubeconfig "${KUBECONFIG_BASE}/${C1}" | sed -n 's/^.*--service-cluster-ip-range=\([^"]*\).*$/\1/p' | head -n 1)
-    C2_SVC_CIDR=$(kubectl cluster-info dump --kubeconfig "${KUBECONFIG_BASE}/${C2}" | sed -n 's/^.*--service-cluster-ip-range=\([^"]*\).*$/\1/p' | head -n 1)
-    docker exec "${C1_NODE}" ip route add "${C2_POD_CIDR}" via "${C2_DOCKER_IP}"
-    docker exec "${C1_NODE}" ip route add "${C2_SVC_CIDR}" via "${C2_DOCKER_IP}"
-    docker exec "${C2_NODE}" ip route add "${C1_POD_CIDR}" via "${C1_DOCKER_IP}"
-    docker exec "${C2_NODE}" ip route add "${C1_SVC_CIDR}" via "${C1_DOCKER_IP}"
-  fi
+  kubectl get nodes --kubeconfig "${KUBECONFIG_BASE}/${dst}" \
+    -o jsonpath='{range .items[*]}{.spec.podCIDR} {.status.addresses[?(@.type=="InternalIP")].address}{"\n"}{end}' |
+  while read -r pod_cidr node_ip; do
+    for node in ${src_nodes}; do
+      docker exec "${node}" ip route replace "${pod_cidr}" via "${node_ip}"
+    done
+  done
+  for node in ${src_nodes}; do
+    docker exec "${node}" ip route replace "${dst_svc_cidr}" via "${dst_cp_ip}"
+  done
 }
 
-ISTIO_NETWORK_MODE=${ISTIO_NETWORK_MODE:-"flat"}
-if [ "${ISTIO_NETWORK_MODE}" = "flat" ]; then
-    echo "connect clusters in flat mode"
+function connect_kind_clusters() {
+  route_to_cluster "${1}" "${2}"
+  route_to_cluster "${2}" "${1}"
+}
 
-    # connecting networks between primary, remote1 and remote2 clusters
-    echo "connect remote1 <-> remote2"
-    connect_kind_clusters "remote1" "remote2" 1
-
-    echo "connect primary <-> remote1"
-    connect_kind_clusters "primary" "remote1" 1
-
-    echo "connect primary <-> remote2"
-    connect_kind_clusters "primary" "remote2" 1
-fi
+# Clusters on the same Istio network must have direct pod-to-pod connectivity;
+# clusters on different networks talk through east-west gateways only.
+case "${ISTIO_MC_MODE}/${ISTIO_NETWORK_MODE}" in
+  primary-remote/flat)
+    # primary, remote1 and remote2 are all on network1
+    connect_kind_clusters "remote1" "remote2"
+    connect_kind_clusters "primary" "remote1"
+    connect_kind_clusters "primary" "remote2"
+    ;;
+  primary-remote/non-flat)
+    # primary and remote1 are on network1, remote2 is on network2
+    connect_kind_clusters "primary" "remote1"
+    ;;
+  *)
+    echo "${ISTIO_MC_MODE}/${ISTIO_NETWORK_MODE}: every cluster is on its own network, nothing to connect"
+    ;;
+esac
