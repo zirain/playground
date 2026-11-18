@@ -1,0 +1,84 @@
+# Measures the latency Envoy itself adds to each request, via the stats access logger.
+#
+#   Envoy overhead ≈ request_path_us - upstream_connect_us + response_path_us
+#
+# Compare per percentile in PromQL, e.g. histogram_quantile(0.99, ...) of each.
+# Percentiles don't add or subtract exactly, so treat the result as an estimate.
+#
+# Things to keep in mind:
+# - External callouts count as Envoy cost: time spent in ext_authz, rate limit or
+#   ext_proc calls lands in request_path_us. To separate it out, add a histogram on
+#   the matching filter-state / dynamic-metadata timing.
+# - Retries skew the numbers: upstream timestamps (US_*) come from the last attempt,
+#   so retried requests look slower. Add `&& response.attempt_count == 1u` to the CEL
+#   filter to exclude them.
+# - Body streaming isn't counted: all histograms measure time to first byte. For
+#   buffering cost (e.g. body-processing filters) also add DS_RX_END -> US_TX_END and
+#   US_RX_END -> DS_TX_END.
+# - upstream_connect_us is only recorded when a new upstream connection was opened,
+#   so its count is lower than the other two histograms.
+# - Values are in microseconds: make sure the histogram buckets cover roughly
+#   10us - 100ms.
+# - The CEL filter (envoy.access_loggers.extension_filters.cel) must be compiled into
+#   the Envoy build, otherwise the patch is rejected.
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyPatchPolicy
+metadata:
+  name: gateway-overhead-stats
+  namespace: default # <gateway-namespace>
+spec:
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: eg
+  type: JSONPatch
+  jsonPatches:
+    - type: type.googleapis.com/envoy.config.listener.v3.Listener
+      name: default/eg/http # <gateway-namespace>/<gateway-name>/<listener-name>
+      operation:
+        op: add
+        # Append, don't replace the existing access_log list.
+        # Plain HTTP listeners only have default_filter_chain; TLS listeners use filter_chains/<idx> (check config_dump).
+        path: /default_filter_chain/filters/0/typed_config/access_log/-
+        value:
+          name: envoy.access_loggers.stats
+          filter: # count only clean responses (no response flags set)
+            extension_filter:
+              name: envoy.access_loggers.extension_filters.cel
+              typed_config:
+                "@type": type.googleapis.com/envoy.extensions.access_loggers.filters.cel.v3.ExpressionFilter
+                expression: "response.flags == 0"
+          typed_config:
+            "@type": type.googleapis.com/envoy.extensions.access_loggers.stats.v3.Config
+            stat_prefix: teg_overhead
+            # Envoy overhead = request_path_us - upstream_connect_us + response_path_us
+            # (value_format can't do arithmetic; combine in PromQL).
+            histograms:
+              # Request path: first downstream byte -> first byte sent upstream.
+              # Includes HTTP filters (ext_authz, ratelimit, ...), routing, LB, and
+              # upstream connect/handshake when a new connection is opened.
+              - stat:
+                  name: request_path_us
+                  tags:
+                    - name: route
+                      value_format: "%ROUTE_NAME%"
+                unit: Microseconds
+                value_format: "%COMMON_DURATION(DS_RX_BEG:US_TX_BEG:us)%"
+              # Upstream connect + TLS handshake (only emitted when a new connection
+              # was established); not Envoy processing, subtract it from request_path_us.
+              - stat:
+                  name: upstream_connect_us
+                  tags:
+                    - name: route
+                      value_format: "%ROUTE_NAME%"
+                unit: Microseconds
+                value_format: "%COMMON_DURATION(US_CX_BEG:US_HS_END:us)%"
+              # Response path: first upstream response byte -> first byte sent downstream.
+              # Covers encoder filters and response header processing.
+              - stat:
+                  name: response_path_us
+                  tags:
+                    - name: route
+                      value_format: "%ROUTE_NAME%"
+                unit: Microseconds
+                value_format: "%COMMON_DURATION(US_RX_BEG:DS_TX_BEG:us)%"
