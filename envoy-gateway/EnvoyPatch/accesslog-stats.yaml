@@ -50,7 +50,7 @@ spec:
                 expression: "response.flags == 0"
           typed_config:
             "@type": type.googleapis.com/envoy.extensions.access_loggers.stats.v3.Config
-            stat_prefix: teg_overhead
+            stat_prefix: eg_overhead
             # Envoy overhead = request_path_us - upstream_connect_us + response_path_us
             # (value_format can't do arithmetic; combine in PromQL).
             histograms:
