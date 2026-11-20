@@ -2,99 +2,78 @@
 
 set -euo pipefail
 
-if ! command -v regctl &>/dev/null; then
-    echo "regctl not found. Install with: brew install regclient"
-    exit 1
-fi
+command -v regctl &>/dev/null || { echo "regctl not found. Install with: brew install regclient"; exit 1; }
 
-# Setup default values
 ISTIO_VERSION=${ISTIO_VERSION:-$(istioctl version --remote=false | cut -d ':' -f2 | xargs)}
+EG_VERSION=${EG_VERSION:-$(egctl version --remote=false | cut -d ':' -f2 | xargs)}
 MIRROR_REGISTRY=${MIRROR_REGISTRY:-"192.168.4.146:5000"}
+echo "ISTIO_VERSION: ${ISTIO_VERSION}, EG_VERSION: ${EG_VERSION}"
 
 regctl registry set "${MIRROR_REGISTRY}" --tls=disabled
 
-# sync Istio images(distroless is used in Ambient)
-istioImages=(pilot proxyv2 ztunnel install-cni)
-for imageName in ${istioImages[@]} ; do
-    regctl image copy "docker.io/istio/${imageName}:${ISTIO_VERSION}" "${MIRROR_REGISTRY}/istio/${imageName}:${ISTIO_VERSION}"
-    regctl image copy "docker.io/istio/${imageName}:${ISTIO_VERSION}-distroless" "${MIRROR_REGISTRY}/istio/${imageName}:${ISTIO_VERSION}-distroless"
+# sync <source-registry> <image>...  (linux/amd64 and linux/arm64 only)
+sync() {
+    local src=$1; shift
+    for img in "$@"; do
+        regctl image copy --platform linux/amd64 --platform linux/arm64 "${src}/${img}" "${MIRROR_REGISTRY}/${img}"
+    done
+}
+
+# latest <registry>/<repo>: print the highest stable X.Y.Z tag (with or without a "v" prefix)
+latest() {
+    regctl tag ls "$1" | grep -E '^v?[0-9]+\.[0-9]+\.[0-9]+$' |
+        awk '{t=$0; sub(/^v/, "", t); print t, $0}' | sort -V | tail -1 | cut -d' ' -f2
+}
+
+# Istio (distroless is used in Ambient)
+for name in pilot proxyv2 ztunnel install-cni; do
+    sync docker.io "istio/${name}:${ISTIO_VERSION}" "istio/${name}:${ISTIO_VERSION}-distroless"
 done
 
-bookinfoTag=${BOOKINFO_IMAGE_TAG:-"1.20.3"}
-bookinfoImages=(istio/examples-bookinfo-productpage-v1
-                 istio/examples-bookinfo-details-v1
-                 istio/examples-bookinfo-ratings-v1
-                 istio/examples-bookinfo-reviews-v1
-                 istio/examples-bookinfo-reviews-v2
-                 istio/examples-bookinfo-reviews-v3)
-for imageName in ${bookinfoImages[@]} ; do
-    regctl image copy "docker.io/${imageName}:${bookinfoTag}" "${MIRROR_REGISTRY}/${imageName}:${bookinfoTag}"
+sync docker.io "envoyproxy/gateway:v${EG_VERSION}"
+
+sync docker.io \
+    redis:8.6.7 \
+    postgres:17 \
+    golang:1.26.4 \
+    kindest/node:v1.35.0 \
+    kindest/node:v1.36.1 \
+    kindest/node:v1.37.0 \
+    kiwigrid/k8s-sidecar:1.30.9 \
+    kiwigrid/k8s-sidecar:2.5.0 \
+    mccutchen/go-httpbin:v2.5.0 \
+    prom/prometheus:v2.52.0 \
+    prom/prometheus:v3.12.0 \
+    bats/bats:v1.4.1
+
+# Always the latest stable release
+for repo in \
+    grafana/alloy \
+    grafana/grafana \
+    grafana/loki \
+    grafana/tempo \
+    otel/opentelemetry-collector-contrib; do
+    tag=$(latest "docker.io/${repo}")
+    [[ -n $tag ]] || { echo "no stable tag found for ${repo}"; exit 1; }
+    sync docker.io "${repo}:${tag}"
 done
 
-# golang: filter to linux/amd64 and linux/arm64 only
-regctl image copy --platform linux/amd64 --platform linux/arm64 \
-    "docker.io/golang:1.26.4" "${MIRROR_REGISTRY}/golang:1.26.4"
+sync quay.io \
+    prometheus-operator/prometheus-config-reloader:v0.81.0 \
+    prometheus-operator/prometheus-config-reloader:v0.89.0 \
+    metallb/controller:v0.16.1 \
+    metallb/speaker:v0.16.1
 
-otherImages=(curlimages/curl:latest moby/buildkit:buildx-stable-1)
-for imageName in ${otherImages[@]} ; do
-    regctl image copy "docker.io/${imageName}" "${MIRROR_REGISTRY}/${imageName}"
-done
+sync ghcr.io \
+    projectcontour/yages:v0.1.0 \
+    spiffe/spire-controller-manager:0.6.3 \
+    spiffe/spiffe-csi-driver:0.2.7 \
+    spiffe/spiffe-helper:0.11.0 \
+    spiffe/oidc-discovery-provider:1.14.2 \
+    spiffe/spire-agent:1.14.2
 
-# sync image from docker.io
-images=(redis:8.6.7
-        kindest/node:v1.35.0
-        kindest/node:v1.36.1
-        kindest/node:v1.37.0
-        otel/opentelemetry-collector-contrib:0.158.0
-        kiwigrid/k8s-sidecar:1.30.9
-        mccutchen/go-httpbin:v2.5.0
-        prom/prometheus:v2.52.0
-        prom/prometheus:v3.12.0
-        grafana/alloy:v1.17.0
-        kiwigrid/k8s-sidecar:2.5.0
-        grafana/grafana:12.3.1
-        grafana/loki:3.6.11
-        grafana/tempo:2.1.1
-        bats/bats:v1.4.1)
-for imageName in ${images[@]} ; do
-    regctl image copy "${imageName}" "${MIRROR_REGISTRY}/${imageName}"
-done
-
-# sync images from quay.io
-queryImages=(prometheus-operator/prometheus-config-reloader:v0.81.0
-             prometheus-operator/prometheus-config-reloader:v0.89.0
-             metallb/controller:v0.16.1
-             metallb/speaker:v0.16.1)
-for imageName in ${queryImages[@]} ; do
-    regctl image copy "quay.io/${imageName}" "${MIRROR_REGISTRY}/${imageName}"
-done
-
-# sync image from ghcr.io
-ghcrImages=(projectcontour/yages:v0.1.0
-            spiffe/spire-controller-manager:0.6.3
-            spiffe/spiffe-csi-driver:0.2.7
-            spiffe/spiffe-helper:0.11.0
-            spiffe/oidc-discovery-provider:1.14.2
-            spiffe/spire-agent:1.14.2)
-for imageName in ${ghcrImages[@]} ; do
-    regctl image copy "ghcr.io/${imageName}" "${MIRROR_REGISTRY}/${imageName}"
-done
-
-# sync Envoy Gateway images
-EG_VERSION=${EG_VERSION:-$(egctl version --remote=false | cut -d ':' -f2 | xargs)}
-echo "EG_VERSION: ${EG_VERSION}"
-
-egImages=(envoyproxy/gateway)
-for imageName in ${egImages[@]} ; do
-    regctl image copy "docker.io/${imageName}:v${EG_VERSION}" "${MIRROR_REGISTRY}/${imageName}:v${EG_VERSION}"
-done
-
-# images for Gateway API conformance tests
-image=(
-    sig-storage/csi-node-driver-registrar:v2.9.4
-    coredns/coredns:v1.12.2
+# Gateway API conformance tests
+sync registry.k8s.io \
+    sig-storage/csi-node-driver-registrar:v2.9.4 \
+    coredns/coredns:v1.12.2 \
     gateway-api/echo-basic:v1.5.1
-)
-for img in ${image[@]}; do
-    regctl image copy "registry.k8s.io/${img}" "${MIRROR_REGISTRY}/${img}"
-done
