@@ -1,4 +1,19 @@
-apiVersion: networking.istio.io/v1beta1
+apiVersion: networking.istio.io/v1
+kind: Gateway
+metadata:
+  name: httpbin-gateway
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - "*"
+---
+apiVersion: networking.istio.io/v1
 kind: VirtualService
 metadata:
   name: httpbin-root
@@ -9,11 +24,20 @@ spec:
   hosts:
     - "*"
   http:
-    - delegate:
+    - match:
+        - uri:
+            prefix: /
+      delegate:
+        name: httpbin
+        namespace: default
+    - match:
+        - uri:
+            exact: /status
+      delegate:
         name: httpbin
         namespace: default
 ---
-apiVersion: networking.istio.io/v1beta1
+apiVersion: networking.istio.io/v1
 kind: VirtualService
 metadata:
   name: httpbin
@@ -22,11 +46,10 @@ spec:
   http:
     - match:
         - uri:
-            prefix: /status
+            exact: /status
       route:
         - destination:
             host: httpbin
-            #subset: v1
             port:
               number: 8000
     - match:
@@ -35,6 +58,5 @@ spec:
       route:
         - destination:
             host: httpbin
-            #subset: v2
             port:
               number: 8000
